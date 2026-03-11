@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+{% if user.is_authenticated %}
+  <h3>Bienvenue {{ user.full_name }} 👋</h3>
+  <p>Université : {{ user.student_profile.university }}</p>
+{% else %}
+  <h3>Bienvenue sur Campus Marketplace</h3>
+  <a href="{% url 'register' %}" class="btn btn-primary">Créer un compte</a>
+{% endif %}
+{% endblock %}
