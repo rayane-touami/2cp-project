@@ -1,0 +1,26 @@
+import 'package:flutter/material.dart';
+
+class StandardButton extends StatelessWidget {
+  final String text;
+   const StandardButton({super.key , required this.text , });
+   @override
+  Widget build(BuildContext context) {
+    return 
+    MaterialButton(
+            onPressed: (){},
+            color: Color(0xff2853af),
+            textColor: Colors.white,
+            minWidth: double.infinity,
+            height: 60,
+            shape:RoundedRectangleBorder(
+              borderRadius: BorderRadiusGeometry.circular(15)
+            ) ,
+            child: Text(text, style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 18,
+            ),),
+
+          
+          );
+  }
+}

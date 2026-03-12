@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class StandardContainer extends StatelessWidget {
+class StandardTitle extends StatelessWidget {
   final String title;
   final String pargh;
-  const StandardContainer({super.key , required this.title , required this.pargh});
+  const StandardTitle({super.key , required this.title , required this.pargh});
 
   @override
   Widget build(BuildContext context) {
@@ -16,40 +16,34 @@ class StandardContainer extends StatelessWidget {
             child: 
            IconButton(
              onPressed: () {},
-             iconSize: 30,
+             iconSize: 28,
                      icon: Icon(Icons.arrow_back , color: Colors.black,)
                      ),),
+
            Positioned(
             top: 150,
-            child: 
-            Container(
-              width: 440,
+            left: 0,
+            right: 0,
+            child: Column( children: [
+            SizedBox(
               height: 50,
-              margin: EdgeInsets.only(left: 10 , right: 10,),
-              alignment: Alignment.center,
               child: Text(title , style: TextStyle(
                 fontWeight:FontWeight.bold , 
                 fontFamily: 'Inter',
-                fontSize: 33,
-
+                fontSize: 28,
                ),),
-            )
-           ),
-            Positioned(
-            top: 200,
-            child: 
-            Container(
-              width: 440,
+            ),
+              SizedBox(
               height: 50,
-              margin: EdgeInsets.only(left: 10 , right: 10,),
-              alignment: Alignment.center,
               child: Text(pargh , style: TextStyle( 
-                fontSize: 17,
+                fontSize: 15,
                 fontFamily: 'Inter',
                 color:Color(0xff353849) 
                ),),
             )
+            ])
            ),
+
         ],
       );
 }
