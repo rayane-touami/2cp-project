@@ -30,13 +30,13 @@ class StandardTitle extends StatelessWidget {
               child: Text(title , style: TextStyle(
                 fontWeight:FontWeight.bold , 
                 fontFamily: 'Inter',
-                fontSize: 28,
+                fontSize: 26,
                ),),
             ),
               SizedBox(
               height: 50,
               child: Text(pargh , style: TextStyle( 
-                fontSize: 15,
+                fontSize: 16,
                 fontFamily: 'Inter',
                 color:Color(0xff353849) 
                ),),
