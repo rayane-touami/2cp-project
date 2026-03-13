@@ -20,29 +20,32 @@ class StandardTitle extends StatelessWidget {
                      icon: Icon(Icons.arrow_back , color: Colors.black,)
                      ),),
 
-           Positioned(
-            top: 150,
-            left: 0,
-            right: 0,
-            child: Column( children: [
-            SizedBox(
-              height: 50,
-              child: Text(title , style: TextStyle(
-                fontWeight:FontWeight.bold , 
-                fontFamily: 'Inter',
-                fontSize: 26,
-               ),),
-            ),
-              SizedBox(
-              height: 50,
-              child: Text(pargh , style: TextStyle( 
-                fontSize: 16,
-                fontFamily: 'Inter',
-                color:Color(0xff353849) 
-               ),),
-            )
-            ])
-           ),
+                     Positioned(
+                      top: 150,
+                       left: 0,
+                       right: 0,
+                     child: Column(
+                     children: [
+                      SizedBox(
+                      child: Text(title,
+                      textAlign: TextAlign.center,
+                       style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Inter',
+                      fontSize: 26,
+                       ),),),
+                      SizedBox(height: 10,),
+                      Text(
+                       pargh, // manually control where it breaks
+                       textAlign: TextAlign.center,
+                       style: TextStyle(
+                       fontFamily: 'Inter',
+                       fontSize: 16,
+                      color: Color(0xff353849),
+                      ),
+                     ),],
+                  ),
+                )
 
         ],
       );

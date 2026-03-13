@@ -22,6 +22,7 @@ class _MyAppState extends State<MyApp>{
 
   @override
   Widget build(BuildContext context) {
+
     return MaterialApp( // it had to be material bcs it will manage the first page
     home: Scaffold(
       body:Stack(children: [
