@@ -86,8 +86,8 @@ class AnnouncementCreateSerializer(serializers.ModelSerializer):
         
      
         for image in value:
-            if image.size > 10 * 1024 * 1024:  # 10mega max
-                raise serializers.ValidationError(f"Image {image.name} is too large. Max size is 10MB")
+            if image.size > 30 * 1024 * 1024:  # 30mega max
+                raise serializers.ValidationError(f"Image {image.name} is too large. Max size is 30MB")
           
             width, height = get_image_dimensions(image)
             if width > 4000 or height > 4000:
