@@ -185,3 +185,13 @@ firebase_cred_path = os.path.join(BASE_DIR, 'firebase-credentials.json')
 if os.path.exists(firebase_cred_path):
     cred = credentials.Certificate(firebase_cred_path)
     firebase_admin.initialize_app(cred)
+
+# Announcement settings
+MAX_PHOTOS_PER_ANNOUNCEMENT = 10
+MAX_PHOTO_SIZE_MB = 30
+ALLOWED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif']
+ANNOUNCEMENTS_PER_PAGE = 20 #optional
+
+# File upload settings
+FILE_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024  # 30MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024  
