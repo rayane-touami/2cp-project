@@ -3,7 +3,7 @@ from rest_framework import generics, status, pagination
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
-from django.db.models import Prefetch, Count
+from django.db.models import Prefetch, Count, F
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers
