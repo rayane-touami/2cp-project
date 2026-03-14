@@ -120,7 +120,7 @@ class AnnouncementDetailAPIView(generics.RetrieveAPIView):
     queryset = Announcement.objects.filter(status=Announcement.Status.ACTIVE)
     serializer_class = AnnouncementDetailSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
-    ions
+    
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         Announcement.objects.filter(pk=instance.pk).update(
