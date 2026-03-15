@@ -25,13 +25,22 @@ class AnnouncementListSerializer(serializers.ModelSerializer):
     seller = serializers.CharField(source='student_full_name')
     category = serializers.CharField(source='category.name')
     price = serializers.DecimalField(max_digits=10, decimal_places=2, coerce_to_string=False)
+    is_favorited = serializers.SerializerMethodField() 
     
     class Meta:
         model = Announcement
         fields = [
             'id', 'title', 'price', 'photo', 
             'seller', 'category', 'created_at'
+            'is_favorited'
         ]
+
+    def get_is_favorited(self, obj):  
+        request = self.context.get('request')
+        if request and hasattr(request, 'user_id'):
+            return obj.favorited_by.filter(user_id=request.user_id).exists()
+        return False
+
     
     def get_photo(self, obj):
         first_photo = obj.photos.first()
@@ -103,7 +112,7 @@ class AnnouncementCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         photos_data = validated_data.pop('photos', [])
         
-        # Get user info from context 
+       
         request = self.context.get('request')
         
         student_id = getattr(request, 'user_id', None)
@@ -125,5 +134,22 @@ class AnnouncementCreateSerializer(serializers.ModelSerializer):
                 image=photo_file,
                 position=position
             )
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    announcement = AnnouncementListSerializer(read_only=True)
+    announcement_id = serializers.PrimaryKeyRelatedField(
+        queryset=Announcement.objects.filter(status='active'),
+        write_only=True,
+        source='announcement'
+    )
+    
+    class Meta:
+        model = Favorite
+        fields = ['id', 'announcement', 'announcement_id', 'created_at']
+        read_only_fields = ['user_id']
+    
+    def create(self, validated_data):
+        request = self.context.get('request')
+        validated_data['user_id'] = request.user_id
+        return super().create(validated_data)
         
-        return announcement
