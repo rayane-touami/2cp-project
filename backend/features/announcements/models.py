@@ -125,3 +125,70 @@ class Favorite(models.Model):
     
     def __str__(self):
         return f"User {self.user_id} favorites {self.announcement.title}"
+
+class University(models.Model):
+    name = models.CharField(max_length=200)
+    location = models.CharField(max_length=255, blank=True)
+    domain = models.CharField(max_length=100, blank=True, help_text="e.g. univ.dz")
+    logo = models.ImageField(upload_to='universities/', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'university'
+        ordering = ['name']
+        indexes = [
+            models.Index(fields=['name']),
+        ]
+    
+    def __str__(self):
+        return self.name
+
+
+class Review(models.Model):
+    announcement = models.ForeignKey(
+        Announcement, 
+        on_delete=models.CASCADE, 
+        related_name='reviews'
+    )
+    user_id = models.IntegerField(db_index=True)
+    rating = models.IntegerField(
+        choices=[(1, '1 Star'), (2, '2 Stars'), (3, '3 Stars'), (4, '4 Stars'), (5, '5 Stars')]
+    )
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'review'
+        unique_together = ['user_id', 'announcement']
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"Review by {self.user_id} for {self.announcement.title}: {self.rating} stars"
+
+
+class Comment(models.Model):
+    announcement = models.ForeignKey(
+        Announcement, 
+        on_delete=models.CASCADE, 
+        related_name='comments'
+    )
+    user_id = models.IntegerField(db_index=True)
+    parent = models.ForeignKey(
+        'self', 
+        null=True, 
+        blank=True, 
+        on_delete=models.CASCADE, 
+        related_name='replies'
+    )
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'comment'
+        ordering = ['created_at']
+    
+    def __str__(self):
+        return f"Comment by {self.user_id} on {self.announcement.title}"
+
