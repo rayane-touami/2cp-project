@@ -110,3 +110,18 @@ class Photo(models.Model):
     def clean(self):
         if self.position < 1 or self.position > 5:
             raise ValidationError({'position': 'Position must be between 1 and 5'})
+
+
+
+class Favorite(models.Model):
+    user_id = models.IntegerField()  # ID from auth service
+    announcement = models.ForeignKey(Announcement, on_delete=models.CASCADE, related_name='favorited_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'favorite'
+        unique_together = ['user_id', 'announcement']  # only one fv for the post
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"User {self.user_id} favorites {self.announcement.title}"
