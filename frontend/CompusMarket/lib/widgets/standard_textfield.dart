@@ -4,12 +4,15 @@ class StandardTextfield extends StatefulWidget {
   final String title;
   final String hint;
   final bool isPassword;
+  final TextEditingController ?controller;
 
   const StandardTextfield({
     super.key,
     required this.title,
     required this.hint,
     this.isPassword = false,
+    this.controller,
+
   });
 
   @override
@@ -35,6 +38,7 @@ class _StandardTextfieldState extends State<StandardTextfield> {
         Container(
           margin: EdgeInsets.only(top: 7, bottom: 20),
           child: TextField(
+            controller:widget.controller,
             obscureText: widget.isPassword ? visibility : false,
             textAlignVertical: TextAlignVertical.center,
             decoration: InputDecoration(

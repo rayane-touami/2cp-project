@@ -34,7 +34,7 @@ class MyApp extends StatefulWidget{
             StandardTextfield(title:"E-mail", hint:"Enter your email"),
            Container(
             margin: EdgeInsets.only(top:30,),
-           child:   StandardButton(text: "Next"),
+           child:   StandardButton(text: "Next",onPressed: () {},),
            )
         ], 
       ),
