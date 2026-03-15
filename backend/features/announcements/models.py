@@ -40,12 +40,30 @@ class Announcement(models.Model):
     
     student_id = models.IntegerField(db_index=True)  
     student_full_name = models.CharField(max_length=255) 
+
+    
     category = models.ForeignKey(
         Category, 
         on_delete=models.SET_NULL, 
         null=True, 
         related_name='announcements'
     )
+
+    university = models.ForeignKey(
+        University,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='announcements'
+    )
+    
+    # Contact information
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    whatsapp = models.CharField(max_length=20, blank=True, null=True)
+    telegram = models.Charfield(max_length=20, blank=True, null=True)
+    instagram = models.Charfield(max_length=20, blank=True, null=True)
+    facebook = models.Charfield(max_length=20, blank=True, null=True)
+    allow_chat = models.BooleanField(default=True)
     
     
     location = models.CharField(max_length=255, blank=True)
