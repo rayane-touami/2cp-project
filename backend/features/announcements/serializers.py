@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.core.files.images import get_image_dimensions
-from .models import Announcement, Category, Photo, Favorite
+from .models import Announcement, Category, Photo, Favorite, University, Review, Comment
 
 class CategorySerializer(serializers.ModelSerializer):
     
@@ -24,6 +24,7 @@ class AnnouncementListSerializer(serializers.ModelSerializer):
     photo = serializers.SerializerMethodField()
     seller = serializers.CharField(source='student_full_name')
     category = serializers.CharField(source='category.name')
+    university = serializers.CharField(source='university.name', read_only=True)
     price = serializers.DecimalField(max_digits=10, decimal_places=2, coerce_to_string=False)
     is_favorited = serializers.SerializerMethodField() 
     
@@ -31,7 +32,7 @@ class AnnouncementListSerializer(serializers.ModelSerializer):
         model = Announcement
         fields = [
             'id', 'title', 'price', 'photo', 
-            'seller', 'category', 'created_at'
+            'seller', 'category', 'university', 'created_at',
             'is_favorited'
         ]
 
@@ -52,21 +53,50 @@ class AnnouncementDetailSerializer(serializers.ModelSerializer):
     photos = PhotoSerializer(many=True, read_only=True)
     seller = serializers.CharField(source='student_full_name')
     category = CategorySerializer(read_only=True)
+    university = serializers.CharField(source='university.name', read_only=True)
     category_id = serializers.PrimaryKeyRelatedField(
         queryset=Category.objects.all(), 
         source='category',
         write_only=True
     )
+    
+    university_id = serializers.PrimaryKeyRelatedField(  
+        queryset=University.objects.all(),
+        source='university',
+        write_only=True,
+        required=False,
+        allow_null=True
+    )
+    
     price = serializers.DecimalField(max_digits=10, decimal_places=2, coerce_to_string=False)
+    average_rating = serializers.SerializerMethodField()
+    reviews_count = serializers.SerializerMethodField()
+    comments_count = serializers.SerializerMethodField()
     
     class Meta:
         model = Announcement
         fields = [
             'id', 'title', 'description', 'price', 
-            'photos', 'seller', 'category', 'category_id', 
-            'location', 'status', 'created_at', 'updated_at'
+            'photos', 'seller', 'category','university', 
+            'category_id','university_id', 'location', 
+            'phone_number', 'whatsapp', 'allow_chat',
+            'status', 'created_at', 'updated_at',
+            'views_count', 'average_rating', 'reviews_count', 'comments_count'
         ]
         read_only_fields = ['student_id', 'student_full_name', 'status', 'created_at', 'updated_at']
+        
+    def get_average_rating(self, obj):
+        reviews = obj.reviews.all()
+        if reviews:
+            return sum(r.rating for r in reviews) / len(reviews)
+        return 0
+    
+    def get_reviews_count(self, obj):
+        return obj.reviews.count()
+    
+    def get_comments_count(self, obj):
+        return obj.comments.count() 
+
 
 class AnnouncementCreateSerializer(serializers.ModelSerializer):
     photos = serializers.ListField(
@@ -78,7 +108,7 @@ class AnnouncementCreateSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False,
         min_length=0,
-        max_length=5
+        max_length=10
     )
     price = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=0)
     
@@ -86,11 +116,13 @@ class AnnouncementCreateSerializer(serializers.ModelSerializer):
         model = Announcement
         fields = [
             'title', 'description', 'price', 
-            'category', 'location', 'photos'
+            'category', 'location', 'university',
+            'phone_number', 'whatsapp', 'allow_chat',
+            'photos'
         ]
     
     def validate_photos(self, value):
-        if len(value) > 5:
+        if len(value) > 10:
             raise serializers.ValidationError("Maximum 5 photos allowed")
         
      
@@ -152,4 +184,30 @@ class FavoriteSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         validated_data['user_id'] = request.user_id
         return super().create(validated_data)
+
+class UniversitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = University
+        fields = ['id', 'name', 'location', 'domain', 'logo']
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['id', 'rating', 'comment', 'created_at', 'updated_at']
+        read_only_fields = ['user_id']
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    replies = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Comment
+        fields = ['id', 'content', 'parent', 'replies', 'created_at', 'updated_at']
+        read_only_fields = ['user_id']
+    
+    def get_replies(self, obj):
+        if obj.replies.exists():
+            return CommentSerializer(obj.replies.all(), many=True).data
+        return []
         
