@@ -40,7 +40,7 @@ class StandardTitle extends StatelessWidget {
                        textAlign: TextAlign.center,
                        style: TextStyle(
                        fontFamily: 'Inter',
-                       fontSize: 16,
+                       fontSize: 15,
                       color: Color(0xff353849),
                       ),
                      ),],
