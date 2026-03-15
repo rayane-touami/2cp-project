@@ -12,7 +12,6 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('features.authentication.urls')),  # ✅ corrigé
-    # added to announcements
     path('api/', include('features.announcements.urls')),
     # ── Added by Nour (messaging module) ──────────────────
     path('api/messaging/', include('features.messaging.urls')),
