@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.core.files.images import get_image_dimensions
-from .models import Announcement, Category, Photo
+from .models import Announcement, Category, Photo, Favorite
 
 class CategorySerializer(serializers.ModelSerializer):
     
