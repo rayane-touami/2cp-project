@@ -7,4 +7,8 @@ urlpatterns = [
     path('announcements/', views.AnnouncementListAPIView.as_view(), name='announcement-list'),
     path('announcements/create/', views.AnnouncementCreateAPIView.as_view(), name='announcement-create'),
     path('announcements/<int:pk>/', views.AnnouncementDetailAPIView.as_view(), name='announcement-detail'),
+    # Favorites endpoints
+    path('favorites/', views.FavoriteListCreateAPIView.as_view(), name='favorite-list'),
+    path('favorites/<int:pk>/', views.FavoriteDestroyAPIView.as_view(), name='favorite-detail'),
+    path('favorites/check/', views.CheckFavoritesAPIView.as_view(), name='favorite-check'),
 ]
