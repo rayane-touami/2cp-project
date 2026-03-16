@@ -20,6 +20,24 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+class University(models.Model):
+    name = models.CharField(max_length=200)
+    location = models.CharField(max_length=255, blank=True)
+    domain = models.CharField(max_length=100, blank=True, help_text="e.g. univ.dz")
+    logo = models.ImageField(upload_to='universities/', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'university'
+        ordering = ['name']
+        indexes = [
+            models.Index(fields=['name']),
+        ]
+    
+    def __str__(self):
+        return self.name
+
+
 class Announcement(models.Model):
    
     class Status(models.TextChoices):
@@ -60,9 +78,9 @@ class Announcement(models.Model):
     # Contact information
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     whatsapp = models.CharField(max_length=20, blank=True, null=True)
-    telegram = models.Charfield(max_length=20, blank=True, null=True)
-    instagram = models.Charfield(max_length=20, blank=True, null=True)
-    facebook = models.Charfield(max_length=20, blank=True, null=True)
+    telegram = models.CharField(max_length=20, blank=True, null=True)
+    instagram = models.CharField(max_length=20, blank=True, null=True)
+    facebook = models.CharField(max_length=20, blank=True, null=True)
     allow_chat = models.BooleanField(default=True)
     
     
@@ -86,6 +104,7 @@ class Announcement(models.Model):
         indexes = [
             models.Index(fields=['status', '-created_at']),
             models.Index(fields=['category']),
+            models.Index(fields=['university']),
             models.Index(fields=['student_id']),
             models.Index(fields=['created_at']),  # index for sorting
         ]
@@ -143,23 +162,6 @@ class Favorite(models.Model):
     
     def __str__(self):
         return f"User {self.user_id} favorites {self.announcement.title}"
-
-class University(models.Model):
-    name = models.CharField(max_length=200)
-    location = models.CharField(max_length=255, blank=True)
-    domain = models.CharField(max_length=100, blank=True, help_text="e.g. univ.dz")
-    logo = models.ImageField(upload_to='universities/', null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        db_table = 'university'
-        ordering = ['name']
-        indexes = [
-            models.Index(fields=['name']),
-        ]
-    
-    def __str__(self):
-        return self.name
 
 
 class Review(models.Model):
