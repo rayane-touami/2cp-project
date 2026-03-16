@@ -17,11 +17,21 @@ class _OTPScreenState extends State<OTPScreen>{
   TextEditingController c4 = TextEditingController();
 
   late List<TextEditingController> controllers;
+  final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
   @override
   
 void initState(){
   super.initState();
   controllers = [c1,c2,c3,c4];
+  Future.delayed(Duration.zero, () {
+    _focusNodes[0].requestFocus();
+  });
+}
+@override
+void dispose() {
+  for (var c in controllers) c.dispose();
+  for (var f in _focusNodes) f.dispose(); // ✅ Add this
+  super.dispose();
 }
 
 
@@ -49,6 +59,20 @@ void initState(){
                       height: 60,
                     child:   TextField(
                        controller: controllers[index],
+                       focusNode: _focusNodes[index], // ✅ Add this
+  onChanged: (value) {           // ✅ Add this
+    if (value.length == 1) {
+      if (index < 3) {
+        _focusNodes[index + 1].requestFocus(); // jump to next
+      } else {
+        _focusNodes[index].unfocus(); // close keyboard on last field
+      }
+    } else if (value.isEmpty) {
+      if (index > 0) {
+        _focusNodes[index - 1].requestFocus(); // go back on delete
+      }
+    }
+  },
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Inter',
