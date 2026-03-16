@@ -16,7 +16,29 @@ class SignUpScreen extends StatefulWidget{
   class _SignUpScreenState extends State<SignUpScreen>{
     TextEditingController emailController = TextEditingController(); 
     TextEditingController nameController = TextEditingController(); 
-    TextEditingController PasswordController = TextEditingController(); 
+    TextEditingController PasswordController = TextEditingController();
+     bool _submitted = false;
+     @override
+  void initState() {
+    super.initState();
+   
+    emailController.addListener(() {
+      setState(() {});
+    });
+    nameController.addListener(() {
+      setState(() {});
+    });
+    PasswordController.addListener(() {
+      setState(() {});
+    });
+  }
+  @override
+  void dispose() {
+    emailController.dispose(); 
+    nameController.dispose(); 
+    PasswordController.dispose(); 
+    super.dispose();
+  } 
     @override
   Widget build(BuildContext context) {
   return Scaffold(
@@ -34,9 +56,9 @@ class SignUpScreen extends StatefulWidget{
           child: Column(  
           crossAxisAlignment: CrossAxisAlignment.start, 
            children: [
-            StandardTextfield(title:"Full Name", hint:"Enter your name",controller: nameController,),
-            StandardTextfield(title:"E-mail", hint:"Enter your email",controller: emailController,),
-            StandardTextfield(title:"Password", hint:"Enter your Password",isPassword: true,controller: PasswordController,),
+            StandardTextfield(title:"Full Name", hint:"Enter your name",controller: nameController,isError: _submitted && nameController.text.isEmpty,),
+            StandardTextfield(title:"E-mail", hint:"Enter your email",controller: emailController,isError: _submitted && emailController.text.isEmpty,),
+            StandardTextfield(title:"Password", hint:"Enter your Password",isPassword: true,controller: PasswordController,isError: _submitted && PasswordController.text.isEmpty,),
             SizedBox(height: 10,),
             StandardButton(text: "Create An Account",onPressed: () {
               _testemail(context);
@@ -135,6 +157,9 @@ class SignUpScreen extends StatefulWidget{
   }
 
   void _testemail (BuildContext context){
+    setState(() {
+    _submitted = true; 
+  });
  if(nameController.text.isEmpty || emailController.text.isEmpty || PasswordController.text.isEmpty ){
     print("Fill all fields");
     return;

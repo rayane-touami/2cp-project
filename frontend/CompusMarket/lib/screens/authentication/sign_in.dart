@@ -19,9 +19,30 @@ class SignInScreen extends StatefulWidget{
   }
 
 class _SignInScreenState extends State<SignInScreen>{
+   TextEditingController emailController = TextEditingController(); 
+    TextEditingController PasswordController = TextEditingController();
 
   bool Status=false; //for checkbox of remember me 
   bool visibility=true;
+   bool _submitted = false;
+     @override
+  void initState() {
+    super.initState();
+   
+    emailController.addListener(() {
+      setState(() {});
+    });
+   
+    PasswordController.addListener(() {
+      setState(() {});
+    });
+  }
+  @override
+  void dispose() {
+    emailController.dispose(); 
+    PasswordController.dispose(); 
+    super.dispose();
+  } 
 
   @override
   Widget build(BuildContext context) {
@@ -46,8 +67,8 @@ class _SignInScreenState extends State<SignInScreen>{
           child: Column(   // had childs in column
           crossAxisAlignment: CrossAxisAlignment.start, // for the children in the column begin from left :0 
            children: [
-            StandardTextfield(title:"Email Adress", hint:"Enter your email adress"),
-            StandardTextfield(title:"Password", hint:"Enter your Password",isPassword: true,),
+            StandardTextfield(title:"Email Adress", hint:"Enter your email adress" ,controller: emailController,isError: _submitted && emailController.text.isEmpty,),
+            StandardTextfield(title:"Password", hint:"Enter your Password",isPassword: true,controller: PasswordController,isError: _submitted && PasswordController.text.isEmpty,),
           Container(
            margin: EdgeInsets.only(bottom: 15),
             child: Row(
@@ -96,7 +117,9 @@ class _SignInScreenState extends State<SignInScreen>{
             ),
           ),
 
-          StandardButton(text: "Sign In",onPressed: () {},),
+          StandardButton(text: "Sign In",onPressed: () {
+            _testfields(context);
+          },),
 
           Container(
             margin: EdgeInsets.only(top: 30 , bottom: 25),
@@ -225,4 +248,13 @@ class _SignInScreenState extends State<SignInScreen>{
     
   }
 
+  void _testfields (BuildContext context){
+     setState(() {
+    _submitted = true; 
+  });
+   if( emailController.text.isEmpty || PasswordController.text.isEmpty ){
+    print("Fill all fields");
+    return;
+  } 
+  }
 }

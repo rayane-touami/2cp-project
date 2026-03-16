@@ -11,6 +11,13 @@ class OTPScreen extends StatefulWidget {
 
 
 class _OTPScreenState extends State<OTPScreen>{
+  bool _submitted = false;
+  BorderSide _getBorderSide(int index) {
+    if (_submitted && controllers[index].text.isEmpty) {
+      return BorderSide(color: Colors.red, width: 2);
+    }
+    return BorderSide.none;
+  }
   TextEditingController c1 = TextEditingController();
   TextEditingController c2 = TextEditingController();
   TextEditingController c3 = TextEditingController();
@@ -60,7 +67,10 @@ void dispose() {
                     child:   TextField(
                        controller: controllers[index],
                        focusNode: _focusNodes[index], // ✅ Add this
-  onChanged: (value) {           // ✅ Add this
+  onChanged: (value) {   
+    if (_submitted) {
+    setState(() {}); 
+  }       
     if (value.length == 1) {
       if (index < 3) {
         _focusNodes[index + 1].requestFocus(); // jump to next
@@ -89,14 +99,22 @@ void dispose() {
                         contentPadding: EdgeInsets.symmetric(vertical: 8),
                         border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(25),
-                borderSide: BorderSide.none,
+                borderSide:BorderSide.none
               ),
+              enabledBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(25),
+    borderSide: _getBorderSide(index),
+  ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(25),
-                borderSide: BorderSide(color: Colors.blue, width: 2),
+                borderSide:  _submitted && controllers[index].text.isEmpty
+        ? BorderSide(color: Colors.red, width: 2)  // ✅ red even if focused and empty
+        : BorderSide(color: Colors.blue, width: 2),
               ),
-              fillColor: Color(0xffeceff3),
-              filled: true,
+              fillColor: _submitted && controllers[index].text.isEmpty
+      ? Colors.red.withOpacity(0.07)
+      : Color(0xffeceff3),
+  filled: true,
                        ),
                     ),
                     ),
@@ -141,8 +159,16 @@ void dispose() {
      
   }
   void _testOTP (BuildContext context) {
+     setState(() {
+    _submitted = true; // ✅ Add this
+  });
     if(c1.text.isEmpty || c2.text.isEmpty || c3.text.isEmpty || c4.text.isEmpty){
-    print("Fill all fields");
+    for (int i = 0; i < controllers.length; i++) {
+      if (controllers[i].text.isEmpty) {
+        _focusNodes[i].requestFocus();
+        break;
+      }
+    }
     return;
   } 
     Navigator.push(

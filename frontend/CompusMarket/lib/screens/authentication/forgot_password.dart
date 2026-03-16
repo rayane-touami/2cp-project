@@ -12,6 +12,22 @@ class ForgotPasswordScreen extends StatefulWidget{
 
   class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>{
     TextEditingController emailController = TextEditingController(); 
+     bool _submitted = false;
+     @override
+  void initState() {
+    super.initState();
+   
+    emailController.addListener(() {
+      setState(() {});
+    });
+  }
+  @override
+  void dispose() {
+    emailController.dispose(); 
+    super.dispose();
+  }
+
+
     @override
   Widget build(BuildContext context) {
    return Scaffold(
@@ -29,7 +45,7 @@ class ForgotPasswordScreen extends StatefulWidget{
           child: Column(   // had childs in column
           crossAxisAlignment: CrossAxisAlignment.start, // for the children in the column begin from left :0 
            children: [
-            StandardTextfield(title:"E-mail", hint:"Enter your email" , controller: emailController,),
+            StandardTextfield(title:"E-mail", hint:"Enter your email" , controller: emailController,isError: _submitted && emailController.text.isEmpty,),
            Container(
             margin: EdgeInsets.only(top:30,),
            child:   StandardButton(text: "Next",onPressed: () {
@@ -46,6 +62,9 @@ class ForgotPasswordScreen extends StatefulWidget{
     );
   }
   void _test(BuildContext context){
+    setState(() {
+    _submitted = true; 
+  });
   if(emailController.text.isEmpty){
     print("Fill all fields");
     return;

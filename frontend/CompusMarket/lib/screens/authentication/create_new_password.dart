@@ -13,6 +13,26 @@ class CreateNewPasswordScreen extends StatefulWidget{
   class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen>{
     TextEditingController newPasswordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
+   bool _submitted = false;
+     @override
+  void initState() {
+    super.initState();
+   
+    newPasswordController.addListener(() {
+      setState(() {});
+    });
+    confirmPasswordController.addListener(() {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    newPasswordController.dispose(); 
+    confirmPasswordController.dispose(); 
+    super.dispose();
+  }
+
     @override
   Widget build(BuildContext context) {
      return  Builder(builder: (context) {
@@ -32,8 +52,8 @@ class CreateNewPasswordScreen extends StatefulWidget{
           crossAxisAlignment: CrossAxisAlignment.start, // for the children in the column begin from left :0 
            children: [
           Container(margin: EdgeInsets.only(bottom: 10),
-            child: StandardTextfield(title: "New Password", hint: "Enter new password",isPassword: true,controller: newPasswordController, ),),
-          StandardTextfield(title: "Confirm Password", hint: "Confirm your password",isPassword: true,controller: confirmPasswordController ),
+            child: StandardTextfield(title: "New Password", hint: "Enter new password",isPassword: true,controller: newPasswordController, isError: _submitted && newPasswordController.text.isEmpty, ),),
+          StandardTextfield(title: "Confirm Password", hint: "Confirm your password",isPassword: true,controller: confirmPasswordController,isError: _submitted && confirmPasswordController.text.isEmpty, ),
          Container(
           margin: EdgeInsets.only(top: 25),
          child:   StandardButton(text: "Next" ,onPressed: () {
@@ -46,6 +66,9 @@ class CreateNewPasswordScreen extends StatefulWidget{
     )]));},);
   }
   void _Success (BuildContext context){
+    setState(() {
+    _submitted = true; 
+  });
      if (newPasswordController.text.isEmpty ||
       confirmPasswordController.text.isEmpty) {
     print("Fill all fields");

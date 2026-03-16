@@ -5,6 +5,7 @@ class StandardTextfield extends StatefulWidget {
   final String hint;
   final bool isPassword;
   final TextEditingController ?controller;
+  final bool isError;
 
   const StandardTextfield({
     super.key,
@@ -12,6 +13,7 @@ class StandardTextfield extends StatefulWidget {
     required this.hint,
     this.isPassword = false,
     this.controller,
+     this.isError = false,
 
   });
 
@@ -58,9 +60,18 @@ class _StandardTextfieldState extends State<StandardTextfield> {
                 borderRadius: BorderRadius.circular(15),
                 borderSide: BorderSide.none,
               ),
+              enabledBorder: OutlineInputBorder(
+  borderRadius: BorderRadius.circular(15),
+  borderSide: widget.isError
+      ? BorderSide(color: Colors.red, width: 2) // ✅ red border when error
+      : BorderSide.none,
+),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide(color: Colors.blue, width: 2),
+                borderSide:  widget.isError
+      ? BorderSide(color: Colors.red, width: 2) // ✅ stays red even focused
+      : BorderSide(color: Colors.blue, width: 2),
+
               ),
               hintText: widget.hint,
               hintStyle: TextStyle(
