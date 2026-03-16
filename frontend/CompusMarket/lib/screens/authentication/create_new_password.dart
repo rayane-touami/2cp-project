@@ -4,23 +4,18 @@ import 'package:flutter/material.dart';
 import '../../widgets/standard_Title.dart';
 import '../../widgets/standard_textfield.dart';
 import '../../widgets/standard_Button.dart';
-void main() {
- runApp( MyApp());// it should be the widjet name in capital for first letter
 
-}
-
-class MyApp extends StatefulWidget{
+class CreateNewPasswordScreen extends StatefulWidget{
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<CreateNewPasswordScreen> createState() => _CreateNewPasswordScreenState();
   }
 
-  class _MyAppState extends State<MyApp>{
+  class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen>{
     TextEditingController newPasswordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
     @override
   Widget build(BuildContext context) {
-     return MaterialApp(
-    home: Builder(builder: (context) {
+     return  Builder(builder: (context) {
       return Scaffold(
       body: Stack(
         children: [
@@ -48,7 +43,7 @@ class MyApp extends StatefulWidget{
         ],
       ),
     ),
-    )]));},),);
+    )]));},);
   }
   void _Success (BuildContext context){
      if (newPasswordController.text.isEmpty ||

@@ -2,20 +2,22 @@ import 'package:flutter/material.dart';
 import '../../widgets/standard_Title.dart';
 import '../../widgets/standard_textfield.dart';
 import '../../widgets/standard_Button.dart';
+import 'package:compusmarket/screens/authentication/forgot_password.dart';
 
-void main() {
- runApp( MyApp());// it should be the widjet name in capital for first letter
-
-}
 
 //===========  Statfulwidget  ===========//
+void main() {
+  runApp(MaterialApp(
+    home: SignInScreen(), 
+  ));
+}
 
-class MyApp extends StatefulWidget{
+class SignInScreen extends StatefulWidget{
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<SignInScreen> createState() => _SignInScreenState();
   }
 
-class _MyAppState extends State<MyApp>{
+class _SignInScreenState extends State<SignInScreen>{
 
   bool Status=false; //for checkbox of remember me 
   bool visibility=true;
@@ -23,8 +25,7 @@ class _MyAppState extends State<MyApp>{
   @override
   Widget build(BuildContext context) {
 
-    return MaterialApp( // it had to be material bcs it will manage the first page
-    home: Scaffold(
+    return  Scaffold(
       body:Stack(children: [
 
 //===============  Title ===============//
@@ -74,8 +75,12 @@ class _MyAppState extends State<MyApp>{
                 ),
                 Spacer(),
 
-                InkWell(
-                  onTap: () {} ,
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),);
+                  } ,
                   child: Text("Forgot Password" ,
                   style:TextStyle(
                     color:Colors.red,
@@ -210,8 +215,8 @@ class _MyAppState extends State<MyApp>{
         )
        )
       ],)
-)
-    );
+);
+    
   }
 
 }

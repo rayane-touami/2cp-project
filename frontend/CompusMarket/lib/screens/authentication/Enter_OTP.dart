@@ -2,14 +2,32 @@ import 'package:compusmarket/widgets/standard_Button.dart';
 import 'package:compusmarket/widgets/standard_Title.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-void main (){
-  runApp(MyApp());
+import 'package:compusmarket/screens/authentication/create_new_password.dart';
+
+class OTPScreen extends StatefulWidget {
+  @override
+  State<OTPScreen> createState() => _OTPScreenState();
 }
-class MyApp extends StatelessWidget{
+
+
+class _OTPScreenState extends State<OTPScreen>{
+  TextEditingController c1 = TextEditingController();
+  TextEditingController c2 = TextEditingController();
+  TextEditingController c3 = TextEditingController();
+  TextEditingController c4 = TextEditingController();
+
+  late List<TextEditingController> controllers;
+  @override
+  
+void initState(){
+  super.initState();
+  controllers = [c1,c2,c3,c4];
+}
+
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
+    return Scaffold(
         body: Stack(
           children: [
             StandardTitle(title: "Enter OTP", pargh: "we have just sent you 4 digit code via your email"),
@@ -30,6 +48,7 @@ class MyApp extends StatelessWidget{
                       width: 60,
                       height: 60,
                     child:   TextField(
+                       controller: controllers[index],
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Inter',
@@ -61,7 +80,9 @@ class MyApp extends StatelessWidget{
                    
                   ),
                   SizedBox(height: 50,),
-                  StandardButton(text: "Continue",onPressed: () {},),
+                  StandardButton(text: "Continue",onPressed: () {
+                    _testOTP(context);
+                  },),
                   SizedBox(height: 30,),
                   Row(
              mainAxisAlignment: MainAxisAlignment.center,
@@ -92,7 +113,18 @@ class MyApp extends StatelessWidget{
            ),
           ],
         ),
-      ),
-    );
+      );
+     
   }
-}
+  void _testOTP (BuildContext context) {
+    if(c1.text.isEmpty || c2.text.isEmpty || c3.text.isEmpty || c4.text.isEmpty){
+    print("Fill all fields");
+    return;
+  } 
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => CreateNewPasswordScreen()),);
+
+  }
+
+  }

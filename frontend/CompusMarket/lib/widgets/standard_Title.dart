@@ -15,7 +15,9 @@ class StandardTitle extends StatelessWidget {
             left: 20,
             child: 
            IconButton(
-             onPressed: () {},
+             onPressed: () {
+              Navigator.pop(context);
+             },
              iconSize: 28,
                      icon: Icon(Icons.arrow_back , color: Colors.black,)
                      ),),

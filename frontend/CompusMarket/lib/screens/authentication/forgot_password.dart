@@ -2,21 +2,19 @@ import 'package:flutter/material.dart';
 import '../../widgets/standard_Title.dart';
 import '../../widgets/standard_textfield.dart';
 import '../../widgets/standard_Button.dart';
-void main() {
- runApp( MyApp());// it should be the widjet name in capital for first letter
+import 'package:compusmarket/screens/authentication/Enter_OTP.dart';
 
+class ForgotPasswordScreen extends StatefulWidget{
+  @override
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+ 
 }
 
-class MyApp extends StatefulWidget{
-  @override
-  State<MyApp> createState() => _MyAppState();
-  }
-
-  class _MyAppState extends State<MyApp>{
+  class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>{
+    TextEditingController emailController = TextEditingController(); 
     @override
   Widget build(BuildContext context) {
-   return MaterialApp(
-    home: Scaffold(
+   return Scaffold(
       body: Stack(
         children: [
           StandardTitle(title: "Forgot Password" , pargh: "Recover your account password",),
@@ -31,10 +29,13 @@ class MyApp extends StatefulWidget{
           child: Column(   // had childs in column
           crossAxisAlignment: CrossAxisAlignment.start, // for the children in the column begin from left :0 
            children: [
-            StandardTextfield(title:"E-mail", hint:"Enter your email"),
+            StandardTextfield(title:"E-mail", hint:"Enter your email" , controller: emailController,),
            Container(
             margin: EdgeInsets.only(top:30,),
-           child:   StandardButton(text: "Next",onPressed: () {},),
+           child:   StandardButton(text: "Next",onPressed: () {
+            _test(context);
+                  
+           },),
            )
         ], 
       ),
@@ -42,7 +43,16 @@ class MyApp extends StatefulWidget{
    )
         ]
       )
-    )
-   );
+    );
+  }
+  void _test(BuildContext context){
+  if(emailController.text.isEmpty){
+    print("Fill all fields");
+    return;
+  } 
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => OTPScreen()),);
+
   }
   }
