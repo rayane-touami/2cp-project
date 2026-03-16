@@ -1,3 +1,4 @@
+import 'package:compusmarket/screens/authentication/sign_up.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/standard_Title.dart';
 import '../../widgets/standard_textfield.dart';
@@ -112,7 +113,11 @@ class _SignInScreenState extends State<SignInScreen>{
 
               InkWell(
                  
-                onTap: () {} ,
+                onTap: () {
+                   Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SignUpScreen()),);
+                } ,
                 child: Text(" Sign Up" , style: TextStyle(
                   color: Color(0xff2853af),
                   fontWeight: FontWeight.bold,
@@ -154,36 +159,37 @@ class _SignInScreenState extends State<SignInScreen>{
            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  margin: EdgeInsets.only(right:15),
-                   decoration: BoxDecoration(
-          color: Color(0xffeceff3),
-          borderRadius: BorderRadius.circular(10),
+                Material(
+      color: Color(0xffeceff3),
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: () {},
+        child: SizedBox(
+          width: 85,
+          height: 55,
+          child: Center(
+            child: Image.asset("assets/images/google.png", width: 60, height: 60),
+          ),
         ),
-                  width: 80,
-                  height: 55,
-                  child:Center(
-             child: Image.asset(
-                       "assets/images/google.png",
-                       width: 60,
-                       height: 60,
-                        ))
-                ),
-                Container(
-                   margin: EdgeInsets.only(left:15),
-                   decoration: BoxDecoration(
-          color: Color(0xffeceff3),
-          borderRadius: BorderRadius.circular(10),
+      ),
+    ),
+    SizedBox(width: 20,),
+              Material(
+      color: Color(0xffeceff3),
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: () {},
+        child: SizedBox(
+          width: 85,
+          height: 55,
+          child: Center(
+            child: Image.asset("assets/images/apple.png", width: 60, height: 60),
+          ),
         ),
-                  width: 80,
-                  height: 55,
-                 child:Center(
-             child: Image.asset(
-                       "assets/images/apple.png",
-                       width: 45,
-                       height: 45,
-                        ))
-                ),
+      ),
+    ),  
                
               ],
             ),
