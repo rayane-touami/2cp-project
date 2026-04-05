@@ -19,6 +19,23 @@ class Category(models.Model):
     
     def __str__(self):
         return self.name
+    
+class University(models.Model):
+    name = models.CharField(max_length=200)
+    location = models.CharField(max_length=255, blank=True)
+    domain = models.CharField(max_length=100, blank=True, help_text="e.g. univ.dz")
+    logo = models.ImageField(upload_to='universities/', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'university'
+        ordering = ['name']
+        indexes = [
+            models.Index(fields=['name']),
+        ]
+    
+    def __str__(self):
+        return self.name    
 
 class Announcement(models.Model):
    
@@ -47,7 +64,22 @@ class Announcement(models.Model):
         related_name='announcements'
     )
     
+    university = models.ForeignKey(
+        University,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='announcements'
+    )
     
+    # Contact information
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    whatsapp = models.CharField(max_length=20, blank=True, null=True)
+    telegram = models.CharField(max_length=50, blank=True, null=True)
+    instagram = models.CharField(max_length=50, blank=True, null=True)
+    facebook = models.CharField(max_length=255, blank=True, null=True)
+    allow_chat = models.BooleanField(default=True)
+
     location = models.CharField(max_length=255, blank=True)
     
     
@@ -61,6 +93,14 @@ class Announcement(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    
+    condition = models.CharField(
+        max_length=20,
+        choices=[('new', 'New'), ('used', 'Used'), ('good', 'Good'), ('damaged', 'Damaged')],
+        blank=True
+    )
+    url = models.URLField(blank=True, null=True)  
     
     class Meta:
         db_table = 'announcement'
@@ -68,6 +108,7 @@ class Announcement(models.Model):
         indexes = [
             models.Index(fields=['status', '-created_at']),
             models.Index(fields=['category']),
+            models.Index(fields=['university']),
             models.Index(fields=['student_id']),
             models.Index(fields=['created_at']),  # index for sorting
         ]
@@ -108,5 +149,76 @@ class Photo(models.Model):
         return None
     
     def clean(self):
-        if self.position < 1 or self.position > 5:
-            raise ValidationError({'position': 'Position must be between 1 and 5'})
+        if self.position < 1 or self.position > 10:
+            raise ValidationError({'position': 'Position must be between 1 and 10'})
+        
+class Favorite(models.Model):
+    user_id = models.IntegerField(db_index=True)  # ID from auth service
+    announcement = models.ForeignKey(
+        Announcement, 
+        on_delete=models.CASCADE, 
+        related_name='favorited_by'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'favorite'
+        unique_together = ['user_id', 'announcement']  # Prevent duplicate favorites
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user_id', 'announcement']),
+        ]
+    
+    def __str__(self):
+        return f"User {self.user_id} favorites {self.announcement.title}"
+    
+
+
+class Review(models.Model):
+    announcement = models.ForeignKey(
+        Announcement, 
+        on_delete=models.CASCADE, 
+        related_name='reviews'
+    )
+    user_id = models.IntegerField(db_index=True)
+    rating = models.IntegerField(
+        choices=[(1, '1 Star'), (2, '2 Stars'), (3, '3 Stars'), (4, '4 Stars'), (5, '5 Stars')]
+    )
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'review'
+        unique_together = ['user_id', 'announcement']
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"Review by {self.user_id} for {self.announcement.title}: {self.rating} stars"
+
+
+class Comment(models.Model):
+    announcement = models.ForeignKey(
+        Announcement, 
+        on_delete=models.CASCADE, 
+        related_name='comments'
+    )
+    user_id = models.IntegerField(db_index=True)
+    parent = models.ForeignKey(
+        'self', 
+        null=True, 
+        blank=True, 
+        on_delete=models.CASCADE, 
+        related_name='replies'
+    )
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'comment'
+        ordering = ['created_at']
+    
+    def __str__(self):
+        return f"Comment by {self.user_id} on {self.announcement.title}"
+

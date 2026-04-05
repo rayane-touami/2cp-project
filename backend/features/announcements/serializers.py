@@ -1,6 +1,7 @@
 from rest_framework import serializers
+from django.db.models import Avg  
 from django.core.files.images import get_image_dimensions
-from .models import Announcement, Category, Photo
+from .models import Announcement, Category, Photo, Favorite, University, Review, Comment
 
 class CategorySerializer(serializers.ModelSerializer):
     
@@ -9,7 +10,7 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'icon']
 
 class PhotoSerializer(serializers.ModelSerializer):
-        url = serializers.SerializerMethodField()
+    url = serializers.SerializerMethodField()
     
     class Meta:
         model = Photo
@@ -24,40 +25,72 @@ class AnnouncementListSerializer(serializers.ModelSerializer):
     photo = serializers.SerializerMethodField()
     seller = serializers.CharField(source='student_full_name')
     category = serializers.CharField(source='category.name')
+    university = serializers.CharField(source='university.name', read_only=True)
     price = serializers.DecimalField(max_digits=10, decimal_places=2, coerce_to_string=False)
-    
+    is_favorited = serializers.SerializerMethodField()
+
     class Meta:
         model = Announcement
         fields = [
             'id', 'title', 'price', 'photo', 
-            'seller', 'category', 'created_at'
+            'seller', 'category', 'created_at', 'university',
+            'is_favorited'
         ]
+
+    def get_is_favorited(self, obj):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user_id'):
+            return obj.favorited_by.filter(user_id=request.user_id).exists()
+        return False
     
     def get_photo(self, obj):
-        first_photo = obj.photos.first()
-        if first_photo and first_photo.image:
-            return first_photo.image.url
-        return None
+       photos = getattr(obj, 'prefetched_photos', None) or obj.photos.all()
+       first = photos[0] if photos else None
+       return first.image.url if first and first.image else None
 
 class AnnouncementDetailSerializer(serializers.ModelSerializer):
     photos = PhotoSerializer(many=True, read_only=True)
     seller = serializers.CharField(source='student_full_name')
     category = CategorySerializer(read_only=True)
+    university = serializers.CharField(source='university.name', read_only=True)
     category_id = serializers.PrimaryKeyRelatedField(
         queryset=Category.objects.all(), 
         source='category',
         write_only=True
     )
+    university_id = serializers.PrimaryKeyRelatedField( 
+        queryset=University.objects.all(),
+        source='university',
+        write_only=True,
+        required=False,
+        allow_null=True
+    )
     price = serializers.DecimalField(max_digits=10, decimal_places=2, coerce_to_string=False)
+    average_rating = serializers.SerializerMethodField()
+    reviews_count = serializers.SerializerMethodField()
+    comments_count = serializers.SerializerMethodField()
     
     class Meta:
         model = Announcement
         fields = [
             'id', 'title', 'description', 'price', 
-            'photos', 'seller', 'category', 'category_id', 
-            'location', 'status', 'created_at', 'updated_at'
+            'photos', 'seller', 'category', 'university',
+            'category_id','university_id', 'location',
+            'phone_number', 'whatsapp', 'allow_chat', 
+            'status', 'created_at', 'updated_at',
+            'views_count', 'average_rating', 'reviews_count', 'comments_count'
         ]
         read_only_fields = ['student_id', 'student_full_name', 'status', 'created_at', 'updated_at']
+
+    def get_average_rating(self, obj):
+       result = obj.reviews.aggregate(avg=Avg('rating'))
+       return round(result['avg'], 2) if result['avg'] else 0
+    
+    def get_reviews_count(self, obj):
+        return obj.reviews.count()
+    
+    def get_comments_count(self, obj):
+        return obj.comments.count()
 
 class AnnouncementCreateSerializer(serializers.ModelSerializer):
     photos = serializers.ListField(
@@ -69,7 +102,7 @@ class AnnouncementCreateSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False,
         min_length=0,
-        max_length=5
+        max_length=10
     )
     price = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=0)
     
@@ -77,12 +110,14 @@ class AnnouncementCreateSerializer(serializers.ModelSerializer):
         model = Announcement
         fields = [
             'title', 'description', 'price', 
-            'category', 'location', 'photos'
+            'category', 'location', 'university',
+            'phone_number', 'whatsapp', 'allow_chat',
+            'photos'
         ]
     
     def validate_photos(self, value):
-        if len(value) > 5:
-            raise serializers.ValidationError("Maximum 5 photos allowed")
+        if len(value) > 10:
+            raise serializers.ValidationError("Maximum 10 photos allowed")
         
      
         for image in value:
@@ -127,3 +162,44 @@ class AnnouncementCreateSerializer(serializers.ModelSerializer):
             )
         
         return announcement
+    
+class FavoriteSerializer(serializers.ModelSerializer):
+    announcement = AnnouncementListSerializer(read_only=True)
+    announcement_id = serializers.PrimaryKeyRelatedField(
+        queryset=Announcement.objects.filter(status='active'),
+        write_only=True,
+        source='announcement'
+    )
+    
+    class Meta:
+        model = Favorite
+        fields = ['id', 'announcement', 'announcement_id', 'created_at']
+        read_only_fields = ['user_id']
+    
+    
+    
+class UniversitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = University
+        fields = ['id', 'name', 'location', 'domain', 'logo']
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['id', 'rating', 'comment', 'created_at', 'updated_at']
+        read_only_fields = ['user_id']
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    replies = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Comment
+        fields = ['id', 'content', 'parent', 'replies', 'created_at', 'updated_at']
+        read_only_fields = ['user_id']
+    
+    def get_replies(self, obj):
+        if obj.replies.exists():
+            return CommentSerializer(obj.replies.all(), many=True).data
+        return []
