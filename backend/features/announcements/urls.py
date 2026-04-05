@@ -2,16 +2,16 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    #categiry
+    # category
     path('categories/', views.CategoryListAPIView.as_view(), name='category-list'),
     
     # university
     path('universities/', views.UniversityListAPIView.as_view(), name='university-list'),
     
-    # ann -read
+    # announcements - read
     path('announcements/', views.AnnouncementListAPIView.as_view(), name='announcement-list'),
     
-    # ann -write (t7taj auth ofc)
+    # announcements - write (requires auth)
     path('announcements/my/', views.MyAnnouncementsAPIView.as_view(), name='my-announcements'),
     path('announcements/<int:pk>/', views.AnnouncementDetailAPIView.as_view(), name='announcement-detail'),
     path('announcements/create/', views.AnnouncementCreateAPIView.as_view(), name='announcement-create'),
@@ -19,13 +19,12 @@ urlpatterns = [
     path('announcements/<int:pk>/delete/', views.AnnouncementDeleteAPIView.as_view(), name='announcement-delete'),
     path('announcements/<int:pk>/status/', views.AnnouncementStatusUpdateAPIView.as_view(), name='announcement-status'),
     
-    # fav
+    # favorites
     path('favorites/', views.FavoriteListCreateAPIView.as_view(), name='favorite-list'),
     path('favorites/check/', views.CheckFavoritesAPIView.as_view(), name='favorite-check'),
     path('favorites/<int:pk>/', views.FavoriteDestroyAPIView.as_view(), name='favorite-detail'),
     
-    
-    # rev
+    # reviews
     path('announcements/<int:announcement_id>/reviews/', views.ReviewListCreateAPIView.as_view(), name='review-list'),
     path('reviews/<int:pk>/', views.ReviewUpdateDeleteAPIView.as_view(), name='review-detail'),
     

@@ -45,7 +45,6 @@ class Announcement(models.Model):
         EXPIRED = 'expired', 'Expired'
         DRAFT = 'draft', 'Draft'
     
-   
     title = models.CharField(max_length=200)
     description = models.TextField()
     price = models.DecimalField(
@@ -53,7 +52,6 @@ class Announcement(models.Model):
         decimal_places=2, 
         validators=[MinValueValidator(0)]
     )
-    
     
     student_id = models.IntegerField(db_index=True)  
     student_full_name = models.CharField(max_length=255) 
@@ -82,7 +80,6 @@ class Announcement(models.Model):
 
     location = models.CharField(max_length=255, blank=True)
     
-    
     status = models.CharField(
         max_length=20, 
         choices=Status.choices, 
@@ -90,11 +87,9 @@ class Announcement(models.Model):
     )
     views_count = models.PositiveIntegerField(default=0)
     
-    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    
     condition = models.CharField(
         max_length=20,
         choices=[('new', 'New'), ('used', 'Used'), ('good', 'Good'), ('damaged', 'Damaged')],
@@ -110,7 +105,7 @@ class Announcement(models.Model):
             models.Index(fields=['category']),
             models.Index(fields=['university']),
             models.Index(fields=['student_id']),
-            models.Index(fields=['created_at']),  # index for sorting
+            models.Index(fields=['created_at']),
         ]
     
     def __str__(self):
@@ -123,7 +118,7 @@ class Photo(models.Model):
         related_name='photos'
     )
     image = models.ImageField(upload_to='announcements/%Y/%m/%d/') 
-    position = models.PositiveSmallIntegerField(validators=[MaxValueValidator(10)])  # Max 10 photos
+    position = models.PositiveSmallIntegerField(validators=[MaxValueValidator(10)])
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -153,7 +148,7 @@ class Photo(models.Model):
             raise ValidationError({'position': 'Position must be between 1 and 10'})
         
 class Favorite(models.Model):
-    user_id = models.IntegerField(db_index=True)  # ID from auth service
+    user_id = models.IntegerField(db_index=True)
     announcement = models.ForeignKey(
         Announcement, 
         on_delete=models.CASCADE, 
@@ -163,7 +158,7 @@ class Favorite(models.Model):
     
     class Meta:
         db_table = 'favorite'
-        unique_together = ['user_id', 'announcement']  # Prevent duplicate favorites
+        unique_together = ['user_id', 'announcement']
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['user_id', 'announcement']),
@@ -171,7 +166,6 @@ class Favorite(models.Model):
     
     def __str__(self):
         return f"User {self.user_id} favorites {self.announcement.title}"
-    
 
 
 class Review(models.Model):
@@ -221,4 +215,3 @@ class Comment(models.Model):
     
     def __str__(self):
         return f"Comment by {self.user_id} on {self.announcement.title}"
-

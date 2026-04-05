@@ -15,7 +15,9 @@ class StandardTitle extends StatelessWidget {
             left: 20,
             child: 
            IconButton(
-             onPressed: () {},
+             onPressed: () {
+              Navigator.pop(context);
+             },
              iconSize: 28,
                      icon: Icon(Icons.arrow_back , color: Colors.black,)
                      ),),
@@ -40,7 +42,7 @@ class StandardTitle extends StatelessWidget {
                        textAlign: TextAlign.center,
                        style: TextStyle(
                        fontFamily: 'Inter',
-                       fontSize: 16,
+                       fontSize: 15,
                       color: Color(0xff353849),
                       ),
                      ),],

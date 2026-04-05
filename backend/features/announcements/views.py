@@ -37,7 +37,7 @@ class CategoryListAPIView(generics.ListAPIView):
     serializer_class = CategorySerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     
-    @method_decorator(cache_page(60 * 60))  # Cache for 1 hour
+    @method_decorator(cache_page(60 * 60))
     @method_decorator(vary_on_headers("Authorization",))
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
@@ -48,7 +48,6 @@ class AnnouncementListAPIView(generics.ListAPIView):
     pagination_class = CustomPagination
     
     def get_queryset(self):
-        # juste les announcements actifs
         queryset = Announcement.objects.filter(
             status=Announcement.Status.ACTIVE
         ).select_related(
@@ -58,40 +57,35 @@ class AnnouncementListAPIView(generics.ListAPIView):
             Prefetch('photos', queryset=Photo.objects.order_by('position'), to_attr='prefetched_photos')
         ).order_by('-created_at')
         
-        # filtre by category
         category_id = self.request.query_params.get('category')
         if category_id and category_id.isdigit():
             queryset = queryset.filter(category_id=int(category_id))
 
-        #filtre by university
         university_id = self.request.query_params.get('university')
         if university_id and university_id.isdigit():
             queryset = queryset.filter(university_id=int(university_id))    
         
-        # search by title
         search = self.request.query_params.get('search')
         if search:
             queryset = queryset.filter(title__icontains=search)
         
-        # min price filter
         min_price = self.request.query_params.get('min_price')
         if min_price and min_price.replace('.', '', 1).isdigit():
             queryset = queryset.filter(price__gte=float(min_price))
         
-        # max price filter
         max_price = self.request.query_params.get('max_price')
         if max_price and max_price.replace('.', '', 1).isdigit():
             queryset = queryset.filter(price__lte=float(max_price))
         
         return queryset
     
-    @method_decorator(cache_page(60 * 5))  # Cache pour 5 minutes
+    @method_decorator(cache_page(60 * 5))
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
 class AnnouncementCreateAPIView(generics.CreateAPIView):
     serializer_class = AnnouncementCreateSerializer
-    permission_classes = [IsAuthenticated]  # User must be logged in
+    permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
     
     def create(self, request, *args, **kwargs):
@@ -130,7 +124,6 @@ class AnnouncementDetailAPIView(generics.RetrieveAPIView):
     serializer_class = AnnouncementDetailSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
-    
     def get_queryset(self):
         user_id = getattr(self.request, 'user_id', None)
         if user_id:
@@ -144,10 +137,7 @@ class AnnouncementDetailAPIView(generics.RetrieveAPIView):
         Announcement.objects.filter(pk=instance.pk).update(
             views_count=F('views_count') + 1
         )
-        
-        # Refresh to get updated value
         instance.refresh_from_db()
-        
         return super().retrieve(request, *args, **kwargs)
 
 class FavoriteListCreateAPIView(generics.ListCreateAPIView):
@@ -186,7 +176,6 @@ class CheckFavoritesAPIView(generics.GenericAPIView):
             'favorited_ids': list(favorites)
         })
 
-# university view
 class UniversityListAPIView(generics.ListAPIView):
     queryset = University.objects.all()
     serializer_class = UniversitySerializer
@@ -195,8 +184,6 @@ class UniversityListAPIView(generics.ListAPIView):
     @method_decorator(cache_page(60 * 60 * 24))
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
-
-
 
 class MyAnnouncementsAPIView(generics.ListAPIView):
     serializer_class = AnnouncementListSerializer
@@ -208,11 +195,9 @@ class MyAnnouncementsAPIView(generics.ListAPIView):
         ).select_related(
             'category', 'university'
         ).prefetch_related(
-           Prefetch('photos', queryset=Photo.objects.order_by('position'), to_attr='prefetched_photos')
+            Prefetch('photos', queryset=Photo.objects.order_by('position'), to_attr='prefetched_photos')
         ).order_by('-created_at')
 
-
-# edit an announcement
 class AnnouncementUpdateAPIView(generics.UpdateAPIView):
     queryset = Announcement.objects.all()
     serializer_class = AnnouncementCreateSerializer
@@ -221,16 +206,12 @@ class AnnouncementUpdateAPIView(generics.UpdateAPIView):
     def get_queryset(self):
         return Announcement.objects.filter(student_id=self.request.user_id)
 
-
-# delete an announcement
 class AnnouncementDeleteAPIView(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         return Announcement.objects.filter(student_id=self.request.user_id)
 
-
-# mark as sold
 class AnnouncementStatusUpdateAPIView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
     
@@ -246,8 +227,6 @@ class AnnouncementStatusUpdateAPIView(generics.UpdateAPIView):
             return Response({'status': status_value})
         return Response({'error': 'Invalid status'}, status=400)
 
-
-# reviews
 class ReviewListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -261,7 +240,6 @@ class ReviewListCreateAPIView(generics.ListCreateAPIView):
             announcement_id=self.kwargs['announcement_id']
         )
 
-# delete or mofidy a review
 class ReviewUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
@@ -270,8 +248,6 @@ class ReviewUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return Review.objects.filter(user_id=self.request.user_id)
 
-
-# comments
 class CommentListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -288,7 +264,6 @@ class CommentListCreateAPIView(generics.ListCreateAPIView):
             announcement_id=self.kwargs['announcement_id']
         )
 
-# delete of modify a comment
 class CommentUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer

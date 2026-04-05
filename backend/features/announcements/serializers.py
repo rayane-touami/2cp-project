@@ -44,9 +44,9 @@ class AnnouncementListSerializer(serializers.ModelSerializer):
         return False
     
     def get_photo(self, obj):
-       photos = getattr(obj, 'prefetched_photos', None) or obj.photos.all()
-       first = photos[0] if photos else None
-       return first.image.url if first and first.image else None
+        photos = getattr(obj, 'prefetched_photos', None) or obj.photos.all()
+        first = photos[0] if photos else None
+        return first.image.url if first and first.image else None
 
 class AnnouncementDetailSerializer(serializers.ModelSerializer):
     photos = PhotoSerializer(many=True, read_only=True)
@@ -75,7 +75,7 @@ class AnnouncementDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'description', 'price', 
             'photos', 'seller', 'category', 'university',
-            'category_id','university_id', 'location',
+            'category_id', 'university_id', 'location',
             'phone_number', 'whatsapp', 'allow_chat', 
             'status', 'created_at', 'updated_at',
             'views_count', 'average_rating', 'reviews_count', 'comments_count'
@@ -83,8 +83,8 @@ class AnnouncementDetailSerializer(serializers.ModelSerializer):
         read_only_fields = ['student_id', 'student_full_name', 'status', 'created_at', 'updated_at']
 
     def get_average_rating(self, obj):
-       result = obj.reviews.aggregate(avg=Avg('rating'))
-       return round(result['avg'], 2) if result['avg'] else 0
+        result = obj.reviews.aggregate(avg=Avg('rating'))
+        return round(result['avg'], 2) if result['avg'] else 0
     
     def get_reviews_count(self, obj):
         return obj.reviews.count()
@@ -119,9 +119,8 @@ class AnnouncementCreateSerializer(serializers.ModelSerializer):
         if len(value) > 10:
             raise serializers.ValidationError("Maximum 10 photos allowed")
         
-     
         for image in value:
-            if image.size > 30 * 1024 * 1024:  # 30mega max
+            if image.size > 30 * 1024 * 1024:
                 raise serializers.ValidationError(f"Image {image.name} is too large. Max size is 30MB")
           
             width, height = get_image_dimensions(image)
@@ -138,7 +137,6 @@ class AnnouncementCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         photos_data = validated_data.pop('photos', [])
         
-        # Get user info from context 
         request = self.context.get('request')
         
         student_id = getattr(request, 'user_id', None)
@@ -152,7 +150,6 @@ class AnnouncementCreateSerializer(serializers.ModelSerializer):
             student_full_name=student_full_name,
             **validated_data
         )
-        
         
         for position, photo_file in enumerate(photos_data, start=1):
             Photo.objects.create(
@@ -175,9 +172,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
         model = Favorite
         fields = ['id', 'announcement', 'announcement_id', 'created_at']
         read_only_fields = ['user_id']
-    
-    
-    
+
 class UniversitySerializer(serializers.ModelSerializer):
     class Meta:
         model = University

@@ -1,30 +1,53 @@
+import 'package:compusmarket/screens/authentication/sign_up.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/standard_Title.dart';
 import '../../widgets/standard_textfield.dart';
 import '../../widgets/standard_Button.dart';
+import 'package:compusmarket/screens/authentication/forgot_password.dart';
 
-void main() {
- runApp( MyApp());// it should be the widjet name in capital for first letter
-
-}
 
 //===========  Statfulwidget  ===========//
+void main() {
+  runApp(MaterialApp(
+    home: SignInScreen(), 
+  ));
+}
 
-class MyApp extends StatefulWidget{
+class SignInScreen extends StatefulWidget{
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<SignInScreen> createState() => _SignInScreenState();
   }
 
-class _MyAppState extends State<MyApp>{
+class _SignInScreenState extends State<SignInScreen>{
+   TextEditingController emailController = TextEditingController(); 
+    TextEditingController PasswordController = TextEditingController();
 
   bool Status=false; //for checkbox of remember me 
   bool visibility=true;
+   bool _submitted = false;
+     @override
+  void initState() {
+    super.initState();
+   
+    emailController.addListener(() {
+      setState(() {});
+    });
+   
+    PasswordController.addListener(() {
+      setState(() {});
+    });
+  }
+  @override
+  void dispose() {
+    emailController.dispose(); 
+    PasswordController.dispose(); 
+    super.dispose();
+  } 
 
   @override
   Widget build(BuildContext context) {
 
-    return MaterialApp( // it had to be material bcs it will manage the first page
-    home: Scaffold(
+    return  Scaffold(
       body:Stack(children: [
 
 //===============  Title ===============//
@@ -44,8 +67,8 @@ class _MyAppState extends State<MyApp>{
           child: Column(   // had childs in column
           crossAxisAlignment: CrossAxisAlignment.start, // for the children in the column begin from left :0 
            children: [
-            StandardTextfield(title:"Email Adress", hint:"Enter your email adress"),
-            StandardTextfield(title:"Password", hint:"Enter your Password",isPassword: true,),
+            StandardTextfield(title:"Email Adress", hint:"Enter your email adress" ,controller: emailController,isError: _submitted && emailController.text.isEmpty,),
+            StandardTextfield(title:"Password", hint:"Enter your Password",isPassword: true,controller: PasswordController,isError: _submitted && PasswordController.text.isEmpty,),
           Container(
            margin: EdgeInsets.only(bottom: 15),
             child: Row(
@@ -74,8 +97,12 @@ class _MyAppState extends State<MyApp>{
                 ),
                 Spacer(),
 
-                InkWell(
-                  onTap: () {} ,
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),);
+                  } ,
                   child: Text("Forgot Password" ,
                   style:TextStyle(
                     color:Colors.red,
@@ -90,7 +117,9 @@ class _MyAppState extends State<MyApp>{
             ),
           ),
 
-          StandardButton(text: "Sign In"),
+          StandardButton(text: "Sign In",onPressed: () {
+            _testfields(context);
+          },),
 
           Container(
             margin: EdgeInsets.only(top: 30 , bottom: 25),
@@ -107,7 +136,11 @@ class _MyAppState extends State<MyApp>{
 
               InkWell(
                  
-                onTap: () {} ,
+                onTap: () {
+                   Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SignUpScreen()),);
+                } ,
                 child: Text(" Sign Up" , style: TextStyle(
                   color: Color(0xff2853af),
                   fontWeight: FontWeight.bold,
@@ -149,36 +182,37 @@ class _MyAppState extends State<MyApp>{
            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  margin: EdgeInsets.only(right:15),
-                   decoration: BoxDecoration(
-          color: Color(0xffeceff3),
-          borderRadius: BorderRadius.circular(10),
+                Material(
+      color: Color(0xffeceff3),
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: () {},
+        child: SizedBox(
+          width: 85,
+          height: 55,
+          child: Center(
+            child: Image.asset("assets/images/google.png", width: 60, height: 60),
+          ),
         ),
-                  width: 80,
-                  height: 55,
-                  child:Center(
-             child: Image.asset(
-                       "assets/images/google.png",
-                       width: 60,
-                       height: 60,
-                        ))
-                ),
-                Container(
-                   margin: EdgeInsets.only(left:15),
-                   decoration: BoxDecoration(
-          color: Color(0xffeceff3),
-          borderRadius: BorderRadius.circular(10),
+      ),
+    ),
+    SizedBox(width: 20,),
+              Material(
+      color: Color(0xffeceff3),
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: () {},
+        child: SizedBox(
+          width: 85,
+          height: 55,
+          child: Center(
+            child: Image.asset("assets/images/apple.png", width: 60, height: 60),
+          ),
         ),
-                  width: 80,
-                  height: 55,
-                 child:Center(
-             child: Image.asset(
-                       "assets/images/apple.png",
-                       width: 45,
-                       height: 45,
-                        ))
-                ),
+      ),
+    ),  
                
               ],
             ),
@@ -210,8 +244,17 @@ class _MyAppState extends State<MyApp>{
         )
        )
       ],)
-)
-    );
+);
+    
   }
 
+  void _testfields (BuildContext context){
+     setState(() {
+    _submitted = true; 
+  });
+   if( emailController.text.isEmpty || PasswordController.text.isEmpty ){
+    print("Fill all fields");
+    return;
+  } 
+  }
 }
