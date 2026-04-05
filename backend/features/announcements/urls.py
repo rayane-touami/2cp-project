@@ -13,7 +13,7 @@ urlpatterns = [
     
     # announcements - write (requires auth)
     path('announcements/my/', views.MyAnnouncementsAPIView.as_view(), name='my-announcements'),
-    path('announcements/create/', views.AnnouncementCreateAPIView.as_view(), name='announcement-create'),  # ← moved up
+    path('announcements/create/', views.AnnouncementCreateAPIView.as_view(), name='announcement-create'),  
     path('announcements/<int:pk>/', views.AnnouncementDetailAPIView.as_view(), name='announcement-detail'),
     path('announcements/<int:pk>/update/', views.AnnouncementUpdateAPIView.as_view(), name='announcement-update'),
     path('announcements/<int:pk>/delete/', views.AnnouncementDeleteAPIView.as_view(), name='announcement-delete'),
