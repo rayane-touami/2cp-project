@@ -214,4 +214,7 @@ class Comment(models.Model):
         ordering = ['created_at']
     
     def __str__(self):
+
         return f"Comment by {self.user_id} on {self.announcement.title}"
+
+

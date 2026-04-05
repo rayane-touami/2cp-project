@@ -198,3 +198,4 @@ class CommentSerializer(serializers.ModelSerializer):
         if obj.replies.exists():
             return CommentSerializer(obj.replies.all(), many=True).data
         return []
+
