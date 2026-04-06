@@ -81,9 +81,6 @@ class AnnouncementListAPIView(generics.ListAPIView):
         
         return queryset
     
-    @method_decorator(cache_page(60 * 5))
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
     
 
 def calculate_distance(lat1, lon1, lat2, lon2):
@@ -102,12 +99,16 @@ class NearbyAnnouncementsAPIView(generics.ListAPIView):
     def get_queryset(self):
         lat = self.request.query_params.get('lat')
         lon = self.request.query_params.get('lon')
-        radius = float(self.request.query_params.get('radius', 50))  # default 50km
 
-        if not lat or not lon:
+        try:
+            lat = float(lat)
+            lon = float(lon)
+            radius = float(self.request.query_params.get('radius', 50))
+        except (TypeError, ValueError):
             return Announcement.objects.none()
+ 
 
-        lat, lon = float(lat), float(lon)
+
 
         # find universities within radius
         nearby_university_ids = []
@@ -178,19 +179,29 @@ class AnnouncementDetailAPIView(generics.RetrieveAPIView):
         return Announcement.objects.filter(status=Announcement.Status.ACTIVE)
     
     def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        Announcement.objects.filter(pk=instance.pk).update(
-            views_count=F('views_count') + 1
-        )
-        instance.refresh_from_db()
-        return super().retrieve(request, *args, **kwargs)
+       instance = self.get_object()
+       Announcement.objects.filter(pk=instance.pk).update(
+           views_count=F('views_count') + 1
+       )
+       instance.views_count += 1 
+       serializer = self.get_serializer(instance)
+       return Response(serializer.data)
 
 class FavoriteListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = FavoriteSerializer
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        return Favorite.objects.filter(user_id=self.request.user_id).select_related('announcement__category')
+        return Favorite.objects.filter(
+
+            user_id=self.request.user_id
+        ).select_related(
+            'announcement__category',
+            'announcement__university'
+        ).prefetch_related(
+            Prefetch('announcement__photos', queryset=Photo.objects.order_by('position'), to_attr='prefetched_photos')
+        )
+
     
     def perform_create(self, serializer):
         serializer.save(user_id=self.request.user_id)

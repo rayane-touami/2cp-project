@@ -41,6 +41,10 @@ class AnnouncementListSerializer(serializers.ModelSerializer):
     def get_is_favorited(self, obj):
         request = self.context.get('request')
         if request and hasattr(request, 'user_id'):
+            # Check prefetched favorited_by if available, else query
+            favorited_by = getattr(obj, '_prefetched_objects_cache', {}).get('favorited_by')
+            if favorited_by is not None:
+                return any(f.user_id == request.user_id for f in favorited_by)
             return obj.favorited_by.filter(user_id=request.user_id).exists()
         return False
     

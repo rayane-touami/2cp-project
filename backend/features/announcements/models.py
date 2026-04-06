@@ -2,7 +2,6 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from features.universities.models import University
-import os
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -103,7 +102,7 @@ class Photo(models.Model):
         related_name='photos'
     )
     image = models.ImageField(upload_to='announcements/%Y/%m/%d/') 
-    position = models.PositiveSmallIntegerField(validators=[MaxValueValidator(10)])
+    position = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -161,7 +160,8 @@ class Review(models.Model):
     )
     user_id = models.IntegerField(db_index=True)
     rating = models.IntegerField(
-        choices=[(1, '1 Star'), (2, '2 Stars'), (3, '3 Stars'), (4, '4 Stars'), (5, '5 Stars')]
+    choices=[(1, '1 Star'), (2, '2 Stars'), (3, '3 Stars'), (4, '4 Stars'), (5, '5 Stars')],
+    validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
