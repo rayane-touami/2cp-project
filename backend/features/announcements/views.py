@@ -7,7 +7,8 @@ from django.db.models import Prefetch, Count, F, Q
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers
-from .models import Announcement, Category, Photo, Favorite, University, Review, Comment
+from .models import Announcement, Category, Photo, Favorite, Review, Comment
+from features.universities.models import University
 from .serializers import (
     CategorySerializer, 
     AnnouncementListSerializer,
@@ -18,6 +19,7 @@ from .serializers import (
     ReviewSerializer,      
     CommentSerializer
 )
+import math
 
 class CustomPagination(pagination.PageNumberPagination):
     page_size = 20
@@ -82,6 +84,49 @@ class AnnouncementListAPIView(generics.ListAPIView):
     @method_decorator(cache_page(60 * 5))
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
+    
+
+def calculate_distance(lat1, lon1, lat2, lon2):
+    """Calculate distance in km between two coordinates"""
+    R = 6371  # Earth radius in km
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
+    return R * 2 * math.asin(math.sqrt(a))
+
+class NearbyAnnouncementsAPIView(generics.ListAPIView):
+    serializer_class = AnnouncementListSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        lat = self.request.query_params.get('lat')
+        lon = self.request.query_params.get('lon')
+        radius = float(self.request.query_params.get('radius', 50))  # default 50km
+
+        if not lat or not lon:
+            return Announcement.objects.none()
+
+        lat, lon = float(lat), float(lon)
+
+        # find universities within radius
+        nearby_university_ids = []
+        for uni in University.objects.filter(
+            latitude__isnull=False, 
+            longitude__isnull=False
+        ):
+            distance = calculate_distance(lat, lon, uni.latitude, uni.longitude)
+            if distance <= radius:
+                nearby_university_ids.append(uni.id)
+
+        return Announcement.objects.filter(
+            status=Announcement.Status.ACTIVE,
+            university_id__in=nearby_university_ids
+        ).select_related(
+            'category', 'university'
+        ).prefetch_related(
+            Prefetch('photos', queryset=Photo.objects.order_by('position'), to_attr='prefetched_photos')
+        ).order_by('-created_at')    
 
 class AnnouncementCreateAPIView(generics.CreateAPIView):
     serializer_class = AnnouncementCreateSerializer

@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
+from features.universities.models import University
 import os
 
 class Category(models.Model):
@@ -20,22 +21,6 @@ class Category(models.Model):
     def __str__(self):
         return self.name
     
-class University(models.Model):
-    name = models.CharField(max_length=200)
-    location = models.CharField(max_length=255, blank=True)
-    domain = models.CharField(max_length=100, blank=True, help_text="e.g. univ.dz")
-    logo = models.ImageField(upload_to='universities/', null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        db_table = 'university'
-        ordering = ['name']
-        indexes = [
-            models.Index(fields=['name']),
-        ]
-    
-    def __str__(self):
-        return self.name    
 
 class Announcement(models.Model):
    

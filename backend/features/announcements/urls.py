@@ -13,7 +13,8 @@ urlpatterns = [
     
     # announcements - write (requires auth)
     path('announcements/my/', views.MyAnnouncementsAPIView.as_view(), name='my-announcements'),
-    path('announcements/create/', views.AnnouncementCreateAPIView.as_view(), name='announcement-create'),  
+    path('announcements/create/', views.AnnouncementCreateAPIView.as_view(), name='announcement-create'), 
+    path('announcements/nearby/', views.NearbyAnnouncementsAPIView.as_view(), name='announcements-nearby'), 
     path('announcements/<int:pk>/', views.AnnouncementDetailAPIView.as_view(), name='announcement-detail'),
     path('announcements/<int:pk>/update/', views.AnnouncementUpdateAPIView.as_view(), name='announcement-update'),
     path('announcements/<int:pk>/delete/', views.AnnouncementDeleteAPIView.as_view(), name='announcement-delete'),
@@ -31,4 +32,6 @@ urlpatterns = [
     # comments
     path('announcements/<int:announcement_id>/comments/', views.CommentListCreateAPIView.as_view(), name='comment-list'),
     path('comments/<int:pk>/', views.CommentUpdateDeleteAPIView.as_view(), name='comment-detail'),
+    
 ]
+
