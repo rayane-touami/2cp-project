@@ -17,7 +17,7 @@ urlpatterns = [
     path('announcements/nearby/', views.NearbyAnnouncementsAPIView.as_view(), name='announcements-nearby'), 
     path('announcements/<int:pk>/', views.AnnouncementDetailAPIView.as_view(), name='announcement-detail'),
     path('announcements/<int:pk>/update/', views.AnnouncementUpdateAPIView.as_view(), name='announcement-update'),
-    path('announcements/<int:pk>/delete/', views.AnnouncementDeleteAPIView.as_view(), name='announcement-delete'),
+    path('announcements/<int:pk>/archive/', views.AnnouncementArchiveAPIView.as_view(), name='announcement-archive'),
     path('announcements/<int:pk>/status/', views.AnnouncementStatusUpdateAPIView.as_view(), name='announcement-status'),
     
     # favorites

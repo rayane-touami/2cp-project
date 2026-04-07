@@ -268,11 +268,17 @@ class AnnouncementUpdateAPIView(generics.UpdateAPIView):
     def get_queryset(self):
         return Announcement.objects.filter(student_id=self.request.user_id)
 
-class AnnouncementDeleteAPIView(generics.DestroyAPIView):
+class AnnouncementArchiveAPIView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         return Announcement.objects.filter(student_id=self.request.user_id)
+    
+    def patch(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.status = Announcement.Status.ARCHIVED
+        instance.save()
+        return Response({'status': 'archived'})
 
 class AnnouncementStatusUpdateAPIView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
