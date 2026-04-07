@@ -58,14 +58,16 @@ class AnnouncementListAPIView(generics.ListAPIView):
         ).prefetch_related(
             Prefetch('photos', queryset=Photo.objects.order_by('position'), to_attr='prefetched_photos')
         ).order_by('-created_at')
+
+    
         
         category_id = self.request.query_params.get('category')
         if category_id and category_id.isdigit():
             queryset = queryset.filter(category_id=int(category_id))
 
         university_id = self.request.query_params.get('university')
-        if university_id and university_id.isdigit():
-            queryset = queryset.filter(university_id=int(university_id))    
+        if university_id:
+            queryset = queryset.filter(university_id=university_id)   
         
         search = self.request.query_params.get('search')
         if search:
@@ -80,6 +82,10 @@ class AnnouncementListAPIView(generics.ListAPIView):
             queryset = queryset.filter(price__lte=float(max_price))
         
         return queryset
+    
+    @method_decorator(cache_page(60 * 5))
+    def get(self, request, *args, **kwargs):  
+        return super().get(request, *args, **kwargs)
     
     
 
