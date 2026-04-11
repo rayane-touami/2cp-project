@@ -1,26 +1,29 @@
 from rest_framework import serializers
-from django.db.models import Avg  
+from django.db.models import Avg
 from django.core.files.images import get_image_dimensions
 from .models import Announcement, Category, Photo, Favorite, Review, Comment
 from features.universities.models import University
 
+
 class CategorySerializer(serializers.ModelSerializer):
-    
+
     class Meta:
         model = Category
         fields = ['id', 'name', 'description', 'icon']
 
+
 class PhotoSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Photo
         fields = ['id', 'url', 'position']
-    
+
     def get_url(self, obj):
         if obj.image:
             return obj.image.url
         return None
+
 
 class AnnouncementListSerializer(serializers.ModelSerializer):
     photo = serializers.SerializerMethodField()
@@ -33,25 +36,25 @@ class AnnouncementListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Announcement
         fields = [
-            'id', 'title', 'price', 'photo', 
+            'id', 'title', 'price', 'photo',
             'seller', 'category', 'created_at', 'university',
             'is_favorited'
         ]
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
-        if request and hasattr(request, 'user_id'):
-            # Check prefetched favorited_by if available, else query
+        if request and request.user.is_authenticated:
             favorited_by = getattr(obj, '_prefetched_objects_cache', {}).get('favorited_by')
             if favorited_by is not None:
-                return any(f.user_id == request.user_id for f in favorited_by)
-            return obj.favorited_by.filter(user_id=request.user_id).exists()
+                return any(f.user_id == request.user.id for f in favorited_by)
+            return obj.favorited_by.filter(user_id=request.user.id).exists()
         return False
-    
+
     def get_photo(self, obj):
         photos = getattr(obj, 'prefetched_photos', None) or obj.photos.all()
         first = photos[0] if photos else None
         return first.image.url if first and first.image else None
+
 
 class AnnouncementDetailSerializer(serializers.ModelSerializer):
     photos = PhotoSerializer(many=True, read_only=True)
@@ -59,11 +62,11 @@ class AnnouncementDetailSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     university = serializers.CharField(source='university.name', read_only=True)
     category_id = serializers.PrimaryKeyRelatedField(
-        queryset=Category.objects.all(), 
+        queryset=Category.objects.all(),
         source='category',
         write_only=True
     )
-    university_id = serializers.PrimaryKeyRelatedField( 
+    university_id = serializers.PrimaryKeyRelatedField(
         queryset=University.objects.all(),
         source='university',
         write_only=True,
@@ -74,14 +77,14 @@ class AnnouncementDetailSerializer(serializers.ModelSerializer):
     average_rating = serializers.SerializerMethodField()
     reviews_count = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Announcement
         fields = [
-            'id', 'title', 'description', 'price', 
+            'id', 'title', 'description', 'price',
             'photos', 'seller', 'category', 'university',
             'category_id', 'university_id', 'location',
-            'phone_number', 'whatsapp', 'allow_chat', 
+            'phone_number', 'whatsapp', 'allow_chat',
             'status', 'created_at', 'updated_at',
             'views_count', 'average_rating', 'reviews_count', 'comments_count'
         ]
@@ -90,12 +93,13 @@ class AnnouncementDetailSerializer(serializers.ModelSerializer):
     def get_average_rating(self, obj):
         result = obj.reviews.aggregate(avg=Avg('rating'))
         return round(result['avg'], 2) if result['avg'] else 0
-    
+
     def get_reviews_count(self, obj):
         return obj.reviews.count()
-    
+
     def get_comments_count(self, obj):
         return obj.comments.count()
+
 
 class AnnouncementCreateSerializer(serializers.ModelSerializer):
     photos = serializers.ListField(
@@ -110,61 +114,55 @@ class AnnouncementCreateSerializer(serializers.ModelSerializer):
         max_length=10
     )
     price = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=0)
-    
+
     class Meta:
         model = Announcement
         fields = [
-            'title', 'description', 'price', 
+            'title', 'description', 'price',
             'category', 'location', 'university',
             'phone_number', 'whatsapp', 'allow_chat',
             'photos'
         ]
-    
+
     def validate_photos(self, value):
         if len(value) > 10:
             raise serializers.ValidationError("Maximum 10 photos allowed")
-        
+
         for image in value:
             if image.size > 30 * 1024 * 1024:
                 raise serializers.ValidationError(f"Image {image.name} is too large. Max size is 30MB")
-          
+
             width, height = get_image_dimensions(image)
             if width > 4000 or height > 4000:
                 raise serializers.ValidationError(f"Image {image.name} dimensions are too large")
-        
+
         return value
-    
+
     def validate_title(self, value):
         if not value or not value.strip():
             raise serializers.ValidationError("Title cannot be empty")
         return value.strip()
-    
+
     def create(self, validated_data):
         photos_data = validated_data.pop('photos', [])
-        
         request = self.context.get('request')
-        
-        student_id = getattr(request, 'user_id', None)
-        student_full_name = getattr(request, 'user_full_name', 'Unknown User')
-        
-        if not student_id:
-            raise serializers.ValidationError({"error": "User authentication required"})
-        
+
         announcement = Announcement.objects.create(
-            student_id=student_id,
-            student_full_name=student_full_name,
+            student_id=request.user.id,
+            student_full_name=request.user.full_name,
             **validated_data
         )
-        
+
         for position, photo_file in enumerate(photos_data, start=1):
             Photo.objects.create(
                 announcement=announcement,
                 image=photo_file,
                 position=position
             )
-        
+
         return announcement
-    
+
+
 class FavoriteSerializer(serializers.ModelSerializer):
     announcement = AnnouncementListSerializer(read_only=True)
     announcement_id = serializers.PrimaryKeyRelatedField(
@@ -172,11 +170,12 @@ class FavoriteSerializer(serializers.ModelSerializer):
         write_only=True,
         source='announcement'
     )
-    
+
     class Meta:
         model = Favorite
         fields = ['id', 'announcement', 'announcement_id', 'created_at']
         read_only_fields = ['user_id']
+
 
 class UniversitySerializer(serializers.ModelSerializer):
     class Meta:
@@ -193,12 +192,12 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     replies = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Comment
         fields = ['id', 'content', 'parent', 'replies', 'created_at', 'updated_at']
         read_only_fields = ['user_id']
-    
+
     def get_replies(self, obj):
         if obj.replies.exists():
             return CommentSerializer(obj.replies.all(), many=True).data

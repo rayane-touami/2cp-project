@@ -38,7 +38,7 @@ class Announcement(models.Model):
         validators=[MinValueValidator(0)]
     )
     
-    student_id = models.IntegerField(db_index=True)  
+    student_id = models.UUIDField(db_index=True)  
     student_full_name = models.CharField(max_length=255) 
     category = models.ForeignKey(
         Category, 
@@ -133,7 +133,7 @@ class Photo(models.Model):
             raise ValidationError({'position': 'Position must be between 1 and 10'})
         
 class Favorite(models.Model):
-    user_id = models.IntegerField(db_index=True)
+    user_id = models.UUIDField(db_index=True)
     announcement = models.ForeignKey(
         Announcement, 
         on_delete=models.CASCADE, 
@@ -159,7 +159,7 @@ class Review(models.Model):
         on_delete=models.CASCADE, 
         related_name='reviews'
     )
-    user_id = models.IntegerField(db_index=True)
+    user_id = models.UUIDField(db_index=True)
     rating = models.IntegerField(
     choices=[(1, '1 Star'), (2, '2 Stars'), (3, '3 Stars'), (4, '4 Stars'), (5, '5 Stars')],
     validators=[MinValueValidator(1), MaxValueValidator(5)]
@@ -183,7 +183,7 @@ class Comment(models.Model):
         on_delete=models.CASCADE, 
         related_name='comments'
     )
-    user_id = models.IntegerField(db_index=True)
+    user_id = models.UUIDField(db_index=True)
     parent = models.ForeignKey(
         'self', 
         null=True, 
