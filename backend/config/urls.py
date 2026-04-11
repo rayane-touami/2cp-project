@@ -19,6 +19,9 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view()),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema')),
+
+    # Notifications API
+    path('api/notifications/', include('features.notifications.urls')),
     # ──────────────────────────────────────────────────────
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
