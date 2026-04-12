@@ -15,6 +15,7 @@ class SignUpScreen extends StatefulWidget{
   }
   class _SignUpScreenState extends State<SignUpScreen>{
     TextEditingController emailController = TextEditingController(); 
+    TextEditingController univerController = TextEditingController(); 
     TextEditingController nameController = TextEditingController(); 
     TextEditingController PasswordController = TextEditingController();
      bool _submitted = false;
@@ -23,6 +24,9 @@ class SignUpScreen extends StatefulWidget{
     super.initState();
    
     emailController.addListener(() {
+      setState(() {});
+    });
+    univerController.addListener(() {
       setState(() {});
     });
     nameController.addListener(() {
@@ -35,6 +39,7 @@ class SignUpScreen extends StatefulWidget{
   @override
   void dispose() {
     emailController.dispose(); 
+    univerController.dispose(); 
     nameController.dispose(); 
     PasswordController.dispose(); 
     super.dispose();
@@ -57,6 +62,7 @@ class SignUpScreen extends StatefulWidget{
           crossAxisAlignment: CrossAxisAlignment.start, 
            children: [
             StandardTextfield(title:"Full Name", hint:"Enter your name",controller: nameController,isError: _submitted && nameController.text.isEmpty,),
+            StandardTextfield(title:"University", hint:"Enter your university",controller: univerController,isError: _submitted && univerController.text.isEmpty,),
             StandardTextfield(title:"E-mail", hint:"Enter your email",isEmail: true,controller: emailController,isError: _submitted && emailController.text.isEmpty,),
             StandardTextfield(title:"Password", hint:"Enter your Password",isPassword: true,controller: PasswordController,isError: _submitted && PasswordController.text.isEmpty,),
             SizedBox(height: 10,),
@@ -64,70 +70,70 @@ class SignUpScreen extends StatefulWidget{
               _testemail(context);
             },),
             SizedBox(height: 30,),
-          Container(
-            margin: EdgeInsets.only(bottom: 35),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                 Container(
-                  margin: EdgeInsets.only(right: 10),
-                color: Color(0xffdfe1e6),
-                width: 70,
-                height: 1,
-               ),
-               Text("Or Sign In with" , 
-               style: TextStyle(
-                fontSize: 15,
-                color: Color(0xffa4abb8),
-               ),),
-                Container(
-                   margin: EdgeInsets.only(left: 10),
-                color: Color(0xffdfe1e6),
-                width: 70,
-                height: 1,
-               ),
+          // Container(
+          //   margin: EdgeInsets.only(bottom: 35),
+          //   child: Row(
+          //     mainAxisAlignment: MainAxisAlignment.center,
+          //     children: [
+          //        Container(
+          //         margin: EdgeInsets.only(right: 10),
+          //       color: Color(0xffdfe1e6),
+          //       width: 70,
+          //       height: 1,
+          //      ),
+          //      Text("Or Sign In with" , 
+          //      style: TextStyle(
+          //       fontSize: 15,
+          //       color: Color(0xffa4abb8),
+          //      ),),
+          //       Container(
+          //          margin: EdgeInsets.only(left: 10),
+          //       color: Color(0xffdfe1e6),
+          //       width: 70,
+          //       height: 1,
+          //      ),
 
-              ],
-            ),
+          //     ],
+          //   ),
             
-          ),
-          Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Material(
-      color: Color(0xffeceff3),
-      borderRadius: BorderRadius.circular(10),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(10),
-        onTap: () {},
-        child: SizedBox(
-          width: 85,
-          height: 55,
-          child: Center(
-            child: Image.asset("assets/images/google.png", width: 60, height: 60),
-          ),
-        ),
-      ),
-    ),
-    SizedBox(width: 20,),
-              Material(
-      color: Color(0xffeceff3),
-      borderRadius: BorderRadius.circular(10),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(10),
-        onTap: () {},
-        child: SizedBox(
-          width: 85,
-          height: 55,
-          child: Center(
-            child: Image.asset("assets/images/apple.png", width: 60, height: 60),
-          ),
-        ),
-      ),
-    ),  
+          // ),
+    //       Row(
+    //           mainAxisAlignment: MainAxisAlignment.center,
+    //           children: [
+    //             Material(
+    //   color: Color(0xffeceff3),
+    //   borderRadius: BorderRadius.circular(10),
+    //   child: InkWell(
+    //     borderRadius: BorderRadius.circular(10),
+    //     onTap: () {},
+    //     child: SizedBox(
+    //       width: 85,
+    //       height: 55,
+    //       child: Center(
+    //         child: Image.asset("assets/images/google.png", width: 60, height: 60),
+    //       ),
+    //     ),
+    //   ),
+    // ),
+    // SizedBox(width: 20,),
+    //           Material(
+    //   color: Color(0xffeceff3),
+    //   borderRadius: BorderRadius.circular(10),
+    //   child: InkWell(
+    //     borderRadius: BorderRadius.circular(10),
+    //     onTap: () {},
+    //     child: SizedBox(
+    //       width: 85,
+    //       height: 55,
+    //       child: Center(
+    //         child: Image.asset("assets/images/apple.png", width: 60, height: 60),
+    //       ),
+    //     ),
+    //   ),
+    // ),  
                
-              ],
-            ),
+    //           ],
+    //         ),
             Spacer(),
 
            Container(
@@ -160,7 +166,7 @@ class SignUpScreen extends StatefulWidget{
     setState(() {
     _submitted = true; 
   });
- if(nameController.text.isEmpty || emailController.text.isEmpty || PasswordController.text.isEmpty ){
+ if(nameController.text.isEmpty || emailController.text.isEmpty || PasswordController.text.isEmpty ||univerController.text.isEmpty ){
     print("Fill all fields");
     return;
   } 
