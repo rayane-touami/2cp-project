@@ -48,7 +48,7 @@ class CreateNewPasswordScreen extends StatefulWidget{
         child: 
         Container(   // Container had all the sign in without title part 
           margin: EdgeInsets.only(left: 30 , right: 30,),
-          child: Column(   // had childs in column
+          child: SingleChildScrollView( child:  Column(   // had childs in column
           crossAxisAlignment: CrossAxisAlignment.start, // for the children in the column begin from left :0 
            children: [
           Container(margin: EdgeInsets.only(bottom: 10),
@@ -61,7 +61,7 @@ class CreateNewPasswordScreen extends StatefulWidget{
          }  ),
          ),
         ],
-      ),
+      ),),
     ),
     )]));},);
   }
