@@ -45,7 +45,7 @@ class ForgotPasswordScreen extends StatefulWidget{
           child: Column(   // had childs in column
           crossAxisAlignment: CrossAxisAlignment.start, // for the children in the column begin from left :0 
            children: [
-            StandardTextfield(title:"E-mail", hint:"Enter your email" , controller: emailController,isError: _submitted && emailController.text.isEmpty,),
+            StandardTextfield(title:"E-mail", hint:"Enter your email" ,isEmail: true, controller: emailController,isError: _submitted && emailController.text.isEmpty,),
            Container(
             margin: EdgeInsets.only(top:30,),
            child:   StandardButton(text: "Next",onPressed: () {

@@ -67,7 +67,7 @@ class _SignInScreenState extends State<SignInScreen>{
           child: Column(   // had childs in column
           crossAxisAlignment: CrossAxisAlignment.start, // for the children in the column begin from left :0 
            children: [
-            StandardTextfield(title:"Email Adress", hint:"Enter your email adress" ,controller: emailController,isError: _submitted && emailController.text.isEmpty,),
+            StandardTextfield(title:"Email Adress", hint:"Enter your email adress" ,isEmail: true,controller: emailController,isError: _submitted && emailController.text.isEmpty,),
             StandardTextfield(title:"Password", hint:"Enter your Password",isPassword: true,controller: PasswordController,isError: _submitted && PasswordController.text.isEmpty,),
           Container(
            margin: EdgeInsets.only(bottom: 15),

@@ -4,6 +4,7 @@ class StandardTextfield extends StatefulWidget {
   final String title;
   final String hint;
   final bool isPassword;
+   final bool isEmail; 
   final TextEditingController ?controller;
   final bool isError;
 
@@ -12,6 +13,7 @@ class StandardTextfield extends StatefulWidget {
     required this.title,
     required this.hint,
     this.isPassword = false,
+      this.isEmail = false, 
     this.controller,
      this.isError = false,
 
@@ -42,6 +44,9 @@ class _StandardTextfieldState extends State<StandardTextfield> {
           child: TextField(
             controller:widget.controller,
             obscureText: widget.isPassword ? visibility : false,
+             keyboardType: widget.isEmail ? TextInputType.emailAddress : TextInputType.text,
+  autocorrect: widget.isEmail ? false : true,        
+  enableSuggestions: widget.isEmail ? false : true, 
             textAlignVertical: TextAlignVertical.center,
             decoration: InputDecoration(
               suffixIcon: widget.isPassword

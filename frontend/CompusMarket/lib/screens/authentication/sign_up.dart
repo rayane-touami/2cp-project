@@ -57,7 +57,7 @@ class SignUpScreen extends StatefulWidget{
           crossAxisAlignment: CrossAxisAlignment.start, 
            children: [
             StandardTextfield(title:"Full Name", hint:"Enter your name",controller: nameController,isError: _submitted && nameController.text.isEmpty,),
-            StandardTextfield(title:"E-mail", hint:"Enter your email",controller: emailController,isError: _submitted && emailController.text.isEmpty,),
+            StandardTextfield(title:"E-mail", hint:"Enter your email",isEmail: true,controller: emailController,isError: _submitted && emailController.text.isEmpty,),
             StandardTextfield(title:"Password", hint:"Enter your Password",isPassword: true,controller: PasswordController,isError: _submitted && PasswordController.text.isEmpty,),
             SizedBox(height: 10,),
             StandardButton(text: "Create An Account",onPressed: () {
