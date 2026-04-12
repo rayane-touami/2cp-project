@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'features.announcements',
     'features.messaging',
     'features.moderation',
+    'features.notifications',
 ]
 
 # ── User model custom ────────────────────
