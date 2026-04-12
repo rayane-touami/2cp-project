@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'channels',
     'drf_spectacular',
+    'rest_framework_simplejwt.token_blacklist',
 
     # our apps
     'features.authentication',
@@ -195,3 +196,9 @@ ANNOUNCEMENTS_PER_PAGE = 20 #optional
 # File upload settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024  # 30MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024  
+
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+}
