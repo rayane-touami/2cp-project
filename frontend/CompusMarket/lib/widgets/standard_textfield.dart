@@ -28,6 +28,8 @@ class _StandardTextfieldState extends State<StandardTextfield> {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -36,12 +38,12 @@ class _StandardTextfieldState extends State<StandardTextfield> {
           style: TextStyle(
             fontFamily: 'Inter',
             fontWeight: FontWeight.bold,
-            fontSize: 17,
+            fontSize: screenWidth*0.02,
           ),
         ),
-        Container(
-          margin: EdgeInsets.only(top: 7, bottom: 20),
-          child: TextField(
+
+        SizedBox(height: screenHeight*0.0074,),
+         TextField(
             controller:widget.controller,
             obscureText: widget.isPassword ? visibility : false,
              keyboardType: widget.isEmail ? TextInputType.emailAddress : TextInputType.text,
@@ -62,20 +64,20 @@ class _StandardTextfieldState extends State<StandardTextfield> {
                     )
                   : null,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(screenWidth*0.035),
                 borderSide: BorderSide.none,
               ),
               enabledBorder: OutlineInputBorder(
-  borderRadius: BorderRadius.circular(15),
+  borderRadius: BorderRadius.circular(screenWidth*0.035),
   borderSide: widget.isError
-      ? BorderSide(color: Colors.red, width: 2) // ✅ red border when error
+      ? BorderSide(color: Colors.red, width: screenWidth*0.0047,) //  red border when error
       : BorderSide.none,
 ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(screenWidth*0.035),
                 borderSide:  widget.isError
-      ? BorderSide(color: Colors.red, width: 2) // ✅ stays red even focused
-      : BorderSide(color: Colors.blue, width: 2),
+      ? BorderSide(color: Colors.red, width: screenWidth*0.0047,) //  stays red even focused
+      : BorderSide(color: Colors.blue, width: screenWidth*0.0047,),
 
               ),
               hintText: widget.hint,
@@ -87,10 +89,10 @@ class _StandardTextfieldState extends State<StandardTextfield> {
               fillColor: Color(0xffeceff3),
               filled: true,
               contentPadding:
-                  EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+                  EdgeInsets.symmetric(vertical: screenWidth*0.047, horizontal: screenHeight*0.01),
             ),
           ),
-        ),
+        SizedBox(height: screenHeight*0.021,)
       ],
     );
   }

@@ -7,23 +7,25 @@ class StandardTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+     final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
     return 
       Stack(
         children: [
           Positioned(
-            top: 70,
-            left: 20,
+            top: screenHeight * 0.073,
+            left: screenWidth * 0.047,
             child: 
            IconButton(
              onPressed: () {
               Navigator.pop(context);
              },
-             iconSize: 28,
+             iconSize: screenWidth * 0.065,
                      icon: Icon(Icons.arrow_back , color: Colors.black,)
                      ),),
 
                      Positioned(
-                      top: 150,
+                      top: screenHeight * 0.157,
                        left: 0,
                        right: 0,
                      child: Column(
@@ -34,15 +36,15 @@ class StandardTitle extends StatelessWidget {
                        style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Inter',
-                      fontSize: 26,
+                      fontSize: screenWidth * 0.061,
                        ),),),
-                      SizedBox(height: 10,),
+                      SizedBox(height: screenHeight * 0.01),
                       Text(
                        pargh, // manually control where it breaks
                        textAlign: TextAlign.center,
                        style: TextStyle(
                        fontFamily: 'Inter',
-                       fontSize: 15,
+                       fontSize: screenWidth * 0.035,
                       color: Color(0xff353849),
                       ),
                      ),],

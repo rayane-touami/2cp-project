@@ -48,6 +48,9 @@ class _SignInScreenState extends State<SignInScreen>{
 
   @override
   Widget build(BuildContext context) {
+      final screenHeight = MediaQuery.of(context).size.height;
+  final screenWidth = MediaQuery.of(context).size.width;
+  print('Height: $screenHeight, Width: $screenWidth');
 
     return  Scaffold(
       body:Stack(children: [
@@ -59,21 +62,21 @@ class _SignInScreenState extends State<SignInScreen>{
 //============== Sign In ===============//
 //        
        Positioned( // posision of the main Container
-        top: 265,
+        top: MediaQuery.of(context).size.height * 0.28,
         left: 0,
         right: 0,
         bottom: 0,
         child: 
         Container(   // Container had all the sign in without title part 
-          margin: EdgeInsets.only(left: 30 , right: 30,),
+         margin: EdgeInsets.symmetric(
+  horizontal: screenWidth * 0.07
+),
           child: Column(   // had childs in column
           crossAxisAlignment: CrossAxisAlignment.start, // for the children in the column begin from left :0 
            children: [
             StandardTextfield(title:"Email Adress", hint:"Enter your email adress" ,isEmail: true,controller: emailController,isError: _submitted && emailController.text.isEmpty,),
             StandardTextfield(title:"Password", hint:"Enter your Password",isPassword: true,controller: PasswordController,isError: _submitted && PasswordController.text.isEmpty,),
-          Container(
-           margin: EdgeInsets.only(bottom: 15),
-            child: Row(
+           Row(
               children: [
                  Transform.scale(
                   scale: 1.5,
@@ -93,7 +96,7 @@ class _SignInScreenState extends State<SignInScreen>{
                 Text("Remember Me",
                 style: TextStyle(
                   fontFamily: 'Inter',
-                  fontSize: 15,
+                  fontSize: screenWidth*0.035,
                   color: Color(0xff666d80)
                 ), 
                 ),
@@ -109,7 +112,7 @@ class _SignInScreenState extends State<SignInScreen>{
                   style:TextStyle(
                     color:Colors.red,
                     fontFamily: 'Inter' ,
-                    fontSize: 15,
+                    fontSize: screenWidth*0.035,
                   ),
    
                   )
@@ -117,8 +120,8 @@ class _SignInScreenState extends State<SignInScreen>{
               
               ],
             ),
-          ),
-
+          
+    SizedBox(height:screenHeight * 0.010 ,),
           StandardButton(
             text: _isLoading ? "Signing in..." : "Sign In",
   onPressed: _isLoading ? null : () {
@@ -126,16 +129,15 @@ class _SignInScreenState extends State<SignInScreen>{
   },
           ),
 
-          Container(
-            margin: EdgeInsets.only(top: 30 , bottom: 25),
+          SizedBox(height:screenHeight * 0.031 ,),
             
-           child:  Row(
+            Row(
              mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text("Don't have an account? " , style: TextStyle(
                 color: Color(0xff808897),
                 fontWeight: FontWeight.bold,
-                fontSize: 17,
+                fontSize: screenWidth*0.04,
                 fontFamily: 'Inter',
               ),),
 
@@ -149,40 +151,38 @@ class _SignInScreenState extends State<SignInScreen>{
                 child: Text(" Sign Up" , style: TextStyle(
                   color: Color(0xff2853af),
                   fontWeight: FontWeight.bold,
-                  fontSize: 17,
+                  fontSize: screenWidth*0.04,
                   fontFamily: 'Inter',
                 ),),
               ),
             ],
-           )
-          ),
+           ),
           
-          Container(
-            margin: EdgeInsets.only(bottom: 20),
-            child: Row(
+          SizedBox(height:screenHeight * 0.024 ,),
+           Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                  Container(
-                  margin: EdgeInsets.only(right: 10),
+                  margin: EdgeInsets.only(right: screenWidth * 0.023),
                 color: Color(0xffdfe1e6),
-                width: 70,
-                height: 1,
+                width: screenWidth*0.16,
+                height:  screenHeight* 0.001,
                ),
-               Text("Or Sign In with" , 
+               Text("Or Sign In With" , 
                style: TextStyle(
-                fontSize: 15,
+                fontSize: screenWidth*0.035,
                 color: Color(0xffa4abb8),
                ),),
                 Container(
-                   margin: EdgeInsets.only(left: 10),
+                   margin: EdgeInsets.only(left: screenWidth * 0.023),
                 color: Color(0xffdfe1e6),
-                width: 70,
-                height: 1,
+                width: screenWidth*0.16,
+                height: screenHeight* 0.001,
                ),
 
               ],
             ),
-          ),
+          SizedBox(height:screenHeight * 0.021 ,),
 
            Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -194,15 +194,15 @@ class _SignInScreenState extends State<SignInScreen>{
         borderRadius: BorderRadius.circular(10),
         onTap: () {},
         child: SizedBox(
-          width: 85,
-          height: 55,
+          width:screenWidth * 0.2,
+          height: screenHeight * 0.058,
           child: Center(
-            child: Image.asset("assets/images/google.png", width: 60, height: 60),
+            child: Image.asset("assets/images/google.png", width: screenWidth * 0.14, height: screenHeight * 0.063,),
           ),
         ),
       ),
     ),
-    SizedBox(width: 20,),
+    SizedBox(width:screenWidth * 0.046,),
               Material(
       color: Color(0xffeceff3),
       borderRadius: BorderRadius.circular(10),
@@ -210,10 +210,10 @@ class _SignInScreenState extends State<SignInScreen>{
         borderRadius: BorderRadius.circular(10),
         onTap: () {},
         child: SizedBox(
-          width: 85,
-          height: 55,
+          width: screenWidth * 0.2,
+          height: screenHeight * 0.058,
           child: Center(
-            child: Image.asset("assets/images/apple.png", width: 60, height: 60),
+            child: Image.asset("assets/images/apple.png", width: screenWidth * 0.14, height: screenHeight * 0.063,),
           ),
         ),
       ),
@@ -224,11 +224,13 @@ class _SignInScreenState extends State<SignInScreen>{
           Spacer(),
 
            Container(
-            margin: EdgeInsets.only(left: 30 , right: 30, bottom: 45 ),
+          margin: EdgeInsets.symmetric(
+  horizontal: MediaQuery.of(context).size.width * 0.07
+),
           child:   RichText(
             textAlign: TextAlign.center,
             text: TextSpan(
-              style: TextStyle(color: Color(0xff666d80) , fontSize: 17, fontFamily: 'Inter'),
+              style: TextStyle(color: Color(0xff666d80) , fontSize: screenWidth * 0.04, fontFamily: 'Inter'),
               children: [
                 TextSpan(text: "By signing up you agree to our "),
                 TextSpan(
@@ -240,9 +242,9 @@ class _SignInScreenState extends State<SignInScreen>{
             )
            
            )
-           )
+           ),
 
-            
+            SizedBox(height: screenHeight*0.047,)
 
           ]
           )
