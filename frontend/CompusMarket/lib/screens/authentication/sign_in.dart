@@ -157,70 +157,70 @@ class _SignInScreenState extends State<SignInScreen>{
            )
           ),
           
-          // Container(
-          //   margin: EdgeInsets.only(bottom: 35),
-          //   child: Row(
-          //     mainAxisAlignment: MainAxisAlignment.center,
-          //     children: [
-          //        Container(
-          //         margin: EdgeInsets.only(right: 10),
-          //       color: Color(0xffdfe1e6),
-          //       width: 70,
-          //       height: 1,
-          //      ),
-          //      Text("Or Sign In with" , 
-          //      style: TextStyle(
-          //       fontSize: 15,
-          //       color: Color(0xffa4abb8),
-          //      ),),
-          //       Container(
-          //          margin: EdgeInsets.only(left: 10),
-          //       color: Color(0xffdfe1e6),
-          //       width: 70,
-          //       height: 1,
-          //      ),
+          Container(
+            margin: EdgeInsets.only(bottom: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                 Container(
+                  margin: EdgeInsets.only(right: 10),
+                color: Color(0xffdfe1e6),
+                width: 70,
+                height: 1,
+               ),
+               Text("Or Sign In with" , 
+               style: TextStyle(
+                fontSize: 15,
+                color: Color(0xffa4abb8),
+               ),),
+                Container(
+                   margin: EdgeInsets.only(left: 10),
+                color: Color(0xffdfe1e6),
+                width: 70,
+                height: 1,
+               ),
 
-          //     ],
-          //   ),
-          // ),
+              ],
+            ),
+          ),
 
-    //        Row(
-    //           mainAxisAlignment: MainAxisAlignment.center,
-    //           children: [
-    //             Material(
-    //   color: Color(0xffeceff3),
-    //   borderRadius: BorderRadius.circular(10),
-    //   child: InkWell(
-    //     borderRadius: BorderRadius.circular(10),
-    //     onTap: () {},
-    //     child: SizedBox(
-    //       width: 85,
-    //       height: 55,
-    //       child: Center(
-    //         child: Image.asset("assets/images/google.png", width: 60, height: 60),
-    //       ),
-    //     ),
-    //   ),
-    // ),
-    // SizedBox(width: 20,),
-    //           Material(
-    //   color: Color(0xffeceff3),
-    //   borderRadius: BorderRadius.circular(10),
-    //   child: InkWell(
-    //     borderRadius: BorderRadius.circular(10),
-    //     onTap: () {},
-    //     child: SizedBox(
-    //       width: 85,
-    //       height: 55,
-    //       child: Center(
-    //         child: Image.asset("assets/images/apple.png", width: 60, height: 60),
-    //       ),
-    //     ),
-    //   ),
-    // ),  
+           Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Material(
+      color: Color(0xffeceff3),
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: () {},
+        child: SizedBox(
+          width: 85,
+          height: 55,
+          child: Center(
+            child: Image.asset("assets/images/google.png", width: 60, height: 60),
+          ),
+        ),
+      ),
+    ),
+    SizedBox(width: 20,),
+              Material(
+      color: Color(0xffeceff3),
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: () {},
+        child: SizedBox(
+          width: 85,
+          height: 55,
+          child: Center(
+            child: Image.asset("assets/images/apple.png", width: 60, height: 60),
+          ),
+        ),
+      ),
+    ),  
                
-    //           ],
-    //         ),
+              ],
+            ),
           Spacer(),
 
            Container(
