@@ -38,7 +38,7 @@ class _StandardTextfieldState extends State<StandardTextfield> {
           style: TextStyle(
             fontFamily: 'Inter',
             fontWeight: FontWeight.bold,
-            fontSize: screenWidth*0.02,
+            fontSize: screenWidth*0.037,
           ),
         ),
 
@@ -85,6 +85,7 @@ class _StandardTextfieldState extends State<StandardTextfield> {
                 fontFamily: 'Inter',
                 color: Color(0xffa4abb8),
                 fontWeight: FontWeight.bold,
+                fontSize: screenWidth*0.04,
               ),
               fillColor: Color(0xffeceff3),
               filled: true,

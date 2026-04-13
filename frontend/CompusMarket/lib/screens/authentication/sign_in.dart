@@ -189,9 +189,9 @@ class _SignInScreenState extends State<SignInScreen>{
               children: [
                 Material(
       color: Color(0xffeceff3),
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(screenWidth * 0.025),
       child: InkWell(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(screenWidth * 0.025),
         onTap: () {},
         child: SizedBox(
           width:screenWidth * 0.2,

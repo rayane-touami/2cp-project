@@ -58,24 +58,24 @@ Future<void> _loadUniversities() async {
   } 
     @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
   return Scaffold(
     body: Stack(
       children: [
        StandardTitle(title: "Create Account" , pargh: "Lorem ipsum dolor sit amet , consectetur",), 
        Positioned( // posision of the main Container
-        top: 265,
+        top: screenHeight * 0.28,
         left: 0,
         right: 0,
         bottom: 0,
         child: 
         Container(  
-          margin: EdgeInsets.only(left: 30 , right: 30,),
+         margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.07),
           child: Column(  
           crossAxisAlignment: CrossAxisAlignment.start, 
            children: [
             StandardTextfield(title:"Full Name", hint:"Enter your name",controller: nameController,isError: _submitted && nameController.text.isEmpty,),
-            
-            //StandardTextfield(title:"University", hint:"Enter your university",controller: univerController,isError: _submitted && univerController.text.isEmpty,),
             StandardTextfield(title:"E-mail", hint:"Enter your email",isEmail: true,controller: emailController,isError: _submitted && emailController.text.isEmpty,),
             StandardTextfield(title:"Password", hint:"Enter your Password",isPassword: true,controller: PasswordController,isError: _submitted && PasswordController.text.isEmpty,),
             DropdownButtonHideUnderline(
@@ -94,72 +94,70 @@ Future<void> _loadUniversities() async {
     },
   ),
 ),
-            SizedBox(height: 10,),
+            SizedBox(height:screenHeight * 0.01,),
             StandardButton(
               text: _isLoading ? "Creating..." : "Create An Account",
   onPressed: _isLoading ? null : () => _testemail(context),
             ),
-            SizedBox(height: 25,),
-          Container(
-           // margin: EdgeInsets.only(bottom: 20),
-            child: Row(
+            SizedBox(height: screenHeight * 0.026,),
+             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                  Container(
-                  margin: EdgeInsets.only(right: 10),
+                  margin: EdgeInsets.only(right:  screenWidth * 0.023),
                 color: Color(0xffdfe1e6),
-                width: 70,
-                height: 1,
+                width: screenWidth * 0.16,
+                height:screenHeight * 0.001,
                ),
                Text("Or Sign In with" , 
                style: TextStyle(
-                fontSize: 15,
+                fontSize:  screenWidth * 0.035,
                 color: Color(0xffa4abb8),
                ),),
                 Container(
-                   margin: EdgeInsets.only(left: 10),
+                   margin: EdgeInsets.only(left: screenWidth * 0.023),
                 color: Color(0xffdfe1e6),
-                width: 70,
-                height: 1,
+                width: screenWidth * 0.16,
+                height: screenHeight * 0.001,
                ),
 
               ],
             ),
             
-          ),
+          
 
-SizedBox(height: 20,),
+SizedBox(height: screenHeight * 0.021,),
 
           Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Material(
       color: Color(0xffeceff3),
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(screenWidth * 0.025),
       child: InkWell(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(screenWidth * 0.025),
         onTap: () {},
         child: SizedBox(
-          width: 85,
-          height: 55,
+          width: screenWidth * 0.2,
+          height: screenHeight * 0.058,
           child: Center(
-            child: Image.asset("assets/images/google.png", width: 60, height: 60),
+            child: Image.asset("assets/images/google.png", width: screenWidth * 0.14, height: screenHeight * 0.063),
           ),
         ),
       ),
     ),
-    SizedBox(width: 15,),
+    SizedBox(width: screenWidth * 0.035),
               Material(
       color: Color(0xffeceff3),
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(screenWidth * 0.025),
       child: InkWell(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(screenWidth * 0.025),
         onTap: () {},
         child: SizedBox(
-          width: 85,
-          height: 55,
+          width: screenWidth * 0.2,
+          height:  screenHeight * 0.058,
           child: Center(
-            child: Image.asset("assets/images/apple.png", width: 60, height: 60),
+            child: Image.asset("assets/images/apple.png",  width: screenWidth * 0.14, height: screenHeight * 0.063),
           ),
         ),
       ),
@@ -170,11 +168,11 @@ SizedBox(height: 20,),
             Spacer(),
 
            Container(
-            margin: EdgeInsets.only(left: 30 , right: 30, bottom: 30 ),
+             margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.07),
           child:   RichText(
             textAlign: TextAlign.center,
             text: TextSpan(
-              style: TextStyle(color: Color(0xff666d80) , fontSize: 17, fontFamily: 'Inter'),
+              style: TextStyle(color: Color(0xff666d80) ,  fontSize: screenWidth * 0.04, fontFamily: 'Inter'),
               children: [
                 TextSpan(text: "By signing up you agree to our "),
                 TextSpan(
@@ -186,7 +184,8 @@ SizedBox(height: 20,),
             )
            
            )
-           )
+           ),
+           SizedBox(height: screenHeight * 0.047),
 
 
            ],),),), 
