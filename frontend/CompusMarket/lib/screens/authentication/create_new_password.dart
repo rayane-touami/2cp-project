@@ -25,7 +25,7 @@ class CreateNewPasswordScreen extends StatefulWidget{
       setState(() {});
     });
   }
-
+  
   @override
   void dispose() {
     newPasswordController.dispose(); 

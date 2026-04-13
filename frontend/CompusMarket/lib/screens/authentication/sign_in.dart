@@ -1,5 +1,6 @@
-import 'package:compusmarket/screens/authentication/sign_up.dart';
+import 'package:compusmarket/services/api_services.dart';
 import 'package:flutter/material.dart';
+import 'package:compusmarket/screens/authentication/sign_up.dart';
 import '../../widgets/standard_Title.dart';
 import '../../widgets/standard_textfield.dart';
 import '../../widgets/standard_Button.dart';
@@ -25,6 +26,7 @@ class _SignInScreenState extends State<SignInScreen>{
   bool Status=false; //for checkbox of remember me 
   bool visibility=true;
    bool _submitted = false;
+   bool _isLoading = false;
      @override
   void initState() {
     super.initState();
@@ -117,9 +119,12 @@ class _SignInScreenState extends State<SignInScreen>{
             ),
           ),
 
-          StandardButton(text: "Sign In",onPressed: () {
-            _testfields(context);
-          },),
+          StandardButton(
+            text: _isLoading ? "Signing in..." : "Sign In",
+  onPressed: _isLoading ? null : () {
+    _testfields(context);
+  },
+          ),
 
           Container(
             margin: EdgeInsets.only(top: 30 , bottom: 25),
@@ -152,70 +157,70 @@ class _SignInScreenState extends State<SignInScreen>{
            )
           ),
           
-          Container(
-            margin: EdgeInsets.only(bottom: 35),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                 Container(
-                  margin: EdgeInsets.only(right: 10),
-                color: Color(0xffdfe1e6),
-                width: 70,
-                height: 1,
-               ),
-               Text("Or Sign In with" , 
-               style: TextStyle(
-                fontSize: 15,
-                color: Color(0xffa4abb8),
-               ),),
-                Container(
-                   margin: EdgeInsets.only(left: 10),
-                color: Color(0xffdfe1e6),
-                width: 70,
-                height: 1,
-               ),
+          // Container(
+          //   margin: EdgeInsets.only(bottom: 35),
+          //   child: Row(
+          //     mainAxisAlignment: MainAxisAlignment.center,
+          //     children: [
+          //        Container(
+          //         margin: EdgeInsets.only(right: 10),
+          //       color: Color(0xffdfe1e6),
+          //       width: 70,
+          //       height: 1,
+          //      ),
+          //      Text("Or Sign In with" , 
+          //      style: TextStyle(
+          //       fontSize: 15,
+          //       color: Color(0xffa4abb8),
+          //      ),),
+          //       Container(
+          //          margin: EdgeInsets.only(left: 10),
+          //       color: Color(0xffdfe1e6),
+          //       width: 70,
+          //       height: 1,
+          //      ),
 
-              ],
-            ),
-          ),
+          //     ],
+          //   ),
+          // ),
 
-           Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Material(
-      color: Color(0xffeceff3),
-      borderRadius: BorderRadius.circular(10),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(10),
-        onTap: () {},
-        child: SizedBox(
-          width: 85,
-          height: 55,
-          child: Center(
-            child: Image.asset("assets/images/google.png", width: 60, height: 60),
-          ),
-        ),
-      ),
-    ),
-    SizedBox(width: 20,),
-              Material(
-      color: Color(0xffeceff3),
-      borderRadius: BorderRadius.circular(10),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(10),
-        onTap: () {},
-        child: SizedBox(
-          width: 85,
-          height: 55,
-          child: Center(
-            child: Image.asset("assets/images/apple.png", width: 60, height: 60),
-          ),
-        ),
-      ),
-    ),  
+    //        Row(
+    //           mainAxisAlignment: MainAxisAlignment.center,
+    //           children: [
+    //             Material(
+    //   color: Color(0xffeceff3),
+    //   borderRadius: BorderRadius.circular(10),
+    //   child: InkWell(
+    //     borderRadius: BorderRadius.circular(10),
+    //     onTap: () {},
+    //     child: SizedBox(
+    //       width: 85,
+    //       height: 55,
+    //       child: Center(
+    //         child: Image.asset("assets/images/google.png", width: 60, height: 60),
+    //       ),
+    //     ),
+    //   ),
+    // ),
+    // SizedBox(width: 20,),
+    //           Material(
+    //   color: Color(0xffeceff3),
+    //   borderRadius: BorderRadius.circular(10),
+    //   child: InkWell(
+    //     borderRadius: BorderRadius.circular(10),
+    //     onTap: () {},
+    //     child: SizedBox(
+    //       width: 85,
+    //       height: 55,
+    //       child: Center(
+    //         child: Image.asset("assets/images/apple.png", width: 60, height: 60),
+    //       ),
+    //     ),
+    //   ),
+    // ),  
                
-              ],
-            ),
+    //           ],
+    //         ),
           Spacer(),
 
            Container(
@@ -248,13 +253,37 @@ class _SignInScreenState extends State<SignInScreen>{
     
   }
 
-  void _testfields (BuildContext context){
-     setState(() {
-    _submitted = true; 
+ void _testfields(BuildContext context) async {
+  setState(() {
+    _submitted = true;
   });
-   if( emailController.text.isEmpty || PasswordController.text.isEmpty ){
-    print("Fill all fields");
+
+  if (emailController.text.isEmpty || PasswordController.text.isEmpty) {
     return;
-  } 
   }
+
+  setState(() => _isLoading = true);
+
+  try {
+    final result = await ApiService.login(
+      emailController.text,
+      PasswordController.text,
+    );
+
+    final token = result['access'];
+    print('✅ Logged in! Token: $token');
+
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Login successful! 🎉')),
+    );
+
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('❌ Wrong email or password')),
+    );
+  } finally {
+    setState(() => _isLoading = false);
+  }
+}
 }

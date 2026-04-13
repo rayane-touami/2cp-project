@@ -160,7 +160,7 @@ void dispose() {
   }
   void _testOTP (BuildContext context) {
      setState(() {
-    _submitted = true; // ✅ Add this
+    _submitted = true; 
   });
     if(c1.text.isEmpty || c2.text.isEmpty || c3.text.isEmpty || c4.text.isEmpty){
     for (int i = 0; i < controllers.length; i++) {
