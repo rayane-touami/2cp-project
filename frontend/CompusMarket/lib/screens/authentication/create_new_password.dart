@@ -37,6 +37,7 @@ class CreateNewPasswordScreen extends StatefulWidget{
   Widget build(BuildContext context) {
      return  Builder(builder: (context) {
       return Scaffold(
+         backgroundColor: Colors.white,
       body: Stack(
         children: [
           StandardTitle(title: "Create a \n New Password" , pargh: "Enter your new password",),

@@ -45,6 +45,7 @@ void dispose() {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+       backgroundColor: Colors.white,
         body: Stack(
           children: [
             StandardTitle(title: "Enter OTP", pargh: "we have just sent you 4 digit code via your email"),

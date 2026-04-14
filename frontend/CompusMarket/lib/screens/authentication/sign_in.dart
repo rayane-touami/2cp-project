@@ -53,6 +53,8 @@ class _SignInScreenState extends State<SignInScreen>{
   print('Height: $screenHeight, Width: $screenWidth');
 
     return  Scaffold(
+        backgroundColor: Colors.white,
+
       body:Stack(children: [
 
 //===============  Title ===============//

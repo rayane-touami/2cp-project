@@ -31,6 +31,7 @@ class ForgotPasswordScreen extends StatefulWidget{
     @override
   Widget build(BuildContext context) {
    return Scaffold(
+     backgroundColor: Colors.white,
       body: Stack(
         children: [
           StandardTitle(title: "Forgot Password" , pargh: "Recover your account password",),

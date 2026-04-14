@@ -61,6 +61,7 @@ Future<void> _loadUniversities() async {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
   return Scaffold(
+      backgroundColor: Colors.white,
     body: Stack(
       children: [
        StandardTitle(title: "Create Account" , pargh: "Lorem ipsum dolor sit amet , consectetur",), 
