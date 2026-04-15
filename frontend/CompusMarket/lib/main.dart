@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:compusmarket/screens/authentication/sign_in.dart';
-
-void main() {
+import 'screens/home/home_screen.dart';
+import 'package:compusmarket/screens/home/favorites_screen.dart';void main() {
   runApp(const MyApp());
 }
 
@@ -13,7 +13,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'CompusMarket',
       debugShowCheckedModeBanner: false,
-      home: SignInScreen(),
+      //inter font
+      theme: ThemeData(
+        fontFamily: 'Inter', 
+      ),
+      home: const HomeScreen(),
+      //home: SignInScreen(),
     );
   }
 }
