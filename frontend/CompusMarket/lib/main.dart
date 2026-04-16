@@ -1,7 +1,9 @@
-import 'package:compusmarket/screens/authentication/ON_Boadring.dart';
-import 'package:compusmarket/screens/authentication/sign_in.dart';
-import 'package:compusmarket/screens/home/home_screen.dart';
-import 'package:compusmarket/screens/home/favorites_screen.dart';
+//import 'package:compusmarket/screens/authentication/ON_Boadring.dart';
+//import 'package:compusmarket/screens/authentication/sign_in.dart';
+//import 'package:compusmarket/screens/home/home_screen.dart';
+//import 'package:compusmarket/screens/home/favorites_screen.dart';
+import 'package:compusmarket/screens/chats/chats_out.dart';
+import 'package:compusmarket/screens/profiles/My_profile.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -19,7 +21,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         fontFamily: 'Inter',
       ),
-      home: OnBoadringScreen(), // change to HomeScreen() or SignInScreen() whenever you want
+      home: ChatsOutScreen(), // change to HomeScreen() or SignInScreen() whenever you want
     );
   }
 }

@@ -140,10 +140,11 @@ const ChatsInScreen({
 
      body:
      ListView.builder(
+      reverse: true,
   padding: EdgeInsets.only(top:50 ,  left: 15 , right: 15 , bottom: 15,),
   itemCount: messages.length,
   itemBuilder: (context, index) {
-    final msg = messages[index];
+    final msg = messages[messages.length - 1 - index];
 
     return Align(
       alignment: msg.isMe ? Alignment.centerRight : Alignment.centerLeft,
