@@ -1,4 +1,3 @@
-
 import json
 import asyncio
 import redis.asyncio as aioredis
@@ -7,6 +6,7 @@ from firebase_admin import messaging
 from .models import Message, Conversation, UserDevice
 
 REDIS_URL = "redis://127.0.0.1:6379"
+
 
 def send_push_notification(token, title, body):
     try:
@@ -20,6 +20,7 @@ def send_push_notification(token, title, body):
         messaging.send(message)
     except Exception as e:
         print(f"Notification error: {e}")
+
 
 class ChatConsumer(AsyncWebsocketConsumer):
 
@@ -54,28 +55,34 @@ class ChatConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
 
-        await Message.objects.acreate(
-            conversation_id=self.conversation_id,
-            sender=self.scope['user'],
-            content=message
-        )
+        msg = await Message.objects.acreate(
+      conversation_id=self.conversation_id,
+      sender=self.scope['user'],
+     content=message
+    )
+
+        payload = {
+            "id": msg.id,
+            "content": msg.content,
+            "timestamp": str(msg.timestamp),
+            "is_read": msg.is_read,
+            "sender": {
+                "email": self.scope['user'].email
+            }
+        }
 
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 "type": "chat.message",
-                "message": message,
-                "sender_email": self.scope['user'].email,
+                "payload": payload
             }
         )
 
         await self.notify_receiver(message)
 
     async def chat_message(self, event):
-        await self.send(text_data=json.dumps({
-            "message": event["message"],
-            "sender_email": event["sender_email"],
-        }))
+        await self.send(text_data=json.dumps(event["payload"]))
 
     async def notify_receiver(self, message):
         try:
@@ -105,5 +112,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     )
                 except UserDevice.DoesNotExist:
                     pass
+
         except Exception as e:
             print(f"notify_receiver error: {e}")
