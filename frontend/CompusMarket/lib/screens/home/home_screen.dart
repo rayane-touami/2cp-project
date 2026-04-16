@@ -25,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Stack(
+          fit: StackFit.expand,
           children: [
 
             // ── SWITCH SCREENS ──

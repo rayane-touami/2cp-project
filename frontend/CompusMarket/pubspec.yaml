@@ -29,6 +29,7 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   flutter:
+
     sdk: flutter
      
   http: ^1.2.0
@@ -73,6 +74,7 @@ flutter:
     - assets/images/malak's_pic.jpg
     - assets/images/houssam's_pic.jpg
     - assets/images/wail's_pic.jpg
+    - assets/images/products/   
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

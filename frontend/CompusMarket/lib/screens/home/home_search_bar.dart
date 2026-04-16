@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'filter_bottom_sheet.dart';
+
 class HomeSearchBar extends StatelessWidget {
   final bool showFilter;
 
@@ -75,7 +77,12 @@ class HomeSearchBar extends StatelessWidget {
 
   GestureDetector(
     onTap: () {
-      // TODO: later → navigate to filter page
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => const FilterBottomSheet(),
+      );
     },
     child: Container(
       width: barHeight,
