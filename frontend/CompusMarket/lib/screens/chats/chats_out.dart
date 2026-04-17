@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import '../chats/chat_in.dart';
 
-void main() {
-  runApp(MaterialApp(
-    home: ChatsOutScreen(), 
-  ));
-}
 
 class ChatsOutScreen extends StatefulWidget{
+  const ChatsOutScreen({super.key});
+
   @override
   State<ChatsOutScreen> createState() => _ChatsOutScreenState();
   }
@@ -19,7 +16,7 @@ class ChatsOutScreen extends StatefulWidget{
         "time":"10:30",
          "image": null,
          "isOnline": true,
-         "unread": 3,
+         "unread": 2,
        
       },
        {
