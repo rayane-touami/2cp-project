@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart'; //Gives you access to all Flutter widgets.
+import 'package:flutter/material.dart'; 
+import 'add_new_product.dart';
 
 class HomeHeader extends StatelessWidget { //Creates your header widget. StatelessWidget because the header doesn't change by itself.
 
@@ -75,13 +76,20 @@ class HomeHeader extends StatelessWidget { //Creates your header widget. Statele
         ),
         SizedBox(width: screenWidth * 0.02),
 
-        // Add button
+         // Add button
         _RoundIconButton(
           icon: Icons.add,
           iconColor: Colors.blue,
           buttonSize: buttonSize,
           iconSize: iconSize,
-          onTap: () {},
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AddNewProductScreen(),
+              ),
+            );
+          },
         ),
       ],
     );

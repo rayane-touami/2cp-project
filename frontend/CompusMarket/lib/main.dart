@@ -1,7 +1,11 @@
+import 'package:compusmarket/screens/home/add_new_product.dart';
 import 'package:flutter/material.dart';
 import 'package:compusmarket/screens/authentication/sign_in.dart';
 import 'screens/home/home_screen.dart';
-import 'package:compusmarket/screens/home/favorites_screen.dart';void main() {
+import 'package:compusmarket/screens/home/favorites_screen.dart';
+//import 'package:compusmarket/screens/home/add_new_product_screen.dart';
+
+void main() {
   runApp(const MyApp());
 }
 
@@ -14,10 +18,9 @@ class MyApp extends StatelessWidget {
       title: 'CompusMarket',
       debugShowCheckedModeBanner: false,
       //inter font
-      theme: ThemeData(
-        fontFamily: 'Inter', 
-      ),
+      theme: ThemeData(fontFamily: 'Inter'),
       home: const HomeScreen(),
+      // home: const AddNewProductScreen(),
       //home: SignInScreen(),
     );
   }

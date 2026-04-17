@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'filter_bottom_sheet.dart';
+import 'filter_state.dart';
 
 class HomeSearchBar extends StatelessWidget {
   final bool showFilter;
@@ -47,6 +48,11 @@ class HomeSearchBar extends StatelessWidget {
                 // ── TEXT INPUT ──
                 Expanded(
                   child: TextField(
+                    onChanged: (value) {
+                      globalFilterState.value = globalFilterState.value.copyWith(
+                        searchQuery: value,
+                      );
+                    },
                     style: TextStyle(fontSize: fontSize),
                     decoration: InputDecoration(
 
