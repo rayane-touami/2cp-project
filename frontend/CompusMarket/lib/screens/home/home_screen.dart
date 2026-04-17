@@ -5,6 +5,7 @@ import 'home_categories.dart';
 import 'home_products_grid.dart';
 import '../../widgets/home_floating_navigation_bar.dart';
 import 'favorites_screen.dart';
+import '../chats/chats_out.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,7 +17,26 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
 
   // ── tracks which nav icon is currently selected ──
-  int _currentNavIndex = 0;  // 0=home, 1=favorites
+  int _currentNavIndex = 0;  // 0=home, 1=favorites, 2=chat, 3=profile
+
+  Widget _buildCurrentScreen() {
+    switch (_currentNavIndex) {
+      case 0:
+        return _HomeContent(
+          onGoToFavorites: () {
+            setState(() {
+              _currentNavIndex = 1;
+            });
+          },
+        );
+      case 1:
+        return const FavoritesScreen();
+      case 2:
+        return const ChatsOutScreen();
+      default:
+        return const Scaffold(body: Center(child: Text("Under Construction"))); // Fallback for profile or placeholder
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,15 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
 
             // ── SWITCH SCREENS ──
-            _currentNavIndex == 0
-                ? _HomeContent(
-                    onGoToFavorites: () {
-                      setState(() {
-                        _currentNavIndex = 1;
-                      });
-                    },
-                  )
-                : const FavoritesScreen(),
+            _buildCurrentScreen(),
 
             // ── FLOATING NAV BAR ──
             HomeFloatingNavigationBar(

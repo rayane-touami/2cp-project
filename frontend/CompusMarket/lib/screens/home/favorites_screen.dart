@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:compusmarket/widgets/home_floating_navigation_bar.dart';
 import 'package:compusmarket/screens/home/home_search_bar.dart';
+import 'package:compusmarket/screens/home/filter_state.dart';
 
 // IMPORT HOME GRID FILE SO WE GET MEMORY LISTS
 import 'package:compusmarket/screens/home/home_products_grid.dart';
@@ -46,8 +47,22 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
                   // ── GRID OF FAVORITES ──
                   Expanded(
-                    child: globalFavoriteProducts.isEmpty
-                        ? const Center(
+                    child: ValueListenableBuilder<FilterData>(
+                      valueListenable: globalFilterState,
+                      builder: (context, filter, child) {
+                        final filteredFavorites = globalFavoriteProducts.where((product) {
+                          if (filter.searchQuery.isNotEmpty) {
+                            final String productName = product['name'].toLowerCase();
+                            final String query = filter.searchQuery.toLowerCase();
+                            if (!productName.contains(query)) {
+                              return false;
+                            }
+                          }
+                          return true;
+                        }).toList();
+
+                        if (globalFavoriteProducts.isEmpty) {
+                          return const Center(
                             child: Text(
                               'No favorites yet',
                               style: TextStyle(
@@ -55,49 +70,64 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                                 color: Colors.grey,
                               ),
                             ),
-                          )
-                        : GridView.builder(
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: screenWidth * 0.03,
-                                  mainAxisSpacing: screenWidth * 0.03,
-                                  childAspectRatio: 0.75,
-                                ),
-                            itemCount: globalFavoriteProducts.length,
-                            itemBuilder: (context, index) {
-                              final product = globalFavoriteProducts[index];
+                          );
+                        }
+                        
+                        if (filteredFavorites.isEmpty) {
+                          return const Center(
+                            child: Text(
+                              'No favorites match the search',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          );
+                        }
 
-                              // Keep the star rating yellow if it was clicked! 🌟
-                              final bool isRated = globalRatedProducts.any(
-                                (p) => p['name'] == product['name'],
-                              );
+                        return GridView.builder(
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: screenWidth * 0.03,
+                            mainAxisSpacing: screenWidth * 0.03,
+                            childAspectRatio: 0.75,
+                          ),
+                          itemCount: filteredFavorites.length,
+                          itemBuilder: (context, index) {
+                            final product = filteredFavorites[index];
 
-                              return ProductCard(
-                                product: product,
-                                isFavorite: true,
-                                isRated: isRated, // Provide star state here
-                                onFavoriteToggle: () {
-                                  setState(() {
-                                    globalFavoriteProducts.removeWhere(
+                            // Keep the star rating yellow if it was clicked! 🌟
+                            final bool isRated = globalRatedProducts.any(
+                              (p) => p['name'] == product['name'],
+                            );
+
+                            return ProductCard(
+                              product: product,
+                              isFavorite: true,
+                              isRated: isRated, // Provide star state here
+                              onFavoriteToggle: () {
+                                setState(() {
+                                  globalFavoriteProducts.removeWhere(
+                                    (p) => p['name'] == product['name'],
+                                  );
+                                });
+                              },
+                              onRatingToggle: () {
+                                setState(() {
+                                  if (isRated) {
+                                    globalRatedProducts.removeWhere(
                                       (p) => p['name'] == product['name'],
                                     );
-                                  });
-                                },
-                                onRatingToggle: () {
-                                  setState(() {
-                                    if (isRated) {
-                                      globalRatedProducts.removeWhere(
-                                        (p) => p['name'] == product['name'],
-                                      );
-                                    } else {
-                                      globalRatedProducts.add(product);
-                                    }
-                                  });
-                                },
-                              );
-                            },
-                          ),
+                                  } else {
+                                    globalRatedProducts.add(product);
+                                  }
+                                });
+                              },
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
