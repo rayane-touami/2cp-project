@@ -5,6 +5,7 @@ class StandardTextfield extends StatefulWidget {
   final String hint;
   final bool isPassword;
    final bool isEmail; 
+   final bool isPhone; 
   final TextEditingController ?controller;
   final bool isError;
 
@@ -14,12 +15,14 @@ class StandardTextfield extends StatefulWidget {
     required this.hint,
     this.isPassword = false,
       this.isEmail = false, 
+      this.isPhone = false, 
     this.controller,
      this.isError = false,
 
   });
 
   @override
+  // ignore: library_private_types_in_public_api
   _StandardTextfieldState createState() => _StandardTextfieldState();
 }
 
@@ -46,7 +49,11 @@ class _StandardTextfieldState extends State<StandardTextfield> {
          TextField(
             controller:widget.controller,
             obscureText: widget.isPassword ? visibility : false,
-             keyboardType: widget.isEmail ? TextInputType.emailAddress : TextInputType.text,
+             keyboardType: widget.isEmail
+    ? TextInputType.emailAddress
+    : widget.isPhone
+        ? TextInputType.phone
+        : TextInputType.text,
   autocorrect: widget.isEmail ? false : true,        
   enableSuggestions: widget.isEmail ? false : true, 
             textAlignVertical: TextAlignVertical.center,

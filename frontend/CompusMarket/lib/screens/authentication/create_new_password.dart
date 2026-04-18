@@ -1,4 +1,6 @@
 import 'dart:ui';
+import 'package:compusmarket/screens/authentication/sign_in.dart';
+import 'package:compusmarket/services/auth_services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/standard_Title.dart';
@@ -6,6 +8,15 @@ import '../../widgets/standard_textfield.dart';
 import '../../widgets/standard_Button.dart';
 
 class CreateNewPasswordScreen extends StatefulWidget{
+  final String email; 
+  final String code; 
+
+const CreateNewPasswordScreen({
+    super.key,
+    required this.email,
+    required this.code,
+  });
+
   @override
   State<CreateNewPasswordScreen> createState() => _CreateNewPasswordScreenState();
   }
@@ -33,55 +44,85 @@ class CreateNewPasswordScreen extends StatefulWidget{
     super.dispose();
   }
 
-    @override
-  Widget build(BuildContext context) {
-     return  Builder(builder: (context) {
-      return Scaffold(
-         backgroundColor: Colors.white,
-      body: Stack(
+   @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: Colors.white,
+    resizeToAvoidBottomInset: false,
+    body: SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          StandardTitle(title: "Create a \n New Password" , pargh: "Enter your new password",),
-          Positioned( // posision of the main Container
-        top: 300,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        child: 
-        Container(   // Container had all the sign in without title part 
-          margin: EdgeInsets.only(left: 30 , right: 30,),
-          child: SingleChildScrollView( child:  Column(   // had childs in column
-          crossAxisAlignment: CrossAxisAlignment.start, // for the children in the column begin from left :0 
-           children: [
-          Container(margin: EdgeInsets.only(bottom: 10),
-            child: StandardTextfield(title: "New Password", hint: "Enter new password",isPassword: true,controller: newPasswordController, isError: _submitted && newPasswordController.text.isEmpty, ),),
-          StandardTextfield(title: "Confirm Password", hint: "Confirm your password",isPassword: true,controller: confirmPasswordController,isError: _submitted && confirmPasswordController.text.isEmpty, ),
-         Container(
-          margin: EdgeInsets.only(top: 25),
-         child:   StandardButton(text: "Next" ,onPressed: () {
-           _Success(context);
-         }  ),
-         ),
+          StandardTitle(
+            title: "Create a \n New Password",
+            pargh: "Enter your new password",
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 30),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                StandardTextfield(
+                  title: "New Password",
+                  hint: "Enter new password",
+                  isPassword: true,
+                  controller: newPasswordController,
+                  isError: _submitted && newPasswordController.text.isEmpty,
+                ),
+                SizedBox(height: 10),
+                StandardTextfield(
+                  title: "Confirm Password",
+                  hint: "Confirm your password",
+                  isPassword: true,
+                  controller: confirmPasswordController,
+                  isError: _submitted && confirmPasswordController.text.isEmpty,
+                ),
+                SizedBox(height: 25),
+                StandardButton(
+                  text: "Next",
+                  onPressed: () => _Success(context),
+                ),
+              ],
+            ),
+          ),
         ],
-      ),),
+      ),
     ),
-    )]));},);
-  }
-  void _Success (BuildContext context){
-    setState(() {
-    _submitted = true; 
-  });
-     if (newPasswordController.text.isEmpty ||
+  );
+}
+ // ignore: non_constant_identifier_names
+ void _Success(BuildContext context) async {
+  setState(() => _submitted = true);
+
+  if (newPasswordController.text.isEmpty ||
       confirmPasswordController.text.isEmpty) {
-    print("Fill all fields");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('❌ Please fill all fields.')),
+    );
     return;
   }
 
   if (newPasswordController.text != confirmPasswordController.text) {
-    print("Passwords don't match");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('❌ Passwords do not match.')),
+    );
     return;
   }
 
-  _showSuccessDialog(context);
+  try {
+    await AuthService.resetPassword(
+      widget.email,
+      widget.code,
+      newPasswordController.text,
+    );
+    // ignore: use_build_context_synchronously
+    _showSuccessDialog(context);
+  } catch (e) {
+    // ignore: use_build_context_synchronously
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('❌ Reset failed. Try again.')),
+    );
+  }
 }
 
 void _showSuccessDialog(BuildContext context){
@@ -93,6 +134,7 @@ children: [
   BackdropFilter(
      filter: ImageFilter.blur(sigmaX: 5,sigmaY: 5),
      child: Container(
+      // ignore: deprecated_member_use
       color: Colors.black.withOpacity(0),
      ),
   ),
@@ -135,7 +177,13 @@ children: [
       ),),
       SizedBox(height: 17),
        MaterialButton(
-            onPressed: (){},
+            onPressed: (){
+               Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => SignInScreen()),
+      (route) => false,
+    );
+            },
             color: Color(0xff2853af),
             textColor: Colors.white,
             minWidth: 150,

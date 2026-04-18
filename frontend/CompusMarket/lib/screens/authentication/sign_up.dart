@@ -3,16 +3,18 @@ import '../../widgets/standard_Title.dart';
 import '../../widgets/standard_textfield.dart';
 import '../../widgets/standard_Button.dart';
 import 'package:compusmarket/screens/authentication/Enter_OTP.dart';
-import 'package:compusmarket/services/api_services.dart';
+import 'package:compusmarket/services/auth_services.dart';
 
 
 class SignUpScreen extends StatefulWidget{
+  const SignUpScreen({super.key});
+
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
   }
   class _SignUpScreenState extends State<SignUpScreen>{
     TextEditingController emailController = TextEditingController(); 
-    TextEditingController univerController = TextEditingController(); 
+    TextEditingController numberController = TextEditingController();  
     TextEditingController nameController = TextEditingController(); 
     TextEditingController PasswordController = TextEditingController();
      bool _submitted = false;
@@ -27,7 +29,7 @@ String? _selectedUniversityId;
     emailController.addListener(() {
       setState(() {});
     });
-    univerController.addListener(() {
+    numberController.addListener(() {
       setState(() {});
     });
     nameController.addListener(() {
@@ -40,7 +42,7 @@ String? _selectedUniversityId;
 
 Future<void> _loadUniversities() async {
   try {
-    final unis = await ApiService.getUniversities();
+    final unis = await AuthService.getUniversities();
     print('✅ Universities loaded: ${unis.length}');
     setState(() => _universities = unis);
   } catch (e) {
@@ -51,7 +53,7 @@ Future<void> _loadUniversities() async {
   @override
   void dispose() {
     emailController.dispose(); 
-    univerController.dispose(); 
+    numberController.dispose(); 
     nameController.dispose(); 
     PasswordController.dispose(); 
     super.dispose();
@@ -62,38 +64,74 @@ Future<void> _loadUniversities() async {
     final screenWidth = MediaQuery.of(context).size.width;
   return Scaffold(
       backgroundColor: Colors.white,
-    body: Stack(
+    body: SingleChildScrollView(
+   child:  Column(
+     crossAxisAlignment: CrossAxisAlignment.start,
       children: [
        StandardTitle(title: "Create Account" , pargh: "Lorem ipsum dolor sit amet , consectetur",), 
-       Positioned( // posision of the main Container
-        top: screenHeight * 0.28,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        child: 
-        Container(  
-         margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.07),
+       Padding( 
+         padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.07),
           child: Column(  
           crossAxisAlignment: CrossAxisAlignment.start, 
            children: [
             StandardTextfield(title:"Full Name", hint:"Enter your name",controller: nameController,isError: _submitted && nameController.text.isEmpty,),
             StandardTextfield(title:"E-mail", hint:"Enter your email",isEmail: true,controller: emailController,isError: _submitted && emailController.text.isEmpty,),
+            StandardTextfield(title:"Phone Number", hint:"Enter your phone number",isPhone: true,controller: numberController,isError: _submitted && numberController.text.isEmpty,),
             StandardTextfield(title:"Password", hint:"Enter your Password",isPassword: true,controller: PasswordController,isError: _submitted && PasswordController.text.isEmpty,),
-            DropdownButtonHideUnderline(
-  child: DropdownButton<String>(
-    isExpanded: true,
-    hint: Text("Select your university"),
-    value: _selectedUniversityId,
-    items: _universities.map((uni) {
-      return DropdownMenuItem<String>(
-        value: uni['id'].toString(),
-        child: Text(uni['name'].toString()),
-      );
-    }).toList(),
-    onChanged: (val) {
-      setState(() => _selectedUniversityId = val);
-    },
-  ),
+         Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Text(
+      "University",
+      style: TextStyle(
+        fontFamily: 'Inter',
+        fontWeight: FontWeight.bold,
+        fontSize: screenWidth * 0.037, // same as textfields
+      ),
+    ),
+    SizedBox(height: screenHeight * 0.0074), // same spacing as textfields
+    Container(
+      height: 65,
+      decoration: BoxDecoration(
+        color: Color(0xffeceff3),
+        borderRadius: BorderRadius.circular(screenWidth * 0.035),
+        border: Border.all(
+          color: (_submitted && _selectedUniversityId == null)
+              ? Colors.red
+              : Colors.transparent,
+          width: screenWidth * 0.0047,
+        ),
+      ),
+      padding: EdgeInsets.symmetric(horizontal: screenHeight * 0.01),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          isExpanded: true,
+          hint: Text(
+            "Select your university",
+            style: TextStyle(
+              fontFamily: 'Inter',
+              color: Color(0xffa4abb8),
+              fontWeight: FontWeight.bold,
+              fontSize: screenWidth * 0.04,
+            ),
+          ),
+          value: _selectedUniversityId,
+          icon: Icon(Icons.keyboard_arrow_down),
+          dropdownColor: Colors.white,
+          items: _universities.map((uni) {
+            return DropdownMenuItem<String>(
+              value: uni['id'].toString(),
+              child: Text(uni['name'].toString()),
+            );
+          }).toList(),
+          onChanged: (val) {
+            setState(() => _selectedUniversityId = val);
+          },
+        ),
+      ),
+    ),
+    SizedBox(height: screenHeight * 0.021), // same bottom spacing as textfields
+  ],
 ),
             SizedBox(height:screenHeight * 0.01,),
             StandardButton(
@@ -166,11 +204,9 @@ SizedBox(height: screenHeight * 0.021,),
                
               ],
             ),
-            Spacer(),
+          SizedBox(height: 40),
 
-           Container(
-             margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.07),
-          child:   RichText(
+            RichText(
             textAlign: TextAlign.center,
             text: TextSpan(
               style: TextStyle(color: Color(0xff666d80) ,  fontSize: screenWidth * 0.04, fontFamily: 'Inter'),
@@ -184,13 +220,12 @@ SizedBox(height: screenHeight * 0.021,),
               ]
             )
            
-           )
            ),
            SizedBox(height: screenHeight * 0.047),
 
 
-           ],),),), 
-      ],
+           ],),),],), 
+      
     ),
   );
   }
@@ -207,18 +242,27 @@ SizedBox(height: screenHeight * 0.021,),
   setState(() => _isLoading = true);
 
   try {
-    await ApiService.register(
+    await AuthService.register(
       emailController.text,
       PasswordController.text,
       nameController.text,
       _selectedUniversityId!,
+        numberController.text,
     );
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Account created! 🎉')),
     );
 
-    Navigator.push(context, MaterialPageRoute(builder: (context) => OTPScreen()));
+   Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => OTPScreen(
+      email: emailController.text,
+      source: 'signup',
+    ),
+  ),
+);
 
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -229,5 +273,6 @@ SizedBox(height: screenHeight * 0.021,),
   }
   
   }
+
   }
   

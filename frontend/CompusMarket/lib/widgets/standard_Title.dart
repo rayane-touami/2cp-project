@@ -9,8 +9,9 @@ class StandardTitle extends StatelessWidget {
   Widget build(BuildContext context) {
      final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    return 
-      Stack(
+    return SizedBox(
+       height: screenHeight * 0.28,
+     child: Stack(
         children: [
           Positioned(
             top: screenHeight * 0.073,
@@ -52,6 +53,6 @@ class StandardTitle extends StatelessWidget {
                 )
 
         ],
-      );
+      ));
 }
 }
