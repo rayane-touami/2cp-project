@@ -11,4 +11,8 @@ urlpatterns = [
     path('me/',             views.UserProfileView.as_view()),
     path('upload-picture/', views.UpdateProfilePictureView.as_view()),
     path('update-profile/', views.UpdateProfileView.as_view()),
+    path('verify-email/',   views.VerifyEmailView.as_view()),
+    path('resend-code/',    views.ResendVerificationCodeView.as_view()),
+    path('forgot-password/', views.ForgotPasswordView.as_view()),
+    path('reset-password/', views.ResetPasswordView.as_view()),
 ]
