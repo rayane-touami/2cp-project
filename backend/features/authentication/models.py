@@ -72,7 +72,7 @@ class EmailVerification(models.Model):
     ]
 
     user       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='verifications')
-    code       = models.CharField(max_length=6)
+    code       = models.CharField(max_length=4)
     purpose    = models.CharField(max_length=20, choices=PURPOSE_CHOICES)
     is_used    = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -85,7 +85,7 @@ class EmailVerification(models.Model):
     def generate_for(cls, user, purpose):
         """Invalide les anciens codes du même type, crée un nouveau."""
         cls.objects.filter(user=user, purpose=purpose, is_used=False).update(is_used=True)
-        code = f"{random.randint(0, 999999):06d}"
+        code = f"{random.randint(0, 9999):04d}"
         return cls.objects.create(
             user=user,
             code=code,
