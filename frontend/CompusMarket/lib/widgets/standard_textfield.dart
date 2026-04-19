@@ -5,6 +5,7 @@ class StandardTextfield extends StatefulWidget {
   final String hint;
   final bool isPassword;
    final bool isEmail; 
+   final bool isPhone; 
   final TextEditingController ?controller;
   final bool isError;
 
@@ -14,12 +15,14 @@ class StandardTextfield extends StatefulWidget {
     required this.hint,
     this.isPassword = false,
       this.isEmail = false, 
+      this.isPhone = false, 
     this.controller,
      this.isError = false,
 
   });
 
   @override
+  // ignore: library_private_types_in_public_api
   _StandardTextfieldState createState() => _StandardTextfieldState();
 }
 
@@ -28,6 +31,8 @@ class _StandardTextfieldState extends State<StandardTextfield> {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -36,15 +41,19 @@ class _StandardTextfieldState extends State<StandardTextfield> {
           style: TextStyle(
             fontFamily: 'Inter',
             fontWeight: FontWeight.bold,
-            fontSize: 17,
+            fontSize: screenWidth*0.037,
           ),
         ),
-        Container(
-          margin: EdgeInsets.only(top: 7, bottom: 20),
-          child: TextField(
+
+        SizedBox(height: screenHeight*0.0074,),
+         TextField(
             controller:widget.controller,
             obscureText: widget.isPassword ? visibility : false,
-             keyboardType: widget.isEmail ? TextInputType.emailAddress : TextInputType.text,
+             keyboardType: widget.isEmail
+    ? TextInputType.emailAddress
+    : widget.isPhone
+        ? TextInputType.phone
+        : TextInputType.text,
   autocorrect: widget.isEmail ? false : true,        
   enableSuggestions: widget.isEmail ? false : true, 
             textAlignVertical: TextAlignVertical.center,
@@ -62,20 +71,20 @@ class _StandardTextfieldState extends State<StandardTextfield> {
                     )
                   : null,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(screenWidth*0.035),
                 borderSide: BorderSide.none,
               ),
               enabledBorder: OutlineInputBorder(
-  borderRadius: BorderRadius.circular(15),
+  borderRadius: BorderRadius.circular(screenWidth*0.035),
   borderSide: widget.isError
-      ? BorderSide(color: Colors.red, width: 2) // ✅ red border when error
+      ? BorderSide(color: Colors.red, width: screenWidth*0.0047,) //  red border when error
       : BorderSide.none,
 ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(screenWidth*0.035),
                 borderSide:  widget.isError
-      ? BorderSide(color: Colors.red, width: 2) // ✅ stays red even focused
-      : BorderSide(color: Colors.blue, width: 2),
+      ? BorderSide(color: Colors.red, width: screenWidth*0.0047,) //  stays red even focused
+      : BorderSide(color: Colors.blue, width: screenWidth*0.0047,),
 
               ),
               hintText: widget.hint,
@@ -83,14 +92,15 @@ class _StandardTextfieldState extends State<StandardTextfield> {
                 fontFamily: 'Inter',
                 color: Color(0xffa4abb8),
                 fontWeight: FontWeight.bold,
+                fontSize: screenWidth*0.04,
               ),
               fillColor: Color(0xffeceff3),
               filled: true,
               contentPadding:
-                  EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+                  EdgeInsets.symmetric(vertical: screenWidth*0.047, horizontal: screenHeight*0.01),
             ),
           ),
-        ),
+        SizedBox(height: screenHeight*0.021,)
       ],
     );
   }
