@@ -20,6 +20,7 @@ class SignInScreen extends StatefulWidget{
 
 class _SignInScreenState extends State<SignInScreen>{
    TextEditingController emailController = TextEditingController(); 
+    // ignore: non_constant_identifier_names
     TextEditingController PasswordController = TextEditingController();
 
   // ignore: non_constant_identifier_names
@@ -231,12 +232,14 @@ Widget build(BuildContext context) {
 
     
     Navigator.pushAndRemoveUntil(
+  // ignore: use_build_context_synchronously
   context,
   MaterialPageRoute(builder: (context) => HomeScreen()),
   (route) => false,
 );
 
   } catch (e) {
+    // ignore: use_build_context_synchronously
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('❌ Wrong email or password')),
     );

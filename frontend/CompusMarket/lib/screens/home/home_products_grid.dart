@@ -313,6 +313,7 @@ class ProductCard extends StatelessWidget {
   final bool isRated; // <--- The card now uses this
   final VoidCallback onFavoriteToggle;
   final VoidCallback onRatingToggle;
+  final VoidCallback? onEdit; 
 
   const ProductCard({
     super.key,
@@ -321,6 +322,7 @@ class ProductCard extends StatelessWidget {
     required this.isRated, // <--- required here
     required this.onFavoriteToggle,
     required this.onRatingToggle,
+    this.onEdit,
   });
 
   @override
@@ -372,7 +374,7 @@ class ProductCard extends StatelessWidget {
                   top: 8,
                   right: 8,
                   child: GestureDetector(
-                    onTap: onFavoriteToggle,
+                    onTap:onEdit ?? onFavoriteToggle, 
                     child: Container(
                       width: screenWidth * 0.08,
                       height: screenWidth * 0.08,
@@ -386,13 +388,16 @@ class ProductCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: Center(
-                        child: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: isFavorite ? Colors.red : Colors.grey,
-                          size: screenWidth * 0.05,
-                        ),
-                      ),
+                      child:  Center(
+      child: onEdit != null
+          ? Icon(Icons.edit_outlined,   // 👈 shown on Profile page
+              color: Color(0xff2853af),
+              size: screenWidth * 0.05)
+          : Icon(                        // 👈 shown on Home page
+              isFavorite ? Icons.favorite : Icons.favorite_border,
+              color: isFavorite ? Colors.red : Colors.grey,
+              size: screenWidth * 0.05),
+    ),
                     ),
                   ),
                 ),
