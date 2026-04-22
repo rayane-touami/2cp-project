@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'filter_state.dart';
+import 'product_details_screen.dart';
 
 // ── GLOBAL VARIABLES FOR MEMORY ──
 // These list hold the memory for hearts AND stars across all pages!
@@ -328,8 +329,29 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                ProductDetailsScreen(product: product),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              const begin = Offset(1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.easeInOut;
+
+              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+              return SlideTransition(
+                position: animation.drive(tween),
+                child: child,
+              );
+            },
+          ),
+        );
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
       decoration: BoxDecoration(
         color: Colors.white,
@@ -461,6 +483,6 @@ class ProductCard extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }

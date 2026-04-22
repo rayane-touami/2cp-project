@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../services/university_service.dart';
 
 class AddNewProductScreen extends StatefulWidget {
   const AddNewProductScreen({super.key});
@@ -23,6 +24,36 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
     'Furnitures',
   ];
   String _selectedType = 'Books';
+
+  // UNIVERSITY STATE
+  List<dynamic> _universitiesList = [];
+  bool _isLoadingUniversities = true;
+  String? _selectedUniversity;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUniversities();
+  }
+
+  Future<void> _fetchUniversities() async {
+    try {
+      final data = await UniversityService.getUniversities();
+      if (mounted) {
+        setState(() {
+          _universitiesList = data;
+          _isLoadingUniversities = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Failed to load universities: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingUniversities = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -215,6 +246,11 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 16),
+
+                const Text('University', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                const SizedBox(height: 8),
+                _buildUniversityDropdown(),
                 const SizedBox(height: 16),
 
                 _buildMainButton(context, 'Post product ', () {
@@ -482,6 +518,53 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
           );
         },
       ),
+    );
+  }
+
+  // ───────────────────────── UNIVERSITY DROPDOWN ─────────────────────────
+  Widget _buildUniversityDropdown() {
+    if (_isLoadingUniversities) {
+      return Container(
+        height: 50,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey),
+        ),
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_universitiesList.isEmpty) {
+      return Container(
+        height: 50,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey),
+        ),
+        child: const Center(child: Text('Failed to load universities or none available')),
+      );
+    }
+
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      ),
+      hint: const Text('Select a University'),
+      value: _selectedUniversity,
+      items: _universitiesList.map((dynamic u) {
+        final String name = (u is Map && u.containsKey('name')) ? u['name'].toString() : u.toString();
+        return DropdownMenuItem<String>(
+          value: name,
+          child: Text(name),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setState(() {
+          _selectedUniversity = value;
+        });
+      },
+      validator: (value) => value == null ? 'Please select a university' : null,
     );
   }
 
