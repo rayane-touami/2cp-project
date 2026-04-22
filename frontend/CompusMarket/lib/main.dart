@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         fontFamily: 'Inter',
       ),
-      home: MyProfileScreen(), // change to HomeScreen() or SignInScreen() whenever you want
+      home: OnBoadringScreen(), // change to HomeScreen() or SignInScreen() whenever you want
     );
   }
 }
