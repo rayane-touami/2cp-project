@@ -64,6 +64,12 @@ INSTALLED_APPS = [
     'features.messaging',
     'features.moderation',
     'features.notifications',
+     # ── (profile module) ─────────────────
+    'features.accounts',
+    'features.listings',
+    'features.reviews',
+    'features.deals',
+    # ──────────────────────────────────────────────────────
 ]
 
 # ── User model custom ────────────────────
