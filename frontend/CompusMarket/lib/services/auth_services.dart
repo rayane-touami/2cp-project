@@ -48,7 +48,7 @@ static Future<void> register(String email, String password, String fullName, Str
     }),
   );
     print('📦 Register response: ${response.body}'); 
-  if (response.statusCode != 201) {
+  if (response.statusCode != 200 && response.statusCode != 201) {
     throw Exception('Register failed: ${response.body}');
   }
 }
