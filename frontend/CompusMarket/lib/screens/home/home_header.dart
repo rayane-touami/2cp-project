@@ -1,11 +1,13 @@
-import 'package:flutter/material.dart'; 
+import 'package:flutter/material.dart';
 import 'add_new_product.dart';
+import 'notifications_screen.dart';
 
-class HomeHeader extends StatelessWidget { //Creates your header widget. StatelessWidget because the header doesn't change by itself.
+class HomeHeader extends StatelessWidget {
+  //Creates your header widget. StatelessWidget because the header doesn't change by itself.
 
   final String userName;
   final String university;
-  final String? profileImageUrl; 
+  final String? profileImageUrl;
 
   const HomeHeader({
     super.key,
@@ -23,7 +25,8 @@ class HomeHeader extends StatelessWidget { //Creates your header widget. Statele
     final buttonSize = screenWidth * 0.11;
     final iconSize = screenWidth * 0.057;
 
-    return Row( //puts everything side by side horizontally
+    return Row(
+      //puts everything side by side horizontally
       children: [
         // Profile photo
         ClipOval(
@@ -72,11 +75,16 @@ class HomeHeader extends StatelessWidget { //Creates your header widget. Statele
           iconColor: Colors.black87,
           buttonSize: buttonSize,
           iconSize: iconSize,
-          onTap: () {},
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const NotificationsScreen(),
+              ),
+            );
+          },
         ),
-        SizedBox(width: screenWidth * 0.02),
-
-         // Add button
+        // Add button
         _RoundIconButton(
           icon: Icons.add,
           iconColor: Colors.blue,
@@ -104,6 +112,8 @@ class HomeHeader extends StatelessWidget { //Creates your header widget. Statele
     );
   }
 }
+
+
 
 class _RoundIconButton extends StatelessWidget {
   final IconData icon;
