@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import environ
 import os
+import json
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -92,6 +93,7 @@ LOGOUT_REDIRECT_URL = '/auth/login/'
 
 MIDDLEWARE = [
      'corsheaders.middleware.CorsMiddleware',
+     'whitenoise.middleware.WhiteNoiseMiddleware', # ← ADDED
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -175,10 +177,12 @@ import os
 
 ASGI_APPLICATION = 'config.asgi.application'
 
+REDIS_URL = env('REDIS_URL', default='redis://127.0.0.1:6379')
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {"hosts": [("127.0.0.1", 6379)]},
+        "CONFIG": {"hosts": [REDIS_URL]},
     },
 }
 
@@ -201,7 +205,15 @@ CORS_ALLOW_ALL_ORIGINS = True
 REDIS_URL = 'redis://127.0.0.1:6379'
 
 firebase_cred_path = os.path.join(BASE_DIR, 'firebase-credentials.json')
-if os.path.exists(firebase_cred_path):
+firebase_cred_json = env('FIREBASE_CREDENTIALS_JSON', default=None)
+
+if firebase_cred_json:
+    # Production: load from env variable
+    cred_dict = json.loads(firebase_cred_json)
+    cred = credentials.Certificate(cred_dict)
+    firebase_admin.initialize_app(cred)
+elif os.path.exists(firebase_cred_path):
+    # Local dev: load from file
     cred = credentials.Certificate(firebase_cred_path)
     firebase_admin.initialize_app(cred)
 
@@ -229,3 +241,6 @@ EMAIL_USE_TLS       = True
 EMAIL_HOST_USER     = env('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL  = env('EMAIL_HOST_USER')
+#added for deploying
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

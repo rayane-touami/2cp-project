@@ -4,8 +4,9 @@ import redis.asyncio as aioredis
 from channels.generic.websocket import AsyncWebsocketConsumer
 from firebase_admin import messaging
 from .models import Message, Conversation, UserDevice
+from django.conf import settings          # ← ADDED
 
-REDIS_URL = "redis://127.0.0.1:6379"
+REDIS_URL = settings.REDIS_URL            # ← CHANGED (was hardcoded before)
 
 
 def send_push_notification(token, title, body):
