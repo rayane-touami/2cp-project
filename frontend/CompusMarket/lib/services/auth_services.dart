@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+// add this import at the top
+import 'package:shared_preferences/shared_preferences.dart';
 
  const String baseUrl = 'http://ritadjl.pythonanywhere.com/api/auth';
+ 
 
 class AuthService {
     static String accessToken = '';
@@ -20,6 +23,8 @@ class AuthService {
      if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       accessToken = data['access'];
+      final prefs = await SharedPreferences.getInstance();
+await prefs.setString('auth_token', data['access']);
       refreshToken = data['refresh'];
       return data;
     } else {
@@ -89,6 +94,8 @@ static Future<void> logout() async {
   }
   final data = jsonDecode(response.body);
   accessToken = data['access'];
+  final prefs = await SharedPreferences.getInstance();
+await prefs.setString('auth_token', data['access']);
   refreshToken = data['refresh'];
 }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'filter_state.dart';
+import '../../services/university_service.dart';
 
 class FilterBottomSheet extends StatefulWidget {
   const FilterBottomSheet({super.key});
@@ -20,16 +21,9 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
   ];
   List<String> _selectedCategories = [];
 
-  // Universities Data (Hardcoded for now as requested)
-  final List<String> _universities = [
-    'ESI',
-    'USTHB',
-    'EMP',
-    'ENP',
-    'EPAU',
-    'ENS',
-    'Universite d\'Alger',
-  ];
+  // Universities Data
+  List<String> _universities = [];
+  bool _isLoadingUniversities = true;
   List<String> _selectedUniversities = [];
 
   // Price Range Data
@@ -42,6 +36,28 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     _selectedCategories = List.from(currentFilters.selectedCategories);
     _selectedUniversities = List.from(currentFilters.selectedUniversities);
     _priceRange = currentFilters.priceRange;
+    _fetchUniversities();
+  }
+
+  Future<void> _fetchUniversities() async {
+    try {
+      final uniList = await UniversityService.getUniversities();
+      if (mounted) {
+        setState(() {
+          _universities = uniList.map((dynamic u) {
+            return (u is Map && u.containsKey('name')) ? u['name'].toString() : u.toString();
+          }).toList();
+          _isLoadingUniversities = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Failed to load universities: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingUniversities = false;
+        });
+      }
+    }
   }
 
   // Helper function to build custom chips
@@ -168,7 +184,18 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                       ),
                     ),
                     children: [
-                      _buildFilterChips(_universities, _selectedUniversities),
+                      if (_isLoadingUniversities)
+                        const Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      else if (_universities.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Text('No universities found.'),
+                        )
+                      else
+                        _buildFilterChips(_universities, _selectedUniversities),
                     ],
                   ),
                 ),
