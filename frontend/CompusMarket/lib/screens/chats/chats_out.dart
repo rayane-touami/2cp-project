@@ -25,11 +25,13 @@ class ChatsOutScreen extends StatefulWidget{
     try {
       // ignore: unnecessary_nullable_for_final_variable_declarations
       final data = await MsgService.getConversations(AuthService.accessToken);
+      if (!mounted) return;
       setState(() {
         conversations = data;
         isLoading = false;
       });
     } catch (e) {
+       if (!mounted) return; 
       setState(() {
         error = 'Failed to load chats';
         isLoading = false;

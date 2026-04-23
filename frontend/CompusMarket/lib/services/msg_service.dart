@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class MsgService {
-  static const String baseUrl = 'http://10.0.2.2:8000/api';  
+  static const String baseUrl = 'http://ritadjl.pythonanywhere.com/api/chat';  
   static const String wsBase = 'ws://10.0.2.2:8000/ws/chat'; 
 
   static String currentUserEmail = '';

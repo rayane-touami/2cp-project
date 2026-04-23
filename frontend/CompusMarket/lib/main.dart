@@ -1,13 +1,5 @@
-//import 'package:compusmarket/screens/authentication/ON_Boadring.dart';
-//import 'package:compusmarket/screens/authentication/sign_in.dart';
-//import 'package:compusmarket/screens/home/home_screen.dart';
-//import 'package:compusmarket/screens/home/favorites_screen.dart';
+
 import 'package:compusmarket/screens/authentication/ON_Boadring.dart';
-import 'package:compusmarket/screens/profiles/Edit_profil.dart';
-import 'package:compusmarket/screens/profiles/My_profile.dart';
-//import 'package:compusmarket/screens/authentication/sign_up.dart';
-//import 'package:compusmarket/screens/chats/chat_in.dart';
-//import 'package:compusmarket/screens/chats/chats_out.dart';
 import 'package:flutter/material.dart';
 
 void main() {
