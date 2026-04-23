@@ -56,6 +56,7 @@ class HomeHeader extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
                 overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
               Text(
                 university.isEmpty ? "" : university,
@@ -64,6 +65,7 @@ class HomeHeader extends StatelessWidget {
                   color: Colors.grey,
                 ),
                 overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ],
           ),
