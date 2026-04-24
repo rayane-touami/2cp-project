@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_extensions',
+    #'django_extensions',
         # Third-party
     'crispy_forms',
     'crispy_bootstrap5',
@@ -213,7 +213,6 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
 }
-
 
 
 CORS_ALLOW_ALL_ORIGINS = True
