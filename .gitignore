@@ -4,3 +4,4 @@ backend/media/
 **/__pycache__/
 *.pyc
 backend/firebase-credentials.json
+backend/.env          ← ADDED
