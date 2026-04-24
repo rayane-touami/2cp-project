@@ -36,10 +36,10 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = 'django-insecure-e(jvq(j@r5g@ld2v=hq6ph+sh$!g0i37h6cs9#!pm*sho&z-h@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', '10.0.2.2', 'localhost', 'ritadjl.pythonanywhere.com']
-CSRF_TRUSTED_ORIGINS = ['https://ritadjl.pythonanywhere.com']
+ALLOWED_HOSTS = ['127.0.0.1', '10.0.2.2', 'localhost', 'ritadjl.pythonanywhere.com', 'aware-art-production.up.railway.app']
+CSRF_TRUSTED_ORIGINS = ['https://ritadjl.pythonanywhere.com', 'https://aware-art-production.up.railway.app']
 
 # Application definition
 
@@ -218,7 +218,7 @@ SIMPLE_JWT = {
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
-REDIS_URL = 'redis://127.0.0.1:6379'
+
 
 firebase_cred_path = os.path.join(BASE_DIR, 'firebase-credentials.json')
 firebase_cred_json = env('FIREBASE_CREDENTIALS_JSON', default=None)
