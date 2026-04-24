@@ -1,7 +1,7 @@
 backend/env/
+backend/.env
 backend/db.sqlite3
 backend/media/
 **/__pycache__/
 *.pyc
 backend/firebase-credentials.json
-backend/.env          ← ADDED
