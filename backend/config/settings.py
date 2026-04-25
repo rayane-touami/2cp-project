@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import environ
+import dj_database_url
 import os
 import json
 import dj_database_url #added for hosting
@@ -33,13 +34,13 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-e(jvq(j@r5g@ld2v=hq6ph+sh$!g0i37h6cs9#!pm*sho&z-h@'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool('DEBUG', default=False)
 
-ALLOWED_HOSTS = ['127.0.0.1', '10.0.2.2', 'localhost', 'ritadjl.pythonanywhere.com']
-CSRF_TRUSTED_ORIGINS = ['https://ritadjl.pythonanywhere.com']
+ALLOWED_HOSTS = ['127.0.0.1', '10.0.2.2', 'localhost', 'ritadjl.pythonanywhere.com','.railway.app',]
+CSRF_TRUSTED_ORIGINS = ['https://ritadjl.pythonanywhere.com','https://*.railway.app',]
 
 # Application definition
 
@@ -94,9 +95,9 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/auth/login/'
 
 MIDDLEWARE = [
-     'corsheaders.middleware.CorsMiddleware',
-     'whitenoise.middleware.WhiteNoiseMiddleware', # ← ADDED
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # ← ADDED
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -141,9 +142,10 @@ STORAGES = {
 # }
 #new one :
 # Database — reads DATABASE_URL set by Railway automatically
+#changed to postgres
 DATABASES = {
     'default': dj_database_url.config(
-        default=config('DATABASE_URL'),
+        default=os.environ.get('DATABASE_URL'),
         conn_max_age=600,
     )
 }
@@ -212,13 +214,9 @@ REST_FRAMEWORK = {
     ],
 }
 
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-}
+
 
 CORS_ALLOW_ALL_ORIGINS = True
-REDIS_URL = 'redis://127.0.0.1:6379'
 
 firebase_cred_path = os.path.join(BASE_DIR, 'firebase-credentials.json')
 firebase_cred_json = env('FIREBASE_CREDENTIALS_JSON', default=None)
@@ -259,4 +257,3 @@ EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL  = env('EMAIL_HOST_USER')
 #added for deploying
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
