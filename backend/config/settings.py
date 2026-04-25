@@ -37,10 +37,10 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DEBUG', default=False)
+DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', '10.0.2.2', 'localhost', 'ritadjl.pythonanywhere.com','.railway.app',]
-CSRF_TRUSTED_ORIGINS = ['https://ritadjl.pythonanywhere.com','https://*.railway.app',]
+ALLOWED_HOSTS = ['127.0.0.1', '10.0.2.2', 'localhost', 'ritadjl.pythonanywhere.com', 'aware-art-production.up.railway.app']
+CSRF_TRUSTED_ORIGINS = ['https://ritadjl.pythonanywhere.com', 'https://aware-art-production.up.railway.app']
 
 # Application definition
 

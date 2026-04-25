@@ -1,0 +1,9 @@
+[
+  {"model": "announcements.category", "pk": 1, "fields": {"name": "Books", "description": "Textbooks and study materials", "icon": "book", "created_at": "2024-01-01T00:00:00Z"}},
+  {"model": "announcements.category", "pk": 2, "fields": {"name": "Clothing", "description": "Clothes and accessories", "icon": "shirt", "created_at": "2024-01-01T00:00:00Z"}},
+  {"model": "announcements.category", "pk": 3, "fields": {"name": "Electronics", "description": "Electronic devices and accessories", "icon": "laptop", "created_at": "2024-01-01T00:00:00Z"}},
+  {"model": "announcements.category", "pk": 4, "fields": {"name": "Furniture", "description": "Furniture and home items", "icon": "chair", "created_at": "2024-01-01T00:00:00Z"}},
+  {"model": "announcements.category", "pk": 5, "fields": {"name": "Sports", "description": "Sports equipment and gear", "icon": "sports", "created_at": "2024-01-01T00:00:00Z"}},
+  {"model": "announcements.category", "pk": 6, "fields": {"name": "Vehicles", "description": "Cars, bikes and transport", "icon": "car", "created_at": "2024-01-01T00:00:00Z"}},
+  {"model": "announcements.category", "pk": 7, "fields": {"name": "Accessories", "description": "Bags, jewelry and other accessories", "icon": "accessories", "created_at": "2024-01-01T00:00:00Z"}}
+]
