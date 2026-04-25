@@ -31,5 +31,5 @@ urlpatterns = [
     path('api/deals/', include('features.deals.urls')),
     path('api/users/', include('features.accounts.user_urls')),
     # ──────────────────────────────────────────────────────
-    path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    path('', SpectacularSwaggerView.as_view(url_name='schema'), name='home'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
