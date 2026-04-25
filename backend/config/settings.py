@@ -39,9 +39,8 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', '10.0.2.2', 'localhost', 'ritadjl.pythonanywhere.com', 'aware-art-production.up.railway.app']
-CSRF_TRUSTED_ORIGINS = ['https://ritadjl.pythonanywhere.com', 'https://aware-art-production.up.railway.app']
-
+ALLOWED_HOSTS = ['127.0.0.1', '10.0.2.2', 'localhost', 'ritadjl.pythonanywhere.com', '2cp-project-production-4365.up.railway.app']
+CSRF_TRUSTED_ORIGINS = ['https://ritadjl.pythonanywhere.com', 'https://2cp-project-production-4365.up.railway.app']
 # Application definition
 
 INSTALLED_APPS = [
@@ -52,7 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    #'django_extensions',
+    'django_extensions',
         # Third-party
     'crispy_forms',
     'crispy_bootstrap5',
