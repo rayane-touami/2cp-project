@@ -88,8 +88,7 @@ class AnnouncementListAPIView(generics.ListAPIView):
             queryset = queryset.filter(price__lte=float(max_price))
 
         return queryset
-
-    @method_decorator(cache_page(60 * 5))
+    
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
