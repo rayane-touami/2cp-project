@@ -391,3 +391,30 @@ class CommentUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return Comment.objects.filter(user_id=self.request.user.id)
+    
+def create(self, validated_data):
+    photos_data = validated_data.pop('photos', [])
+    request = self.context.get('request')
+
+    try:
+        announcement = Announcement.objects.create(
+            student_id=request.user.id,
+            student_full_name=request.user.full_name,
+            **validated_data
+        )
+
+        for position, photo_file in enumerate(photos_data, start=1):
+            Photo.objects.create(
+                announcement=announcement,
+                image=photo_file,
+                position=position
+            )
+
+        return announcement
+
+    except Exception as e:
+        import traceback
+        print("-- ANNOUNCEMENT CREATE ERROR --")
+        traceback.print_exc()
+        print("----------")
+        raise  # still raises so DRF handles it    
