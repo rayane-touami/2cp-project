@@ -6,3 +6,5 @@ backend/media/
 *.pyc
 backend/firebase-credentials.json
 backend/staticfiles/
+backend/.env
+.env

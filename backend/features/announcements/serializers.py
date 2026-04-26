@@ -151,25 +151,26 @@ class AnnouncementCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Title cannot be empty")
         return value.strip()
 
+  
+
     def create(self, validated_data):
-        photos_data = validated_data.pop('photos', [])
-        request = self.context.get('request')
+         photos_data = validated_data.pop('photos', [])
+         request = self.context.get('request')
 
-        announcement = Announcement.objects.create(
-            student_id=request.user.id,
-            student_full_name=request.user.full_name,
-            **validated_data
-        )
-
-        for position, photo_file in enumerate(photos_data, start=1):
-            Photo.objects.create(
-                announcement=announcement,
-                image=photo_file,
-                position=position
+         with transaction.atomic():  # ← ADD THIS
+            announcement = Announcement.objects.create(
+                student_id=request.user.id,
+                student_full_name=request.user.full_name,
+                **validated_data 
             )
+            for position, photo_file in enumerate(photos_data, start=1):
+                Photo.objects.create(
+                    announcement=announcement,
+                    image=photo_file,
+                    position=position
+                )
 
-        return announcement
-
+         return announcement
 
 class FavoriteSerializer(serializers.ModelSerializer):
     announcement = AnnouncementListSerializer(read_only=True)
