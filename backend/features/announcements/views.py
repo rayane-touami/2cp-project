@@ -171,6 +171,20 @@ class AnnouncementCreateAPIView(generics.CreateAPIView):
                 {'errors': serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
+    def create(self, request, *args, **kwargs):
+    serializer = self.get_serializer(data=request.data, context={'request': request})
+
+    if serializer.is_valid():
+        try:
+            self.perform_create(serializer)
+        except Exception as e:
+            import traceback
+            return Response(
+                {'debug_error': str(e), 'trace': traceback.format_exc()},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        # ... rest of your code    
 
     def perform_create(self, serializer):
         serializer.save()
@@ -392,29 +406,3 @@ class CommentUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return Comment.objects.filter(user_id=self.request.user.id)
     
-def create(self, validated_data):
-    photos_data = validated_data.pop('photos', [])
-    request = self.context.get('request')
-
-    try:
-        announcement = Announcement.objects.create(
-            student_id=request.user.id,
-            student_full_name=request.user.full_name,
-            **validated_data
-        )
-
-        for position, photo_file in enumerate(photos_data, start=1):
-            Photo.objects.create(
-                announcement=announcement,
-                image=photo_file,
-                position=position
-            )
-
-        return announcement
-
-    except Exception as e:
-        import traceback
-        print("-- ANNOUNCEMENT CREATE ERROR --")
-        traceback.print_exc()
-        print("----------")
-        raise  # still raises so DRF handles it    
