@@ -147,7 +147,14 @@ class AnnouncementCreateAPIView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data, context={'request': request})
 
         if serializer.is_valid():
-            self.perform_create(serializer)
+            try:                              # ← ADD THIS
+                self.perform_create(serializer)
+            except Exception as e:            # ← ADD THIS
+                import traceback              # ← ADD THIS
+                return Response(              # ← ADD THIS
+                    {'debug_error': str(e), 'trace': traceback.format_exc()},  # ← ADD THIS
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR  # ← ADD THIS
+                )                             # ← ADD THIS
 
             announcement = serializer.instance
             photos_data = []
@@ -172,19 +179,6 @@ class AnnouncementCreateAPIView(generics.CreateAPIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-    def create(self, request, *args, **kwargs):
-    serializer = self.get_serializer(data=request.data, context={'request': request})
-
-    if serializer.is_valid():
-        try:
-            self.perform_create(serializer)
-        except Exception as e:
-            import traceback
-            return Response(
-                {'debug_error': str(e), 'trace': traceback.format_exc()},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-        # ... rest of your code    
 
     def perform_create(self, serializer):
         serializer.save()
