@@ -113,5 +113,53 @@
   {"model": "universities.university", "pk": "00000000-0000-0000-0000-000000000112", "fields": {"name": "Centre Universitaire d'Aflou", "location": "Laghouat", "domain": "cu-aflou.dz", "logo": "", "latitude": 34.1167, "longitude": 2.1000}},
   {"model": "universities.university", "pk": "00000000-0000-0000-0000-000000000113", "fields": {"name": "Centre Universitaire de Barika", "location": "Batna", "domain": "cu-barika.dz", "logo": "", "latitude": 35.3833, "longitude": 5.3667}},
   {"model": "universities.university", "pk": "00000000-0000-0000-0000-000000000114", "fields": {"name": "Centre Universitaire d'El Bayadh", "location": "El Bayadh", "domain": "cu-elbayadh.dz", "logo": "", "latitude": 33.6833, "longitude": 1.0167}},
-  {"model": "universities.university", "pk": "00000000-0000-0000-0000-000000000115", "fields": {"name": "Centre Universitaire de Maghnia", "location": "Tlemcen", "domain": "cu-maghnia.edu.dz", "logo": "", "latitude": 34.8528, "longitude": -1.7275}}
+  {"model": "universities.university", "pk": "00000000-0000-0000-0000-000000000115", "fields": {"name": "Centre Universitaire de Maghnia", "location": "Tlemcen", "domain": "cu-maghnia.edu.dz", "logo": "", "latitude": 34.8528, "longitude": -1.7275}},
+  {
+    "model": "universities.university",
+    "pk": "00000000-0000-0000-0000-000000000116",
+    "fields": {
+      "name": "École Nationale Supérieure en Nanosciences et Nanotechnologies",
+      "location": "Alger",
+      "domain": "nsnn.edu.dz",
+      "logo": "",
+      "latitude": 36.689,
+      "longitude": 2.8692
+    }
+  },
+  {
+    "model": "universities.university",
+    "pk": "00000000-0000-0000-0000-000000000117",
+    "fields": {
+      "name": "École Nationale Supérieure de Technologie des Systèmes Autonomes",
+      "location": "Alger",
+      "domain": "enstsa.edu.dz",
+      "logo": "",
+      "latitude": 36.689,
+      "longitude": 2.8692
+    }
+  },
+  {
+    "model": "universities.university",
+    "pk": "00000000-0000-0000-0000-000000000118",
+    "fields": {
+      "name": "École Nationale Supérieure des Technologies de l'Information et de la Communication et de la Poste",
+      "location": "Alger",
+      "domain": "inptic.edu.dz",
+      "logo": "",
+      "latitude": 36.6624,
+      "longitude": 3.1451
+    }
+  },
+  {
+    "model": "universities.university",
+    "pk": "00000000-0000-0000-0000-000000000119",
+    "fields": {
+      "name": "École Nationale Supérieure des Télécommunications et Technologies de l'Information et de la Communication d'Oran",
+      "location": "Oran",
+      "domain": "ensttic.dz",
+      "logo": "",
+      "latitude": 35.6649,
+      "longitude": -0.6358
+    }
+  }
 ]
