@@ -11,13 +11,15 @@ class HomeCategories extends StatefulWidget {
 class _HomeCategoriesState extends State <HomeCategories> {
   //list of all categories 
   final List<Map<String, dynamic>> _categories = [
-    {'label': 'All',               'icon': Icons.apps},
-    {'label': 'Books',             'icon': Icons.menu_book},
-    {'label': 'Electronics',       'icon': Icons.devices},
-    {'label': 'Accessories',       'icon': Icons.watch},
-    {'label': 'Clothes',           'icon': Icons.checkroom},
-    {'label': 'Furniture',         'icon': Icons.chair},
-  ];
+  {'label': 'All',         'icon': Icons.apps},
+  {'label': 'Books',       'icon': Icons.menu_book},
+  {'label': 'Electronics', 'icon': Icons.devices},
+  {'label': 'Accessories', 'icon': Icons.watch},
+  {'label': 'Clothing',    'icon': Icons.checkroom},
+  {'label': 'Furniture',   'icon': Icons.chair},
+  {'label': 'Sports',      'icon': Icons.sports_soccer},
+  {'label': 'Vehicles',    'icon': Icons.directions_car},
+];
 
   @override
   Widget build(BuildContext context) {

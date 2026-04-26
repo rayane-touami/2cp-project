@@ -14,7 +14,6 @@ class MyProfileScreen extends StatefulWidget {
 }
 
 class _MyProfileScreenState extends State<MyProfileScreen> {
-  // Profile data
   String _userName = "";
   String _userEmail = "";
   String _userPhone = "";
@@ -37,74 +36,73 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
   void initState() {
     super.initState();
     _loadAll();
+    globalRealProductsNotifier.addListener(_onNewProduct);
+  }
+
+  @override
+  void dispose() {
+    globalRealProductsNotifier.removeListener(_onNewProduct);
+    super.dispose();
+  }
+
+  void _onNewProduct() {
+    _loadAll();
   }
 
   Future<void> _loadAll() async {
-  setState(() => _isLoading = true);
-  try {
-    final profile = await ProfileApiService.getMyProfile();
-    final authMe = await AuthService.getMe();
-    debugPrint('AUTH ME DATA: $authMe');
-    debugPrint('PROFILE KEYS: ${profile.keys.toList()}');
-    debugPrint('PROFILE DATA: $profile');
-
-    // Fetch listings & deals separately so one failure doesn't kill everything
-    List<dynamic> listings = [];
-    List<dynamic> deals = [];
-    List<dynamic> universities = [];
-
+    setState(() => _isLoading = true);
     try {
-      listings = await ProfileApiService.getMyListings();
+      // Fetch all data in parallel
+      final results = await Future.wait([
+        ProfileApiService.getMyProfile(),
+        AuthService.getMe(),
+        ProfileApiService.getMyListings().catchError((_) => <dynamic>[]),
+        ProfileApiService.getMyDeals().catchError((_) => <dynamic>[]),
+        AuthService.getUniversities().catchError((_) => <dynamic>[]),
+      ]);
+
+      final profile = results[0] as Map<String, dynamic>;
+      final authMe = results[1] as Map<String, dynamic>;
+      final listings = results[2] as List<dynamic>;
+      final deals = results[3] as List<dynamic>;
+      final universities = results[4] as List<dynamic>;
+
+      debugPrint('AUTH ME DATA: $authMe');
+      debugPrint('PROFILE KEYS: ${profile.keys.toList()}');
+      debugPrint('PROFILE DATA: $profile');
+
+      setState(() {
+        _userName = profile['full_name'] ?? profile['name'] ?? '';
+        _userEmail = authMe['email'] ?? '';
+        _userPhone = authMe['phone'] ?? profile['phone'] ?? '';
+        _userBio = profile['bio'] ?? '';
+        _userUniversityId = authMe['university']?['id']?.toString() ?? '';
+        _userUniversityName = authMe['university']?['name'] ?? '';
+        _notificationsEnabled = profile['notifications_enabled'] ?? false;
+        _showEmail = profile['show_email'] ?? false;
+        _myListings = [
+          ...globalRealProductsNotifier.value,
+          ...listings,
+        ];
+        _itemsCount = listings.length;
+        _dealsCount = deals.length;
+        _averageRating = double.tryParse(
+              profile['average_rating']?.toString() ?? '0',
+            ) ??
+            0.0;
+        _universities = universities;
+      });
     } catch (e) {
-      debugPrint('Listings error: $e'); // won't crash the whole screen
+      debugPrint('Error loading profile: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to load profile. Please try again.')),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
     }
-
-    try {
-  universities = await AuthService.getUniversities();
-} catch (e) {
-  debugPrint('Universities error: $e');
-}
-
-    try {
-      deals = await ProfileApiService.getMyDeals();
-    } catch (e) {
-      debugPrint('Deals error: $e');
-    }
-
-    setState(() {
-  _userName = profile['full_name'] ?? profile['name'] ?? '';
-  _userEmail = authMe['email'] ?? '';
-  _userPhone = authMe['phone'] ?? '';
-  _userBio = profile['bio'] ?? '';
-
-  
- _userUniversityId = authMe['university']?['id']?.toString() ?? '';
-    _userUniversityName = authMe['university']?['name'] ?? ''; // API doesn't return university id in /me/
-
-  _notificationsEnabled = profile['notifications_enabled'] ?? false;
-  _showEmail = profile['show_email'] ?? false;
-  _myListings = listings;
-  _itemsCount = listings.length;
-  _dealsCount = deals.length;
-  _universities = universities; 
-
-  // ✅ parse String to double safely
-  _averageRating = double.tryParse(
-    profile['average_rating']?.toString() ?? '0'
-  ) ?? 0.0;
-});
-
-  } catch (e) {
-    debugPrint('Error loading profile: $e');
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to load profile. Please try again.')),
-      );
-    }
-  } finally {
-    setState(() => _isLoading = false);
   }
-}
 
   Future<void> _toggleNotifications(bool value, StateSetter setModalState) async {
     setModalState(() => _notificationsEnabled = value);
@@ -112,7 +110,6 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
     try {
       await ProfileApiService.updateMyProfile(notificationsEnabled: value);
     } catch (e) {
-      // Revert on failure
       setModalState(() => _notificationsEnabled = !value);
       setState(() => _notificationsEnabled = !value);
       if (mounted) {
@@ -140,9 +137,12 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
   }
 
   Future<void> _handleLogout() async {
-    Navigator.pop(context); // close bottom sheet
+    Navigator.pop(context);
     try {
-     
+      await AuthService.logout();
+      if (mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -174,9 +174,9 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                   SizedBox(height: MediaQuery.of(context).padding.top + 10),
+                    SizedBox(height: MediaQuery.of(context).padding.top + 10),
 
-                    // ── Title + Settings ──────────────────────────────
+                    // ── Title + Settings ──
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
                       child: Row(
@@ -197,7 +197,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                       ),
                     ),
 
-                    // ── Avatar + Card ─────────────────────────────────
+                    // ── Avatar + Card ──
                     Stack(
                       clipBehavior: Clip.none,
                       alignment: Alignment.topCenter,
@@ -212,7 +212,6 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                               color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  // ignore: deprecated_member_use
                                   color: Colors.grey.withOpacity(0.5),
                                   blurRadius: 15,
                                   offset: const Offset(0, 5),
@@ -230,7 +229,6 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                                   ),
                                 ),
                                 SizedBox(height: screenHeight * 0.01),
-                                // Show email only if toggle is on
                                 if (_showEmail)
                                   Text(
                                     _userEmail,
@@ -253,9 +251,12 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                                     _divider(),
                                     _statItem("Deals", "$_dealsCount"),
                                     _divider(),
-                                    _statItem("Rating", _averageRating > 0
-                                        ? _averageRating.toStringAsFixed(1)
-                                        : "N/A"),
+                                    _statItem(
+                                      "Rating",
+                                      _averageRating > 0
+                                          ? _averageRating.toStringAsFixed(1)
+                                          : "N/A",
+                                    ),
                                   ],
                                 ),
                                 SizedBox(height: screenHeight * 0.02),
@@ -269,38 +270,40 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                             ),
                           ),
                         ),
-                       Positioned(
-  top: 0,
-  child: Container(
-    width: 120,
-    height: 120,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      color: Colors.grey[350],
-      border: Border.all(color: Colors.white, width: 3),
-      boxShadow: const [
-        BoxShadow(
-          color: Colors.black26,
-          blurRadius: 8,
-          offset: Offset(0, 4),
-        ),
-      ],
-    ),
-    child: ClipOval(
-      child: Icon(
-        Icons.person,
-        size: 60,
-        color: Colors.grey[600],
-      ),
-    ),
-  ),
-),
+
+                        // ── Avatar ──
+                        Positioned(
+                          top: 0,
+                          child: Container(
+                            width: 120,
+                            height: 120,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.grey[400], // ✅ fixed from grey[350]
+                              border: Border.all(color: Colors.white, width: 3),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 8,
+                                  offset: Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: ClipOval(
+                              child: Icon(
+                                Icons.person,
+                                size: 60,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
 
                     SizedBox(height: screenHeight * 0.025),
 
-                    // ── About ─────────────────────────────────────────
+                    // ── About ──
                     if (_userBio.isNotEmpty)
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
@@ -331,7 +334,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
 
                     SizedBox(height: screenHeight * 0.02),
 
-                    // ── My Listings ───────────────────────────────────
+                    // ── My Listings ──
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
                       child: Text(
@@ -373,23 +376,37 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                           itemCount: visibleListings.length,
                           itemBuilder: (context, index) {
                             final listing = visibleListings[index];
-                            // Map API fields to the product map your ProductCard expects
+                            final bool isUserAdded = listing['isUserAdded'] == true;
+
                             final product = {
-                              'name': listing['title'] ?? '',
-                              'price': '${listing['price']} ${listing['currency'] ?? 'DA'}',
-                              'priceValue': double.tryParse(listing['price'].toString()) ?? 0.0,
+                              'name': listing['title'] ?? listing['name'] ?? '',
+                              'price': isUserAdded
+                                  ? listing['price']
+                                  : '${listing['price']} ${listing['currency'] ?? 'DA'}',
+                              'priceValue': double.tryParse(
+                                    listing['priceValue']?.toString() ??
+                                        listing['price']?.toString() ??
+                                        '0',
+                                  ) ??
+                                  0.0,
                               'category': listing['category'] ?? '',
-                              'rating': (listing['average_rating'] ?? 0.0).toDouble(),
+                              'rating': (listing['average_rating'] ?? listing['rating'] ?? 0.0).toDouble(),
                               'isRated': false,
-                              'image': listing['image_url'] ?? 'assets/images/products/airpods.jpg',
+                              'image': isUserAdded
+                                  ? listing['image']
+                                  : (listing['photo'] ??
+                                      listing['image_url'] ??
+                                      'assets/images/products/airpods.jpg'),
+                              'isReal': listing['isReal'] ?? false,
+                              'isUserAdded': isUserAdded,
                               'id': listing['id'],
                             };
+
                             return Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
-                                    // ignore: deprecated_member_use
                                     color: Colors.black.withOpacity(0.18),
                                     blurRadius: 15,
                                     spreadRadius: 1,
@@ -477,13 +494,11 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                   ),
                   const Divider(height: 1, color: Color(0xffdfe1e6)),
 
-                  // Edit Profile
                   ListTile(
                     leading: const Icon(Icons.edit_outlined),
                     title: const Text("Edit Profile",
                         style: TextStyle(fontWeight: FontWeight.bold)),
-                    trailing: Text(">",
-                        style: TextStyle(fontSize: screenWidth * 0.04)),
+                    trailing: Text(">", style: TextStyle(fontSize: screenWidth * 0.04)),
                     onTap: () async {
                       Navigator.pop(context);
                       final updated = await Navigator.push<bool>(
@@ -499,13 +514,11 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                           ),
                         ),
                       );
-                      // Reload profile if changes were saved
                       if (updated == true) _loadAll();
                     },
                   ),
                   const Divider(height: 1, color: Color(0xffdfe1e6)),
 
-                  // Notifications
                   SwitchListTile(
                     secondary: const Icon(Icons.notifications_outlined),
                     title: const Text("Notifications",
@@ -516,7 +529,6 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                   ),
                   const Divider(height: 1, color: Color(0xffdfe1e6)),
 
-                  // Show Email
                   SwitchListTile(
                     secondary: const Icon(Icons.email_outlined),
                     title: const Text("Show Email",
@@ -527,11 +539,9 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                   ),
                   const Divider(height: 1, color: Color(0xffdfe1e6)),
 
-                  // Logout
                   ListTile(
                     leading: const Icon(Icons.logout, color: Colors.red),
-                    title: const Text("Logout",
-                        style: TextStyle(color: Colors.red)),
+                    title: const Text("Logout", style: TextStyle(color: Colors.red)),
                     onTap: _handleLogout,
                   ),
                 ],

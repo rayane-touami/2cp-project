@@ -4,9 +4,8 @@ import 'package:http/http.dart' as http;
 // add this import at the top
 import 'package:shared_preferences/shared_preferences.dart';
 
- const String baseUrl = 'https://2cp-project-production-4365.up.railway.app/api/auth';
- 
 
+const String baseUrl = 'https://2cp-project-production-4365.up.railway.app/api/auth';
 class AuthService {
     static String accessToken = '';
   static String refreshToken = '';
@@ -85,6 +84,8 @@ static Future<void> logout() async {
     );
     accessToken = '';
     refreshToken = '';
+    final prefs = await SharedPreferences.getInstance();
+  await prefs.remove('auth_token');
   }
 
   static Future<void> verifyEmail(String email, String code) async {
