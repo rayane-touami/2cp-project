@@ -126,6 +126,9 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 #added for hosting #:
 STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage", 
+    },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },

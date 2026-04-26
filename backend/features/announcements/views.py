@@ -88,8 +88,7 @@ class AnnouncementListAPIView(generics.ListAPIView):
             queryset = queryset.filter(price__lte=float(max_price))
 
         return queryset
-
-    @method_decorator(cache_page(60 * 5))
+    
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
@@ -147,15 +146,22 @@ class AnnouncementCreateAPIView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data, context={'request': request})
 
         if serializer.is_valid():
-            self.perform_create(serializer)
+            try:                              # ← ADD THIS
+                self.perform_create(serializer)
+            except Exception as e:            # ← ADD THIS
+                import traceback              # ← ADD THIS
+                return Response(              # ← ADD THIS
+                    {'debug_error': str(e), 'trace': traceback.format_exc()},  # ← ADD THIS
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR  # ← ADD THIS
+                )                             # ← ADD THIS
 
             announcement = serializer.instance
             photos_data = []
 
             for photo in announcement.photos.all().order_by('position'):
                 photos_data.append({
-                    'url': photo.image.url
-                })
+                    'url': request.build_absolute_uri(photo.image.url)  # ← full url
+                      })
 
             response_data = {
                 'id': announcement.id,
@@ -171,6 +177,7 @@ class AnnouncementCreateAPIView(generics.CreateAPIView):
                 {'errors': serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
 
     def perform_create(self, serializer):
         serializer.save()
@@ -391,3 +398,4 @@ class CommentUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return Comment.objects.filter(user_id=self.request.user.id)
+    

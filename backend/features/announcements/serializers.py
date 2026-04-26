@@ -21,6 +21,9 @@ class PhotoSerializer(serializers.ModelSerializer):
 
     def get_url(self, obj):
         if obj.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.image.url)  # full URL with domain
             return obj.image.url
         return None
 
@@ -51,9 +54,14 @@ class AnnouncementListSerializer(serializers.ModelSerializer):
         return False
 
     def get_photo(self, obj):
-        photos = getattr(obj, 'prefetched_photos', None) or obj.photos.all()
-        first = photos[0] if photos else None
-        return first.image.url if first and first.image else None
+       photos = getattr(obj, 'prefetched_photos', None) or obj.photos.all()
+       first = photos[0] if photos else None
+       if first and first.image:
+           request = self.context.get('request')
+           if request:
+               return request.build_absolute_uri(first.image.url)  # ← full URL
+           return first.image.url
+       return None
 
 
 class AnnouncementDetailSerializer(serializers.ModelSerializer):
