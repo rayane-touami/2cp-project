@@ -160,8 +160,8 @@ class AnnouncementCreateAPIView(generics.CreateAPIView):
 
             for photo in announcement.photos.all().order_by('position'):
                 photos_data.append({
-                    'url': photo.image.url
-                })
+                    'url': request.build_absolute_uri(photo.image.url)  # ← full url
+                      })
 
             response_data = {
                 'id': announcement.id,
