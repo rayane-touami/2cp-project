@@ -13,7 +13,6 @@ class MyProfileScreen extends StatefulWidget {
 }
 
 class _MyProfileScreenState extends State<MyProfileScreen> {
-  // Profile data
   String _userName = "";
   String _userEmail = "";
   String _userPhone = "";
@@ -36,12 +35,23 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
   void initState() {
     super.initState();
     _loadAll();
+    // rebuild when user adds a new product
+    globalRealProductsNotifier.addListener(_onNewProduct);
+  }
+
+  @override
+  void dispose() {
+    globalRealProductsNotifier.removeListener(_onNewProduct);
+    super.dispose();
+  }
+
+  void _onNewProduct() {
+    _loadAll();
   }
 
   Future<void> _loadAll() async {
     setState(() => _isLoading = true);
     try {
-      // Run all 3 in parallel for speed
       final results = await Future.wait([
         ProfileApiService.getMyProfile(),
         ProfileApiService.getMyListings(),
@@ -53,20 +63,20 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
       final deals = results[2] as List<dynamic>;
 
       setState(() {
-        // User info — adjust field names to match your backend response
         _userName = profile['full_name'] ?? profile['name'] ?? '';
         _userEmail = profile['email'] ?? '';
         _userPhone = profile['phone'] ?? '';
         _userBio = profile['bio'] ?? '';
         _userUniversityId = profile['university']?['id']?.toString() ?? '';
         _userUniversityName = profile['university']?['name'] ?? '';
-
-        // Settings toggles
         _notificationsEnabled = profile['notifications_enabled'] ?? false;
         _showEmail = profile['show_email'] ?? false;
 
-        // Listings & stats
-        _myListings = listings;
+        // Combine user-added products + API listings
+        _myListings = [
+          ...globalRealProductsNotifier.value, // user-added first
+          ...listings,                          // API listings after
+        ];
         _itemsCount = listings.length;
         _dealsCount = deals.length;
         _averageRating = (profile['average_rating'] ?? 0.0).toDouble();
@@ -89,7 +99,6 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
     try {
       await ProfileApiService.updateMyProfile(notificationsEnabled: value);
     } catch (e) {
-      // Revert on failure
       setModalState(() => _notificationsEnabled = !value);
       setState(() => _notificationsEnabled = !value);
       if (mounted) {
@@ -117,9 +126,8 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
   }
 
   Future<void> _handleLogout() async {
-    Navigator.pop(context); // close bottom sheet
+    Navigator.pop(context);
     try {
-     
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -153,7 +161,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                   children: [
                     SizedBox(height: screenHeight * 0.06),
 
-                    // ── Title + Settings ──────────────────────────────
+                    // ── Title + Settings ──
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
                       child: Row(
@@ -174,7 +182,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                       ),
                     ),
 
-                    // ── Avatar + Card ─────────────────────────────────
+                    // ── Avatar + Card ──
                     Stack(
                       clipBehavior: Clip.none,
                       alignment: Alignment.topCenter,
@@ -189,7 +197,6 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                               color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  // ignore: deprecated_member_use
                                   color: Colors.grey.withOpacity(0.5),
                                   blurRadius: 15,
                                   offset: const Offset(0, 5),
@@ -207,7 +214,6 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                                   ),
                                 ),
                                 SizedBox(height: screenHeight * 0.01),
-                                // Show email only if toggle is on
                                 if (_showEmail)
                                   Text(
                                     _userEmail,
@@ -274,7 +280,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
 
                     SizedBox(height: screenHeight * 0.025),
 
-                    // ── About ─────────────────────────────────────────
+                    // ── About ──
                     if (_userBio.isNotEmpty)
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
@@ -305,7 +311,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
 
                     SizedBox(height: screenHeight * 0.02),
 
-                    // ── My Listings ───────────────────────────────────
+                    // ── My Listings ──
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
                       child: Text(
@@ -347,23 +353,31 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                           itemCount: visibleListings.length,
                           itemBuilder: (context, index) {
                             final listing = visibleListings[index];
-                            // Map API fields to the product map your ProductCard expects
+                            final bool isUserAdded = listing['isUserAdded'] == true;
+
                             final product = {
-                              'name': listing['title'] ?? '',
-                              'price': '${listing['price']} ${listing['currency'] ?? 'DA'}',
-                              'priceValue': double.tryParse(listing['price'].toString()) ?? 0.0,
+                              'name': listing['title'] ?? listing['name'] ?? '',
+                              'price': isUserAdded
+                                  ? listing['price']
+                                  : '${listing['price']} ${listing['currency'] ?? 'DA'}',
+                              'priceValue': double.tryParse(listing['priceValue']?.toString() ??
+                                      listing['price']?.toString() ?? '0') ?? 0.0,
                               'category': listing['category'] ?? '',
-                              'rating': (listing['average_rating'] ?? 0.0).toDouble(),
+                              'rating': (listing['average_rating'] ?? listing['rating'] ?? 0.0).toDouble(),
                               'isRated': false,
-                              'image': listing['image_url'] ?? 'assets/images/products/airpods.jpg',
+                              'image': isUserAdded
+                                  ? listing['image']
+                                  : (listing['photo'] ?? listing['image_url'] ?? 'assets/images/products/airpods.jpg'),
+                              'isReal': listing['isReal'] ?? false,
+                              'isUserAdded': isUserAdded,
                               'id': listing['id'],
                             };
+
                             return Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
-                                    // ignore: deprecated_member_use
                                     color: Colors.black.withOpacity(0.18),
                                     blurRadius: 15,
                                     spreadRadius: 1,
@@ -451,7 +465,6 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                   ),
                   const Divider(height: 1, color: Color(0xffdfe1e6)),
 
-                  // Edit Profile
                   ListTile(
                     leading: const Icon(Icons.edit_outlined),
                     title: const Text("Edit Profile",
@@ -473,13 +486,11 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                           ),
                         ),
                       );
-                      // Reload profile if changes were saved
                       if (updated == true) _loadAll();
                     },
                   ),
                   const Divider(height: 1, color: Color(0xffdfe1e6)),
 
-                  // Notifications
                   SwitchListTile(
                     secondary: const Icon(Icons.notifications_outlined),
                     title: const Text("Notifications",
@@ -490,7 +501,6 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                   ),
                   const Divider(height: 1, color: Color(0xffdfe1e6)),
 
-                  // Show Email
                   SwitchListTile(
                     secondary: const Icon(Icons.email_outlined),
                     title: const Text("Show Email",
@@ -501,7 +511,6 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                   ),
                   const Divider(height: 1, color: Color(0xffdfe1e6)),
 
-                  // Logout
                   ListTile(
                     leading: const Icon(Icons.logout, color: Colors.red),
                     title: const Text("Logout",

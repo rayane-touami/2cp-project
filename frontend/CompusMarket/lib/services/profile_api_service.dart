@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ProfileApiService {
-  static const String baseUrl = 'http://ritadjl.pythonanywhere.com/api/profiles';
-
+static const String baseUrl = 'https://2cp-project-production-4365.up.railway.app/api';
   static String token = '';
 
   static Map<String, String> get headers => {

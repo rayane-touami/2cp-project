@@ -3,9 +3,7 @@ import 'package:http/http.dart' as http;
 // add this import at the top
 import 'package:shared_preferences/shared_preferences.dart';
 
- const String baseUrl = 'http://ritadjl.pythonanywhere.com/api/auth';
- 
-
+const String baseUrl = 'https://2cp-project-production-4365.up.railway.app/api/auth';
 class AuthService {
     static String accessToken = '';
   static String refreshToken = '';

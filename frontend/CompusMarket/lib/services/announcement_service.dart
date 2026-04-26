@@ -5,7 +5,6 @@ import 'api_config.dart';
 
 class AnnouncementService {
   /// 1. Home page — Announcements feed
-  /// 2,3,4,5,6 — Apply filters dynamically
   static Future<Map<String, dynamic>> getAnnouncements({
     int page = 1,
     String? search,
@@ -15,7 +14,6 @@ class AnnouncementService {
     double? maxPrice,
   }) async {
     final queryParams = <String, String>{'page': page.toString()};
-    
     if (search != null && search.isNotEmpty) queryParams['search'] = search;
     if (categoryId != null) queryParams['category'] = categoryId.toString();
     if (universityId != null) queryParams['university'] = universityId.toString();
@@ -32,7 +30,7 @@ class AnnouncementService {
     }
   }
 
-  /// 9. Home page — Nearby announcements
+  /// 9. Nearby announcements
   static Future<List<dynamic>> getNearbyAnnouncements(double lat, double lon, {double radius = 50.0}) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}/announcements/nearby/').replace(queryParameters: {
       'lat': lat.toString(),
@@ -48,13 +46,12 @@ class AnnouncementService {
     }
   }
 
-  /// 10. Announcement detail page
+  /// 10. Announcement detail
   static Future<Map<String, dynamic>> getAnnouncementDetails(int id) async {
     final response = await http.get(
       Uri.parse('${ApiConfig.baseUrl}/announcements/$id/'),
       headers: await ApiConfig.getHeaders(),
     );
-
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
@@ -62,13 +59,12 @@ class AnnouncementService {
     }
   }
 
-  /// 19. My announcements page
+  /// 19. My announcements
   static Future<List<dynamic>> getMyAnnouncements() async {
     final response = await http.get(
       Uri.parse('${ApiConfig.baseUrl}/announcements/my/'),
       headers: await ApiConfig.getHeaders(),
     );
-
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
@@ -76,12 +72,11 @@ class AnnouncementService {
     }
   }
 
-  
-  /// 16. Add announcement — Update
+  /// 16. Update announcement
   static Future<Map<String, dynamic>> updateAnnouncement(
     int id,
     Map<String, String> data,
-    List<String>? photoPaths, 
+    List<String>? photoPaths,
   ) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}/announcements/$id/update/');
     var request = http.MultipartRequest('PUT', uri)
@@ -104,14 +99,13 @@ class AnnouncementService {
     }
   }
 
-  /// 17. Add announcement — Change status
+  /// 17. Change status
   static Future<Map<String, dynamic>> changeStatus(int id, String status) async {
     final response = await http.patch(
       Uri.parse('${ApiConfig.baseUrl}/announcements/$id/status/'),
       headers: await ApiConfig.getHeaders(),
       body: jsonEncode({'status': status}),
     );
-
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
@@ -119,13 +113,12 @@ class AnnouncementService {
     }
   }
 
-  /// 18. Add announcement — Archive
+  /// 18. Archive announcement
   static Future<Map<String, dynamic>> archiveAnnouncement(int id) async {
     final response = await http.patch(
       Uri.parse('${ApiConfig.baseUrl}/announcements/$id/archive/'),
       headers: await ApiConfig.getHeaders(),
     );
-
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
@@ -133,48 +126,76 @@ class AnnouncementService {
     }
   }
 
-//post product button
-static Future<Map<String, dynamic>> createAnnouncement({
-  required String title,
-  required String description,
-  required String price,
-  required int categoryId,
-  required int universityId,
-  required String location,
-  required String phoneNumber,
-  required List<File> photos,
-}) async {
-  final request = http.MultipartRequest(
-    'POST',
-    Uri.parse('${ApiConfig.baseUrl}/announcements/create/'),
-  );
+  /// 15. Create announcement
+  static Future<Map<String, dynamic>> createAnnouncement({
+    required String title,
+    required String description,
+    required String price,
+    required String categoryId,
+    required String universityId,
+    required String location,
+    required String phoneNumber,
+    required List<File> photos,
+  }) async {
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('${ApiConfig.baseUrl}/announcements/create'),
+    );
 
-  // Add headers
-  final headers = await ApiConfig.getHeaders(isMultipart: true);
-  request.headers.addAll(headers);
+    final headers = await ApiConfig.getHeaders(isMultipart: true);
+    request.headers.addAll(headers);
 
-  // Add text fields
-  request.fields['title'] = title;
-  request.fields['description'] = description;
-  request.fields['price'] = price;
-  request.fields['category'] = categoryId.toString();
-  request.fields['university'] = universityId.toString();
-  request.fields['location'] = location;
-  request.fields['phone_number'] = phoneNumber;
+    request.fields['title'] = title;
+    request.fields['description'] = description;
+    request.fields['price'] = price;
+    request.fields['category'] = categoryId;
+    request.fields['university'] = universityId;
+    request.fields['location'] = location;
+    request.fields['phone_number'] = phoneNumber;
 
-  // Add photos
-  for (final photo in photos) {
-    request.files.add(await http.MultipartFile.fromPath('photos', photo.path));
+    for (final photo in photos) {
+      request.files.add(await http.MultipartFile.fromPath('photos', photo.path));
+    }
+
+    print('📤 Sending fields: ${request.fields}');
+    print('📤 Sending to: ${ApiConfig.baseUrl}/announcements/create');
+    print('📤 Photos count: ${photos.length}');
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode == 201) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to create: ${response.body}');
+    }
   }
 
-  final streamedResponse = await request.send();
-  final response = await http.Response.fromStream(streamedResponse);
-
-  if (response.statusCode == 201) {
-    return jsonDecode(response.body);
-  } else {
-    throw Exception('Failed to create: ${response.body}');
+  /// Get comments for an announcement
+  static Future<List<dynamic>> getComments(dynamic announcementId) async {
+    final response = await http.get(
+      Uri.parse('${ApiConfig.baseUrl}/announcements/$announcementId/comments/'),
+      headers: await ApiConfig.getHeaders(),
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load comments: ${response.body}');
+    }
   }
-}
 
+  /// Post a comment on an announcement
+  static Future<Map<String, dynamic>> createComment(
+      dynamic announcementId, String content) async {
+    final response = await http.post(
+      Uri.parse('${ApiConfig.baseUrl}/announcements/$announcementId/comments/'),
+      headers: await ApiConfig.getHeaders(),
+      body: jsonEncode({'content': content}),
+    );
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to post comment: ${response.body}');
+    }
+  }
 }
