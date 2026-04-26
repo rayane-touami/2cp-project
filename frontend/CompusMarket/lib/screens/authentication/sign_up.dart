@@ -234,6 +234,7 @@ SizedBox(height: screenHeight * 0.021,),
    setState(() => _submitted = true);
 
   if (nameController.text.isEmpty || emailController.text.isEmpty ||
+  numberController.text.isEmpty ||
       PasswordController.text.isEmpty || 
       _selectedUniversityId == null) {
     return;

@@ -2,6 +2,7 @@
 import 'package:compusmarket/screens/home/add_new_product.dart';
 import 'package:compusmarket/screens/profiles/Edit_profil.dart';
 import 'package:compusmarket/services/profile_api_service.dart';
+import 'package:compusmarket/services/auth_services.dart';
 import 'package:flutter/material.dart';
 import 'package:compusmarket/screens/home/home_products_grid.dart';
 
@@ -39,49 +40,71 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
   }
 
   Future<void> _loadAll() async {
-    setState(() => _isLoading = true);
+  setState(() => _isLoading = true);
+  try {
+    final profile = await ProfileApiService.getMyProfile();
+    final authMe = await AuthService.getMe();
+    debugPrint('AUTH ME DATA: $authMe');
+    debugPrint('PROFILE KEYS: ${profile.keys.toList()}');
+    debugPrint('PROFILE DATA: $profile');
+
+    // Fetch listings & deals separately so one failure doesn't kill everything
+    List<dynamic> listings = [];
+    List<dynamic> deals = [];
+    List<dynamic> universities = [];
+
     try {
-      // Run all 3 in parallel for speed
-      final results = await Future.wait([
-        ProfileApiService.getMyProfile(),
-        ProfileApiService.getMyListings(),
-        ProfileApiService.getMyDeals(),
-      ]);
-
-      final profile = results[0] as Map<String, dynamic>;
-      final listings = results[1] as List<dynamic>;
-      final deals = results[2] as List<dynamic>;
-
-      setState(() {
-        // User info — adjust field names to match your backend response
-        _userName = profile['full_name'] ?? profile['name'] ?? '';
-        _userEmail = profile['email'] ?? '';
-        _userPhone = profile['phone'] ?? '';
-        _userBio = profile['bio'] ?? '';
-        _userUniversityId = profile['university']?['id']?.toString() ?? '';
-        _userUniversityName = profile['university']?['name'] ?? '';
-
-        // Settings toggles
-        _notificationsEnabled = profile['notifications_enabled'] ?? false;
-        _showEmail = profile['show_email'] ?? false;
-
-        // Listings & stats
-        _myListings = listings;
-        _itemsCount = listings.length;
-        _dealsCount = deals.length;
-        _averageRating = (profile['average_rating'] ?? 0.0).toDouble();
-      });
+      listings = await ProfileApiService.getMyListings();
     } catch (e) {
-      debugPrint('Error loading profile: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load profile. Please try again.')),
-        );
-      }
-    } finally {
-      setState(() => _isLoading = false);
+      debugPrint('Listings error: $e'); // won't crash the whole screen
     }
+
+    try {
+  universities = await AuthService.getUniversities();
+} catch (e) {
+  debugPrint('Universities error: $e');
+}
+
+    try {
+      deals = await ProfileApiService.getMyDeals();
+    } catch (e) {
+      debugPrint('Deals error: $e');
+    }
+
+    setState(() {
+  _userName = profile['full_name'] ?? profile['name'] ?? '';
+  _userEmail = authMe['email'] ?? '';
+  _userPhone = authMe['phone'] ?? '';
+  _userBio = profile['bio'] ?? '';
+
+  
+ _userUniversityId = authMe['university']?['id']?.toString() ?? '';
+    _userUniversityName = authMe['university']?['name'] ?? ''; // API doesn't return university id in /me/
+
+  _notificationsEnabled = profile['notifications_enabled'] ?? false;
+  _showEmail = profile['show_email'] ?? false;
+  _myListings = listings;
+  _itemsCount = listings.length;
+  _dealsCount = deals.length;
+  _universities = universities; 
+
+  // ✅ parse String to double safely
+  _averageRating = double.tryParse(
+    profile['average_rating']?.toString() ?? '0'
+  ) ?? 0.0;
+});
+
+  } catch (e) {
+    debugPrint('Error loading profile: $e');
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to load profile. Please try again.')),
+      );
+    }
+  } finally {
+    setState(() => _isLoading = false);
   }
+}
 
   Future<void> _toggleNotifications(bool value, StateSetter setModalState) async {
     setModalState(() => _notificationsEnabled = value);
@@ -151,7 +174,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: screenHeight * 0.06),
+                   SizedBox(height: MediaQuery.of(context).padding.top + 10),
 
                     // ── Title + Settings ──────────────────────────────
                     Padding(
@@ -246,29 +269,32 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                             ),
                           ),
                         ),
-                        Positioned(
-                          top: 0,
-                          child: Container(
-                            width: 120,
-                            height: 120,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 3),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Colors.black26,
-                                  blurRadius: 8,
-                                  offset: Offset(0, 4),
-                                ),
-                              ],
-                              image: const DecorationImage(
-                                image: AssetImage("assets/images/malak's_pic.jpg"),
-                                fit: BoxFit.cover,
-                                alignment: Alignment.topCenter,
-                              ),
-                            ),
-                          ),
-                        ),
+                       Positioned(
+  top: 0,
+  child: Container(
+    width: 120,
+    height: 120,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: Colors.grey[350],
+      border: Border.all(color: Colors.white, width: 3),
+      boxShadow: const [
+        BoxShadow(
+          color: Colors.black26,
+          blurRadius: 8,
+          offset: Offset(0, 4),
+        ),
+      ],
+    ),
+    child: ClipOval(
+      child: Icon(
+        Icons.person,
+        size: 60,
+        color: Colors.grey[600],
+      ),
+    ),
+  ),
+),
                       ],
                     ),
 

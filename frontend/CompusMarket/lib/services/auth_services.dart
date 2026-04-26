@@ -1,9 +1,10 @@
 import 'dart:convert';
+import 'package:compusmarket/services/profile_api_service.dart';
 import 'package:http/http.dart' as http;
 // add this import at the top
 import 'package:shared_preferences/shared_preferences.dart';
 
- const String baseUrl = 'http://ritadjl.pythonanywhere.com/api/auth';
+ const String baseUrl = 'https://2cp-project-production-4365.up.railway.app/api/auth';
  
 
 class AuthService {
@@ -23,6 +24,7 @@ class AuthService {
      if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       accessToken = data['access'];
+      ProfileApiService.token = data['access'];
       final prefs = await SharedPreferences.getInstance();
 await prefs.setString('auth_token', data['access']);
       refreshToken = data['refresh'];
@@ -33,6 +35,8 @@ await prefs.setString('auth_token', data['access']);
   }
  static Future<List<dynamic>> getUniversities() async {
   final response = await http.get(Uri.parse('$baseUrl/universities/'));
+  print('🌐 Universities status: ${response.statusCode}');
+  print('🌐 Universities body: ${response.body}');
   if (response.statusCode == 200) {
     return jsonDecode(response.body);
   } else {
@@ -94,6 +98,7 @@ static Future<void> logout() async {
   }
   final data = jsonDecode(response.body);
   accessToken = data['access'];
+  ProfileApiService.token = data['access'];
   final prefs = await SharedPreferences.getInstance();
 await prefs.setString('auth_token', data['access']);
   refreshToken = data['refresh'];

@@ -94,23 +94,29 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ),
               Center(
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 3),
-                    boxShadow: const [
-                      BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4)),
-                    ],
-                    image: const DecorationImage(
-                      image: AssetImage("assets/images/malak's_pic.jpg"),
-                      fit: BoxFit.cover,
-                      alignment: Alignment.topCenter,
-                    ),
-                  ),
-                ),
-              ),
+  child: GestureDetector(
+    onTap: () => _showImagePickerOptions(context),
+    child: Container(
+      width: 100,
+      height: 100,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.grey[350],
+        border: Border.all(color: Colors.white, width: 3),
+        boxShadow: const [
+          BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4)),
+        ],
+      ),
+      child: ClipOval(
+        child: Icon(
+          Icons.person,
+          size: 55,
+          color: Colors.grey[600],
+        ),
+      ),
+    ),
+  ),
+),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.07),
                 child: Column(
@@ -152,26 +158,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       maxLines: 4,
                     ),
 
-                    // ── Change Password (optional) ──────────────────
-                    StandardTextfield(
-                      title: "Current Password",
-                      hint: "Leave blank to keep current",
-                      controller: currentPasswordController,
-                      isError: false,
-                      hasShadow: true,
-                      fillColor: Colors.white,
-                      isPassword: true,
-                    ),
-                    StandardTextfield(
-                      title: "New Password",
-                      hint: "Leave blank to keep current",
-                      controller: newPasswordController,
-                      isError: false,
-                      hasShadow: true,
-                      fillColor: Colors.white,
-                      isPassword: true,
-                    ),
-
+                   
+                    
                     // ── University Dropdown ─────────────────────────
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,6 +244,49 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
+  void _showImagePickerOptions(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) => Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // little bar on top
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          SizedBox(height: 20),
+          ListTile(
+            leading: Icon(Icons.photo_library, color: Colors.blue),
+            title: Text("Gallery"),
+            onTap: () {
+              Navigator.pop(context);
+              // TODO: open gallery
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.camera_alt, color: Colors.blue),
+            title: Text("Camera"),
+            onTap: () {
+              Navigator.pop(context);
+              // TODO: open camera
+            },
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
   void _saveChanges(BuildContext context) async {
     setState(() => _submitted = true);
 
@@ -294,7 +325,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       // 2. Update profile fields (bio, etc.)
       await ProfileApiService.updateMyProfile(
-        // Add bio/phone here if your backend supports them on this endpoint
+       bio: bioController.text.trim(),
       );
 
       if (mounted) {

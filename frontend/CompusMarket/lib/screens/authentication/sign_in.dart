@@ -1,4 +1,5 @@
 import 'package:compusmarket/services/auth_services.dart';
+import 'package:compusmarket/services/profile_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:compusmarket/screens/authentication/sign_up.dart';
 import '../../widgets/standard_Title.dart';
@@ -229,6 +230,7 @@ Widget build(BuildContext context) {
 
     final token = result['access'];
     print('✅ Logged in! Token: $token');
+   ProfileApiService.token = token;
 
     
     Navigator.pushAndRemoveUntil(

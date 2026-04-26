@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 
 class ProfileApiService {
-  static const String baseUrl = 'http://ritadjl.pythonanywhere.com/api/profiles';
+  static const String baseUrl = 'http://ritadjl.pythonanywhere.com/api';
 
   static String token = '';
 
@@ -25,14 +26,21 @@ class ProfileApiService {
   }
 
    // GET /api/profiles/me/
-  static Future<Map<String, dynamic>> getMyProfile() async {
-    final res = await http.get(
-      Uri.parse('$baseUrl/profiles/me/'),
-      headers: headers,
-    );
-    if (res.statusCode == 200) return jsonDecode(res.body);
-    throw Exception('Failed to load my profile');
-  }
+ static Future<Map<String, dynamic>> getMyProfile() async {
+  final url = '$baseUrl/profiles/me/';
+  debugPrint('GET URL: $url');          
+  debugPrint('TOKEN: $token');        
+  final res = await http.get(
+    Uri.parse(url),
+    headers: headers,
+  );
+
+  debugPrint('STATUS: ${res.statusCode}');  // 👈 check status
+  debugPrint('BODY: ${res.body}');          // 👈 check response
+
+  if (res.statusCode == 200) return jsonDecode(res.body);
+  throw Exception('Failed to load my profile');
+}
 
    // PATCH /api/profiles/me/update/
   static Future<Map<String, dynamic>> updateMyProfile({
@@ -40,12 +48,14 @@ class ProfileApiService {
     bool? showEmail,
     bool? isActiveSeller,
     String? responseTime,
+    String? bio,
   }) async {
     final body = <String, dynamic>{};
     if (notificationsEnabled != null) body['notifications_enabled'] = notificationsEnabled;
     if (showEmail != null) body['show_email'] = showEmail;
     if (isActiveSeller != null) body['is_active_seller'] = isActiveSeller;
     if (responseTime != null) body['response_time'] = responseTime;
+    if (bio != null) body['bio'] = bio;
 
     final res = await http.patch(
       Uri.parse('$baseUrl/profiles/me/update/'),
