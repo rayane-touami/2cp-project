@@ -1,4 +1,5 @@
 backend/env/
+backend/.env
 backend/db.sqlite3
 backend/media/
 **/__pycache__/
