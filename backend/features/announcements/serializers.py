@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.db.models import Avg
+from django.bd import transaction
 from django.core.files.images import get_image_dimensions
 from .models import Announcement, Category, Photo, Favorite, Review, Comment
 from features.universities.models import University
