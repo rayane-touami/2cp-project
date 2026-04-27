@@ -17,7 +17,11 @@ class Migration(migrations.Migration):
             model_name='university',
             name='university_name_65a7d2_idx',
         ),
-        migrations.AlterField(
+        migrations.RemoveField(
+            model_name='announcement',
+            name='university',
+        ),
+        migrations.AddField(
             model_name='announcement',
             name='university',
             field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='announcements', to='universities.university'),

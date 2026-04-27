@@ -3,8 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiConfig {
   // Replace with your actual IP if testing on physical device (e.g. 'http://192.168.1.X:8000')
   // static const String baseUrl = 'http://192.168.1.X:8000/api';
-static const String baseUrl = 'https://ritadjl.pythonanywhere.com/api';
-  /// Retrieves the Bearer token from SharedPreferences.
+static const String baseUrl = 'https://2cp-project-production-4365.up.railway.app/api';  /// Retrieves the Bearer token from SharedPreferences.
   /// If you haven't implemented login token saving yet, you can temporarily return a hardcoded token here.
   static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();

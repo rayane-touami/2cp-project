@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class MsgService {
-  static const String baseUrl = 'http://ritadjl.pythonanywhere.com/api/chat';  
-  static const String wsBase = 'ws://10.0.2.2:8000/ws/chat'; 
+  static const String baseUrl = 'https://2cp-project-production-4365.up.railway.app/api';  
+  static const String wsBase = 'wss://2cp-project-production-4365.up.railway.app/ws'; 
 
   static String currentUserEmail = '';
   static String currentUserId = '';  // String because Me returns UUID

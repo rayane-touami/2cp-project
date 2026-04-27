@@ -17,6 +17,18 @@ import os
 import json
 import dj_database_url #added for hosting
 from decouple import config #added for hosting
+import cloudinary #added for hosting
+import cloudinary.uploader #added for hosting
+import cloudinary.api #added for hosting
+
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'da0d50b29fd4258b608854948ff404',
+    'API_KEY': '363755518931131',
+    'API_SECRET': '5ws2fCDcgrBb2VsXIdDpy4OKwOw',
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,6 +57,7 @@ CSRF_TRUSTED_ORIGINS = ['https://ritadjl.pythonanywhere.com', 'https://2cp-proje
 
 INSTALLED_APPS = [
     'daphne',
+    'cloudinary_storage',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -74,6 +87,8 @@ INSTALLED_APPS = [
     'features.reviews',
     'features.deals',
     # ──────────────────────────────────────────────────────
+    'django.contrib.staticfiles',
+    'cloudinary',
 ]
 
 # ── User model custom ────────────────────
@@ -207,6 +222,9 @@ CHANNEL_LAYERS = {
 }
 
 REST_FRAMEWORK = {
+      'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
