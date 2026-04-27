@@ -27,16 +27,8 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='announcements', to='universities.university'),
         ),
         migrations.AlterField(
-            model_name='photo',
-            name='position',
-            field=models.PositiveSmallIntegerField(validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(10)]),
-        ),
-        migrations.AlterField(
             model_name='review',
             name='rating',
             field=models.IntegerField(choices=[(1, '1 Star'), (2, '2 Stars'), (3, '3 Stars'), (4, '4 Stars'), (5, '5 Stars')], validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(5)]),
-        ),
-        migrations.DeleteModel(
-            name='University',
         ),
     ]
