@@ -15,17 +15,21 @@ import environ
 import dj_database_url
 import os
 import json
-import dj_database_url #added for hosting
-from decouple import config #added for hosting
-import cloudinary #added for hosting
-import cloudinary.uploader #added for hosting
-import cloudinary.api #added for hosting
+#from decouple import config #added for hosting
+#import cloudinary #added for hosting
+#import cloudinary.uploader #added for hosting
+#import cloudinary.api #added for hosting
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Initialise environ
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'da0d50b29fd4258b608854948ff404',
-    'API_KEY': '363755518931131',
-    'API_SECRET': '5ws2fCDcgrBb2VsXIdDpy4OKwOw',
+    'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': env('CLOUDINARY_API_KEY'),
+    'API_SECRET': env('CLOUDINARY_API_SECRET'),
 }
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
@@ -87,7 +91,7 @@ INSTALLED_APPS = [
     'features.reviews',
     'features.deals',
     # ──────────────────────────────────────────────────────
-    'django.contrib.staticfiles',
+    #'django.contrib.staticfiles',
     'cloudinary',
 ]
 
@@ -142,7 +146,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 #added for hosting #:
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage", 
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
@@ -203,7 +207,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 from datetime import timedelta
 import firebase_admin
