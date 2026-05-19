@@ -15,24 +15,10 @@ import environ
 import dj_database_url
 import os
 import json
-#from decouple import config #added for hosting
-#import cloudinary #added for hosting
-#import cloudinary.uploader #added for hosting
-#import cloudinary.api #added for hosting
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+from datetime import timedelta
+import firebase_admin
+from firebase_admin import credentials
 
-# Initialise environ
-env = environ.Env()
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
-
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': env('CLOUDINARY_API_KEY'),
-    'API_SECRET': env('CLOUDINARY_API_SECRET'),
-}
-
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -142,16 +128,9 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+ASGI_APPLICATION = 'config.asgi.application'
 
-#added for hosting #:
-STORAGES = {
-    "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
+
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 # previous database:
@@ -171,6 +150,24 @@ DATABASES = {
     )
 }
 
+# ── Cloudinary + Storage ───────────────────────────────────────────────────────
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': env('CLOUDINARY_API_KEY'),
+    'API_SECRET': env('CLOUDINARY_API_SECRET'),
+}
+
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 # Password validation
@@ -207,15 +204,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
+# ── Static files ───────────────────────────────────────────────────────────────
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-from datetime import timedelta
-import firebase_admin
-from firebase_admin import credentials
-import os
-
-ASGI_APPLICATION = 'config.asgi.application'
-
+# ── Redis + Channels ───────────────────────────────────────────────────────────
 REDIS_URL = env('REDIS_URL', default='redis://127.0.0.1:6379')
 
 CHANNEL_LAYERS = {
@@ -224,6 +217,7 @@ CHANNEL_LAYERS = {
         "CONFIG": {"hosts": [REDIS_URL]},
     },
 }
+
 
 REST_FRAMEWORK = {
       'DEFAULT_RENDERER_CLASSES': [
@@ -241,18 +235,22 @@ REST_FRAMEWORK = {
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+# ── Firebase ───────────────────────────────────────────────────────────────────
+
 firebase_cred_path = os.path.join(BASE_DIR, 'firebase-credentials.json')
 firebase_cred_json = env('FIREBASE_CREDENTIALS_JSON', default=None)
 
-if firebase_cred_json:
-    # Production: load from env variable
-    cred_dict = json.loads(firebase_cred_json)
-    cred = credentials.Certificate(cred_dict)
-    firebase_admin.initialize_app(cred)
-elif os.path.exists(firebase_cred_path):
-    # Local dev: load from file
-    cred = credentials.Certificate(firebase_cred_path)
-    firebase_admin.initialize_app(cred)
+# Prevent multiple initialization
+if not firebase_admin._apps:
+
+    if firebase_cred_json:
+        cred_dict = json.loads(firebase_cred_json)
+        cred = credentials.Certificate(cred_dict)
+        firebase_admin.initialize_app(cred)
+
+    elif os.path.exists(firebase_cred_path):
+        cred = credentials.Certificate(firebase_cred_path)
+        firebase_admin.initialize_app(cred)
 
 # Announcement settings
 MAX_PHOTOS_PER_ANNOUNCEMENT = 10
@@ -264,7 +262,7 @@ ANNOUNCEMENTS_PER_PAGE = 20 #optional
 FILE_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024  # 30MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024  
 
-from datetime import timedelta
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
@@ -278,5 +276,4 @@ EMAIL_USE_TLS       = True
 EMAIL_HOST_USER     = env('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL  = env('EMAIL_HOST_USER')
-#added for deploying
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
