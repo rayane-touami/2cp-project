@@ -47,7 +47,6 @@ CSRF_TRUSTED_ORIGINS = ['https://ritadjl.pythonanywhere.com', 'https://2cp-proje
 
 INSTALLED_APPS = [
     'daphne',
-    'cloudinary_storage',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
