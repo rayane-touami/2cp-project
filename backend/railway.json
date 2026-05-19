@@ -4,7 +4,7 @@
     "builder": "RAILPACK"
   },
   "deploy": {
-    "startCommand": "python manage.py migrate announcements 0007 --noinput && python manage.py migrate announcements 0008 --fake --noinput && python manage.py migrate --noinput && python manage.py collectstatic --noinput && daphne -b 0.0.0.0 -p $PORT config.asgi:application",
+    "startCommand": "python manage.py migrate announcements 0007 --noinput && python manage.py migrate announcements 0008 --fake --noinput && python manage.py migrate --noinput && python manage.py loaddata features/universities/fixtures/universities.json && python manage.py loaddata features/announcements/fixtures/categories.json && python manage.py collectstatic --noinput && daphne -b 0.0.0.0 -p $PORT config.asgi:application",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 3
   }
