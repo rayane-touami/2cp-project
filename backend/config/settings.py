@@ -41,8 +41,8 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', '10.0.2.2', 'localhost', 'ritadjl.pythonanywhere.com', '2cp-project-production-3593.up.railway.app']
-CSRF_TRUSTED_ORIGINS = ['https://ritadjl.pythonanywhere.com', 'https://2cp-project-production-3593.up.railway.app']
+ALLOWED_HOSTS = ['127.0.0.1', '10.0.2.2', 'localhost', 'ritadjl.pythonanywhere.com', 'twocp-project-mbil.onrender.com']
+CSRF_TRUSTED_ORIGINS = ['https://ritadjl.pythonanywhere.com', 'https://twocp-project-mbil.onrender.com']
 # Application definition
 
 INSTALLED_APPS = [
