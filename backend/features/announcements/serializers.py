@@ -93,10 +93,11 @@ class AnnouncementDetailSerializer(serializers.ModelSerializer):
             'id', 'title', 'description', 'price',
             'photos', 'seller', 'category', 'university',
             'category_id', 'university_id', 'location',
-            'phone_number', 'whatsapp', 'allow_chat',
+            'phone_number', 'whatsapp', 'telegram', 'instagram',
+            'facebook', 'allow_chat', 'condition', 'url',
             'status', 'created_at', 'updated_at',
             'views_count', 'average_rating', 'reviews_count', 'comments_count'
-        ]
+            ]
         read_only_fields = ['student_id', 'student_full_name', 'status', 'created_at', 'updated_at']
 
     def get_average_rating(self, obj):
@@ -129,9 +130,10 @@ class AnnouncementCreateSerializer(serializers.ModelSerializer):
         fields = [
             'title', 'description', 'price',
             'category', 'location', 'university',
-            'phone_number', 'whatsapp', 'allow_chat',
+            'phone_number', 'whatsapp', 'telegram', 'instagram', 
+            'facebook', 'allow_chat', 'condition', 'url',
             'photos'
-        ]
+            ]
 
     def validate_photos(self, value):
         if len(value) > 10:
@@ -158,7 +160,7 @@ class AnnouncementCreateSerializer(serializers.ModelSerializer):
          photos_data = validated_data.pop('photos', [])
          request = self.context.get('request')
 
-         with transaction.atomic():  # ← ADD THIS
+         with transaction.atomic():  
             announcement = Announcement.objects.create(
                 student_id=request.user.id,
                 student_full_name=request.user.full_name,
@@ -209,7 +211,8 @@ class CommentSerializer(serializers.ModelSerializer):
         read_only_fields = ['user_id']
 
     def get_replies(self, obj):
-        if obj.replies.exists():
-            return CommentSerializer(obj.replies.all(), many=True).data
+        replies = obj.replies.all() 
+        if replies:
+            return CommentSerializer(replies, many=True, context=self.context).data
         return []
 
