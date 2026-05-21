@@ -204,3 +204,64 @@ class Comment(models.Model):
         return f"Comment by {self.user_id} on {self.announcement.title}"
 
 
+
+class Report(models.Model):
+
+    class Reason(models.TextChoices):
+        SPAM          = 'spam',          'Spam'
+        SCAM          = 'scam',          'Arnaque'
+        INAPPROPRIATE = 'inappropriate', 'Contenu inapproprié'
+        FAKE          = 'fake',          'Faux produit / fausse annonce'
+        OFFENSIVE     = 'offensive',     'Contenu offensant'
+        OTHER         = 'other',         'Autre'
+
+    class Status(models.TextChoices):
+        PENDING  = 'pending',  'En attente'
+        RESOLVED = 'resolved', 'Résolu'
+        IGNORED  = 'ignored',  'Ignoré'
+
+    announcement = models.ForeignKey(
+        Announcement,
+        on_delete=models.CASCADE,
+        related_name='reports'
+    )
+    reporter_id  = models.UUIDField(db_index=True)   # UUID du user qui reporte
+    reason       = models.CharField(max_length=20, choices=Reason.choices)
+    description  = models.TextField(blank=True)       # détail libre (optionnel)
+
+    status       = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING
+    )
+
+    reviewed_by  = models.ForeignKey(
+        'authentication.User',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='reviewed_reports'
+    )
+    reviewed_at  = models.DateTimeField(null=True, blank=True)
+    # Admin qui a traité le report
+    resolved_by  = models.ForeignKey(
+        'authentication.User',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='resolved_reports'
+    )
+    resolved_at  = models.DateTimeField(null=True, blank=True)
+    admin_note   = models.TextField(blank=True)       # note interne de l'admin
+
+    created_at   = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'report'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', '-created_at']),
+            models.Index(fields=['announcement']),
+            models.Index(fields=['reporter_id']),
+        ]
+
+    def __str__(self):
+        return f"Report '{self.announcement.title}' — {self.get_reason_display()} [{self.status}]"

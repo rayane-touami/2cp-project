@@ -1,0 +1,23 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | CompusMarket Admin{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+  <a href="{% url 'admin:index' %}">
+     Compus Market
+  </a>
+</h1>
+{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'admin/css/custom_admin.css' %}">
+{% endblock %}
+
+{% block footer %}
+<div id="footer">
+  <p>CompusMarket Administration &mdash; Université d'Oran</p>
+</div>
+{% endblock %}  

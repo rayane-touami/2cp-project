@@ -1,3 +1,5 @@
-from django.db import models
+# Le modèle Report est défini dans features.announcements.models
+# Ce module le réexporte pour garder une logique claire
+from features.announcements.models import Report
 
-# Create your models here.
+__all__ = ['Report']
