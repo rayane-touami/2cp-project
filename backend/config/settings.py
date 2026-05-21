@@ -219,12 +219,11 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 }
 
-# ── Email (Resend) ────────────────────────────────────────────────────────────
-EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST          = 'smtp.resend.com'
-EMAIL_PORT          = 465
-EMAIL_USE_SSL       = True
-EMAIL_HOST_USER     = 'resend'
-EMAIL_HOST_PASSWORD = env('RESEND_API_KEY')
-DEFAULT_FROM_EMAIL  = 'onboarding@resend.dev'
-RESEND_API_KEY      = env('RESEND_API_KEY')
+# ── Email (Gmail SMTP) ────────────────────────────────────────────────────────
+EMAIL_BACKEND       = env('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST          = env('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT          = int(env('EMAIL_PORT', default='587'))
+EMAIL_USE_TLS       = env('EMAIL_USE_TLS', default='True') == 'True'
+EMAIL_HOST_USER     = env('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL  = env('DEFAULT_FROM_EMAIL', default='')

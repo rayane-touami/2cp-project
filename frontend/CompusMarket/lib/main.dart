@@ -1,9 +1,9 @@
 
 import 'package:compusmarket/screens/authentication/ON_Boadring.dart';
-import 'package:compusmarket/screens/profiles/His_profile.dart';
-import 'package:compusmarket/screens/profiles/My_profile.dart';
+//import 'package:compusmarket/screens/profiles/His_profile.dart';
+//import 'package:compusmarket/screens/profiles/My_profile.dart';
 import 'package:flutter/material.dart';
-import 'package:compusmarket/screens/home/home_screen.dart';
+//import 'package:compusmarket/screens/home/home_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Inter',
       ),
       //home:HomeScreen(),
-      home: MyProfileScreen(), // change to HomeScreen() or SignInScreen() whenever you want
+      home :OnBoadringScreen(), // change to HomeScreen() or SignInScreen() whenever you want
 
     );
   }

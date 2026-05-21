@@ -1,48 +1,28 @@
 from rest_framework import serializers
 from .models import Profile
+from features.universities.models import University
 
 
 class ProfileReadSerializer(serializers.ModelSerializer):
-    full_name = serializers.CharField(
-        source='student.user.full_name', read_only=True
-    )
+    full_name = serializers.CharField(source='student.user.full_name', read_only=True)
     email = serializers.SerializerMethodField()
-    member_since = serializers.DateTimeField(
-        source='student.user.created_at', read_only=True
-    )
+    member_since = serializers.DateTimeField(source='student.user.created_at', read_only=True)
     university = serializers.SerializerMethodField()
     avatar = serializers.SerializerMethodField()
     is_verified = serializers.SerializerMethodField()
     last_seen_display = serializers.SerializerMethodField()
-
-    # ─── FROM STUDENT MODEL ──────────────────────────────────
-    bio = serializers.CharField(
-        source='student.description',
-        read_only=True,
-        allow_null=True
-    )
-    phone = serializers.CharField(
-        source='student.user.phone',
-        read_only=True,
-        allow_null=True
-    )
+    bio = serializers.CharField(source='student.description', read_only=True, allow_null=True)
+    phone = serializers.CharField(source='student.user.phone', read_only=True, allow_null=True)
 
     class Meta:
         model = Profile
         fields = [
-            # Identity
             'id', 'full_name', 'email', 'phone', 'avatar',
             'university', 'is_verified', 'member_since',
             'last_seen_display', 'bio',
-
-            # Trust & Reputation
             'average_rating', 'total_reviews',
-
-            # Seller Stats
             'items_listed', 'completed_sales',
             'response_rate', 'response_time',
-
-            # Settings affecting public view
             'is_active_seller',
         ]
 
@@ -84,34 +64,40 @@ class ProfileReadSerializer(serializers.ModelSerializer):
 
 
 class ProfileWriteSerializer(serializers.ModelSerializer):
-    """
-    Allows owner to update profile settings.
-    Bio and avatar updates go through Student model directly.
-    """
     bio = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    university = serializers.PrimaryKeyRelatedField(
+        queryset=University.objects.all(),
+        write_only=True,
+        required=False
+    )
 
     class Meta:
         model = Profile
         fields = [
             'notifications_enabled', 'show_email',
             'is_active_seller', 'response_time', 'bio',
+            'university',
         ]
 
-    def update(self, instance, validated_data):
-        # Extract bio and save to Student.description
+    def update(self, instance, validated_data):  # ✅ correctly indented inside class
         bio = validated_data.pop('bio', None)
+        university = validated_data.pop('university', None)
+
         if bio is not None:
             instance.student.description = bio
             instance.student.save(update_fields=['description'])
 
-        # Update the rest on Profile model
+        if university is not None:
+            instance.student.university = university
+            instance.student.save(update_fields=['university'])
+
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
         return instance
 
 
-class ProfileOwnerSerializer(ProfileReadSerializer):
+class ProfileOwnerSerializer(ProfileReadSerializer):  # ✅ added missing class
     class Meta(ProfileReadSerializer.Meta):
         fields = ProfileReadSerializer.Meta.fields + [
             'notifications_enabled', 'show_email',

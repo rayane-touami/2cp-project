@@ -313,20 +313,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     try {
       // 1. Update account (name + optional password)
-      await ProfileApiService.updateAccount(
-        fullName: nameController.text.trim(),
-        currentPassword: hasPasswordChange
-            ? currentPasswordController.text
-            : null,
-        newPassword: hasPasswordChange
-            ? newPasswordController.text
-            : null,
-      );
+     await ProfileApiService.updateAccount(
+  fullName: nameController.text.trim(),
+  phone: numberController.text.trim(),
+  universityId: _selectedUniversityId,
+  currentPassword: hasPasswordChange ? currentPasswordController.text : null,
+  newPassword: hasPasswordChange ? newPasswordController.text : null,
+);
 
-      // 2. Update profile fields (bio, etc.)
-      await ProfileApiService.updateMyProfile(
-       bio: bioController.text.trim(),
-      );
+// Keep this for bio only
+await ProfileApiService.updateMyProfile(
+  bio: bioController.text.trim(),
+);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

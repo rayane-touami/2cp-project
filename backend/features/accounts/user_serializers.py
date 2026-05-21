@@ -10,7 +10,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['full_name', 'current_password', 'new_password']
+        fields = ['full_name', 'phone', 'current_password', 'new_password']  # ✅ added phone
 
     def validate(self, data):
         user = self.context['request'].user
@@ -33,6 +33,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         validated_data.pop('current_password', None)
         new_password = validated_data.pop('new_password', None)
         instance.full_name = validated_data.get('full_name', instance.full_name)
+        instance.phone = validated_data.get('phone', instance.phone)  # ✅ NEW
         if new_password:
             instance.set_password(new_password)
         instance.save()
