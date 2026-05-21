@@ -70,27 +70,28 @@ class ProfileApiService {
 
   // PATCH /api/users/me/
   static Future<void> updateAccount({
-    String? fullName,
-     String? phone,
-    String? currentPassword,
-    String? newPassword,
-  }) async {
-    final body = <String, dynamic>{};
-    if (fullName != null) body['full_name'] = fullName;
-    if (phone != null) body['phone'] = phone;
-    if (currentPassword != null) body['current_password'] = currentPassword;
-    if (newPassword != null) body['new_password'] = newPassword;
+  String? fullName,
+  String? phone,
+  String? universityId,
+  String? currentPassword,
+  String? newPassword,
+}) async {
+  final body = <String, dynamic>{};
+  if (fullName != null) body['full_name'] = fullName;
+  if (phone != null) body['phone'] = phone;
+  if (universityId != null) body['university_id'] = universityId;
+  if (currentPassword != null) body['current_password'] = currentPassword;
+  if (newPassword != null) body['new_password'] = newPassword;
 
-    final res = await http.patch(
-      Uri.parse('$baseUrl/users/me/'),
-      headers: headers,
-      body: jsonEncode(body),
-    );
-    if (res.statusCode != 200) {
-      throw Exception('Failed to update account: ${res.body}');
-    }
+  final res = await http.put(
+    Uri.parse('$baseUrl/auth/update-profile/'),
+    headers: headers,
+    body: jsonEncode(body),
+  );
+  if (res.statusCode != 200) {
+    throw Exception('Failed to update account: ${res.body}');
   }
-
+}
    // POST /api/users/logout/
   static Future<void> logout(String refreshToken) async {
     final res = await http.post(

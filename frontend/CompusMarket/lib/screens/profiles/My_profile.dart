@@ -1,4 +1,6 @@
 // ignore: file_names
+import 'package:compusmarket/screens/authentication/sign_in.dart';
+import 'package:compusmarket/screens/authentication/sign_up.dart';
 import 'package:compusmarket/screens/home/add_new_product.dart';
 import 'package:compusmarket/screens/profiles/Edit_profil.dart';
 import 'package:compusmarket/services/profile_api_service.dart';
@@ -136,21 +138,21 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
     }
   }
 
-  Future<void> _handleLogout() async {
-    Navigator.pop(context);
-    try {
-      await AuthService.logout();
-      if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Logout failed. Try again.')),
-        );
-      }
-    }
+ Future<void> _handleLogout() async {
+  Navigator.pop(context); // close settings bottom sheet
+  try {
+    await AuthService.logout();
+  } catch (e) {
+    debugPrint('Logout error: $e'); // don't block navigation on error
   }
+  // Always navigate to login regardless
+  if (mounted) {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => SignInScreen()),
+      (route) => false,
+    );
+  }
+}
 
   @override
   Widget build(BuildContext context) {
