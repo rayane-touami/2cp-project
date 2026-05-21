@@ -20,7 +20,7 @@ urlpatterns = [
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema')),
 
-    path('api/', include('features.universities.urls')),
+    path('api/universities/', include('features.universities.urls')),
 
     # Notifications API
     path('api/', include('features.notifications.urls')),
