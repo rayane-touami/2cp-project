@@ -49,7 +49,8 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
+
 
 ALLOWED_HOSTS = ['127.0.0.1', '10.0.2.2', 'localhost', 'ritadjl.pythonanywhere.com', '2cp-project-production-4365.up.railway.app']
 CSRF_TRUSTED_ORIGINS = ['https://ritadjl.pythonanywhere.com', 'https://2cp-project-production-4365.up.railway.app']
@@ -87,7 +88,6 @@ INSTALLED_APPS = [
     'features.reviews',
     'features.deals',
     # ──────────────────────────────────────────────────────
-    'django.contrib.staticfiles',
     'cloudinary',
 ]
 
@@ -160,13 +160,23 @@ STORAGES = {
 #new one :
 # Database — reads DATABASE_URL set by Railway automatically
 #changed to postgres
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
-        conn_max_age=600,
-    )
-}
+# Database
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+        )
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -204,6 +214,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
 from datetime import timedelta
 import firebase_admin
@@ -276,3 +287,17 @@ EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL  = env('EMAIL_HOST_USER')
 #added for deploying
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": (
+            "django.contrib.staticfiles.storage.StaticFilesStorage"
+            if DEBUG else
+            "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        ),
+    },
+}
+# Compatibilité cloudinary_storage avec Django 4.2+
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"

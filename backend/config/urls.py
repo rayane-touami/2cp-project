@@ -10,7 +10,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 # ──────────────────────────────────────────────────────────
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('api/moderation/', include('features.moderation.urls')),
     path('api/auth/', include('features.authentication.urls')),
     path('api/', include('features.announcements.urls')),
     # ──  (messaging module) ──────────────────
@@ -32,4 +32,6 @@ urlpatterns = [
     path('api/users/', include('features.accounts.user_urls')),
     # ──────────────────────────────────────────────────────
     path('', SpectacularSwaggerView.as_view(url_name='schema'), name='home'),
+
+     path('admin/', admin.site.urls),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
