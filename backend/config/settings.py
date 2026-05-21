@@ -283,5 +283,5 @@ DEFAULT_FROM_EMAIL = 'onboarding@resend.dev'
 #DEFAULT_FROM_EMAIL  = env('EMAIL_HOST_USER')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+RESEND_API_KEY = env('RESEND_API_KEY')
 
