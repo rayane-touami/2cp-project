@@ -315,6 +315,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       // 1. Update account (name + optional password)
       await ProfileApiService.updateAccount(
         fullName: nameController.text.trim(),
+        phone: numberController.text.trim(),
         currentPassword: hasPasswordChange
             ? currentPasswordController.text
             : null,
@@ -326,6 +327,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       // 2. Update profile fields (bio, etc.)
       await ProfileApiService.updateMyProfile(
        bio: bioController.text.trim(),
+      universityId: _selectedUniversityId,
       );
 
       if (mounted) {

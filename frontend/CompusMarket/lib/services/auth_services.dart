@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 
-const String baseUrl = 'https://2cp-project-production-4365.up.railway.app/api/auth';
+const String baseUrl = 'http://10.0.2.2:8000/api/auth';
 class AuthService {
     static String accessToken = '';
   static String refreshToken = '';

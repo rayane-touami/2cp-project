@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 
 class ProfileApiService {
-  static const String baseUrl = 'http://ritadjl.pythonanywhere.com/api';
+  static const String baseUrl = 'http://10.0.2.2:8000/api';
 
   static String token = '';
 
@@ -49,6 +49,7 @@ class ProfileApiService {
     bool? isActiveSeller,
     String? responseTime,
     String? bio,
+    String? universityId, 
   }) async {
     final body = <String, dynamic>{};
     if (notificationsEnabled != null) body['notifications_enabled'] = notificationsEnabled;
@@ -56,6 +57,7 @@ class ProfileApiService {
     if (isActiveSeller != null) body['is_active_seller'] = isActiveSeller;
     if (responseTime != null) body['response_time'] = responseTime;
     if (bio != null) body['bio'] = bio;
+     if (universityId != null) body['university'] = universityId; 
 
     final res = await http.patch(
       Uri.parse('$baseUrl/profiles/me/update/'),
@@ -69,11 +71,13 @@ class ProfileApiService {
   // PATCH /api/users/me/
   static Future<void> updateAccount({
     String? fullName,
+     String? phone,
     String? currentPassword,
     String? newPassword,
   }) async {
     final body = <String, dynamic>{};
     if (fullName != null) body['full_name'] = fullName;
+    if (phone != null) body['phone'] = phone;
     if (currentPassword != null) body['current_password'] = currentPassword;
     if (newPassword != null) body['new_password'] = newPassword;
 
