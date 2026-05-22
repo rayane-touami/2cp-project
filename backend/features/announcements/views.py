@@ -16,7 +16,8 @@ from .serializers import (
     FavoriteSerializer,
     UniversitySerializer,
     ReviewSerializer,
-    CommentSerializer
+    CommentSerializer,
+    MyAnnouncementSerializer,
 )
 from features.notifications.signals import (
     notify_new_favorite,
@@ -269,7 +270,7 @@ class UniversityListAPIView(generics.ListAPIView):
 
 
 class MyAnnouncementsAPIView(generics.ListAPIView):
-    serializer_class = AnnouncementListSerializer
+    serializer_class = MyAnnouncementSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -282,13 +283,53 @@ class MyAnnouncementsAPIView(generics.ListAPIView):
         ).order_by('-created_at')
 
 
+#class AnnouncementUpdateAPIView(generics.UpdateAPIView):
+ #   serializer_class = AnnouncementCreateSerializer
+  #  permission_classes = [IsAuthenticated]
+#
+ #   def get_queryset(self):
+  #      return Announcement.objects.filter(student_id=self.request.user.id)
+
 class AnnouncementUpdateAPIView(generics.UpdateAPIView):
-    serializer_class = AnnouncementCreateSerializer
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
     def get_queryset(self):
         return Announcement.objects.filter(student_id=self.request.user.id)
 
+    def get_serializer_class(self):
+        return AnnouncementCreateSerializer
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        # map category/university if sent as IDs
+        data = request.data.copy()
+
+        serializer = AnnouncementCreateSerializer(
+            instance,
+            data=data,
+            partial=True,
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        # handle photos if sent
+        photos = request.FILES.getlist('photos')
+        if photos:
+            instance.photos.all().delete()
+            for position, photo_file in enumerate(photos, start=1):
+                Photo.objects.create(
+                    announcement=instance,
+                    image=photo_file,
+                    position=position
+                )
+
+        return Response(
+            MyAnnouncementSerializer(instance, context={'request': request}).data,
+            status=status.HTTP_200_OK
+        )
 
 class AnnouncementArchiveAPIView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]

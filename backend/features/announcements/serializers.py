@@ -216,3 +216,39 @@ class CommentSerializer(serializers.ModelSerializer):
             return CommentSerializer(replies, many=True, context=self.context).data
         return []
 
+# add new serializer for the edit listing profile :
+class MyAnnouncementSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='title')
+    priceValue = serializers.DecimalField(source='price', max_digits=10, decimal_places=2, coerce_to_string=False)
+    price = serializers.SerializerMethodField()
+    category = serializers.CharField(source='category.name')
+    university = serializers.CharField(source='university.name', allow_null=True)
+    image = serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Announcement
+        fields = [
+            'id', 'name', 'title', 'price', 'priceValue',
+            'description', 'category', 'university',
+            'location', 'image', 'images', 'status', 'created_at'
+        ]
+
+    def get_price(self, obj):
+        return f"{obj.price} DA"
+
+    def get_image(self, obj):
+        photos = getattr(obj, 'prefetched_photos', None) or obj.photos.all()
+        first = photos[0] if photos else None
+        if first and first.image:
+            request = self.context.get('request')
+            return request.build_absolute_uri(first.image.url) if request else first.image.url
+        return None
+
+    def get_images(self, obj):
+        request = self.context.get('request')
+        photos = getattr(obj, 'prefetched_photos', None) or obj.photos.all()
+        return [
+            request.build_absolute_uri(p.image.url) if request else p.image.url
+            for p in photos if p.image
+        ]
