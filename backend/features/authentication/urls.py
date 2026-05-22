@@ -1,6 +1,7 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from . import views
+from .views import GoogleLoginView, AppleLoginView
 
 urlpatterns = [
     path('universities/',   views.UniversityListView.as_view()),
@@ -15,4 +16,6 @@ urlpatterns = [
     path('resend-code/',    views.ResendVerificationCodeView.as_view()),
     path('forgot-password/', views.ForgotPasswordView.as_view()),
     path('reset-password/', views.ResetPasswordView.as_view()),
+    path('auth/google/', GoogleLoginView.as_view(), name='google-login'),
+    path('auth/apple/', AppleLoginView.as_view(), name='apple-login'),
 ]
