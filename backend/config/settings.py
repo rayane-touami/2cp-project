@@ -24,6 +24,7 @@ ALLOWED_HOSTS = [
 ]
 CSRF_TRUSTED_ORIGINS = [
     'https://ritadjl.pythonanywhere.com',
+    'https://twocp-project-1-gtam.onrender.com',
     'https://twocp-project-mbil.onrender.com',
 ]
 
