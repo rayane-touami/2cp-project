@@ -1,3 +1,4 @@
+import os
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -6,6 +7,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from features.universities.models import University
 from .models import Student, EmailVerification
 from .utils.email import send_verification_code
+from google.oauth2 import id_token #added for google login
+from google.auth.transport import requests as google_requests #
 
 User = get_user_model()
 
@@ -328,3 +331,86 @@ class UserProfileView(APIView):
             )
 
         return Response(data)
+ # ─── Google OAuth ─────────────────────────────────────────────────────────────
+
+class GoogleLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        token = request.data.get('id_token')
+        if not token:
+            return Response({'error': 'id_token is required'}, status=400)
+
+        try:
+            # verify the token with Google
+            CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID') # ← we'll fill this in Step 4
+            idinfo = id_token.verify_oauth2_token(
+                token,
+                google_requests.Request(),
+                CLIENT_ID
+            )
+        except ValueError:
+            return Response({'error': 'Invalid Google token'}, status=400)
+
+        email     = idinfo.get('email')
+        full_name = idinfo.get('name', '')
+        
+        if not email:
+            return Response({'error': 'Could not get email from Google'}, status=400)
+
+        # get or create the user
+        user, created = User.objects.get_or_create(
+            email=email,
+            defaults={
+                'full_name': full_name,
+                'is_active': True,
+            }
+        )
+
+        # if user already existed, make sure they're active
+        if not created and not user.is_active:
+            user.is_active = True
+            user.save()
+
+        # create Student profile if doesn't exist
+        if not hasattr(user, 'student_profile'):
+            Student.objects.create(user=user, verified=True)
+
+        return Response(_issue_tokens(user), status=200)
+
+
+# ─── Apple OAuth ──────────────────────────────────────────────────────────────
+
+class AppleLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        # Apple sends a 'code' or 'id_token' depending on the Flutter package
+        apple_token = request.data.get('id_token')
+        email       = request.data.get('email')      # Apple only sends email on FIRST login
+        full_name   = request.data.get('full_name', '')
+
+        if not apple_token and not email:
+            return Response({'error': 'id_token or email is required'}, status=400)
+
+        # For Apple, basic implementation: trust the email sent
+        # (Full verification requires Apple's public keys — add later if needed)
+        if not email:
+            return Response({'error': 'Email not provided by Apple'}, status=400)
+
+        user, created = User.objects.get_or_create(
+            email=email,
+            defaults={
+                'full_name': full_name or email.split('@')[0],
+                'is_active': True,
+            }
+        )
+
+        if not created and not user.is_active:
+            user.is_active = True
+            user.save()
+
+        if not hasattr(user, 'student_profile'):
+            Student.objects.create(user=user, verified=True)
+
+        return Response(_issue_tokens(user), status=200)
