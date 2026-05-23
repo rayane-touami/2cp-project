@@ -147,14 +147,7 @@ class AnnouncementCreateAPIView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data, context={'request': request})
 
         if serializer.is_valid():
-            try:                              # ← ADD THIS
-                self.perform_create(serializer)
-            except Exception as e:            # ← ADD THIS
-                import traceback              # ← ADD THIS
-                return Response(              # ← ADD THIS
-                    {'debug_error': str(e), 'trace': traceback.format_exc()},  # ← ADD THIS
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR  # ← ADD THIS
-                )                             # ← ADD THIS
+            self.perform_create(serializer)
 
             announcement = serializer.instance
             photos_data = []
@@ -283,14 +276,8 @@ class MyAnnouncementsAPIView(generics.ListAPIView):
         ).order_by('-created_at')
 
 
-#class AnnouncementUpdateAPIView(generics.UpdateAPIView):
- #   serializer_class = AnnouncementCreateSerializer
-  #  permission_classes = [IsAuthenticated]
-#
- #   def get_queryset(self):
-  #      return Announcement.objects.filter(student_id=self.request.user.id)
-
 class AnnouncementUpdateAPIView(generics.UpdateAPIView):
+    serializer_class = AnnouncementCreateSerializer
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
@@ -332,6 +319,7 @@ class AnnouncementUpdateAPIView(generics.UpdateAPIView):
         )
 
 class AnnouncementArchiveAPIView(generics.UpdateAPIView):
+    serializer_class = AnnouncementCreateSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -345,6 +333,7 @@ class AnnouncementArchiveAPIView(generics.UpdateAPIView):
 
 
 class AnnouncementStatusUpdateAPIView(generics.UpdateAPIView):
+    serializer_class = AnnouncementCreateSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
