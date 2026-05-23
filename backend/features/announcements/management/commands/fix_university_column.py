@@ -8,7 +8,6 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         with connection.cursor() as cursor:
 
-            # Fix announcement table
             cursor.execute("""
                 ALTER TABLE announcement 
                 ADD COLUMN IF NOT EXISTS university_id uuid NULL REFERENCES university(id) ON DELETE SET NULL;
@@ -45,37 +44,11 @@ class Command(BaseCommand):
                 ALTER TABLE announcement 
                 ADD COLUMN IF NOT EXISTS url varchar(200) NULL;
             """)
-
-            # Fix student_id type in announcement
             cursor.execute("""
                 ALTER TABLE announcement DROP COLUMN IF EXISTS student_id;
             """)
             cursor.execute("""
                 ALTER TABLE announcement ADD COLUMN student_id uuid;
-            """)
-
-            # Fix user_id type in comment
-            cursor.execute("""
-                ALTER TABLE comment DROP COLUMN IF EXISTS user_id;
-            """)
-            cursor.execute("""
-                ALTER TABLE comment ADD COLUMN user_id uuid;
-            """)
-
-            # Fix user_id type in favorite
-            cursor.execute("""
-                ALTER TABLE favorite DROP COLUMN IF EXISTS user_id;
-            """)
-            cursor.execute("""
-                ALTER TABLE favorite ADD COLUMN user_id uuid;
-            """)
-
-            # Fix user_id type in review
-            cursor.execute("""
-                ALTER TABLE review DROP COLUMN IF EXISTS user_id;
-            """)
-            cursor.execute("""
-                ALTER TABLE review ADD COLUMN user_id uuid;
             """)
 
         self.stdout.write('Done')
