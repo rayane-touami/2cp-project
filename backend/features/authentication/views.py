@@ -42,7 +42,7 @@ class RegisterView(APIView):
         email         = request.data.get('email')
         password      = request.data.get('password')
         full_name     = request.data.get('full_name')
-        phone         = request.data.get('phone', None)
+        phone         = request.data.get('phone') or request.data.get('phone_number')
         university_id = request.data.get('university_id', None)
 
         if not email or not password or not full_name:
