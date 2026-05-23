@@ -30,7 +30,7 @@ def send_verification_code(to_email: str, code: str, purpose: str):
 
     send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
         to=[{"email": to_email}],
-        sender={"email": "noreply@2cp-project.com", "name": "2CP Project"},
+        sender={"email": "ritadjhammane@gmail.com", "name": "2CP Project"},
         subject=subject,
         html_content=html
     )
