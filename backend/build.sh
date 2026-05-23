@@ -5,4 +5,5 @@ mkdir -p static
 python manage.py collectstatic --no-input
 python manage.py migrate --run-syncdb
 python manage.py fix_university_column
-python manage.py loaddata categories.json || echo "Fixture already loaded, skipping"
+python manage.py loaddata categories.json || echo "categories already loaded"
+python manage.py loaddata universities.json || echo "universities already loaded"
