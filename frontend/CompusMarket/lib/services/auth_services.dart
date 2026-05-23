@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 
-const String baseUrl = 'http://10.0.2.2:8000/api/auth';
+const String baseUrl = 'https://twocp-project-1-gtam.onrender.com/api/auth';
 class AuthService {
     static String accessToken = '';
   static String refreshToken = '';
