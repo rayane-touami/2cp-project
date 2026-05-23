@@ -82,10 +82,8 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
         _userUniversityName = authMe['university']?['name'] ?? '';
         _notificationsEnabled = profile['notifications_enabled'] ?? false;
         _showEmail = profile['show_email'] ?? false;
-        _myListings = [
-          ...globalRealProductsNotifier.value,
-          ...listings,
-        ];
+        _myListings = listings;
+       
         _itemsCount = listings.length;
         _dealsCount = deals.length;
         _averageRating = double.tryParse(
@@ -145,6 +143,9 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
   } catch (e) {
     debugPrint('Logout error: $e'); // don't block navigation on error
   }
+
+globalRealProductsNotifier.value = [];
+
   // Always navigate to login regardless
   if (mounted) {
     Navigator.of(context).pushAndRemoveUntil(
@@ -428,7 +429,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) => AddNewProductScreen(),
+                                        builder: (_) => AddNewProductScreen( product: product,),
                                       ),
                                     );
                                   },

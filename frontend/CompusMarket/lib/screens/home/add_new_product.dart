@@ -5,10 +5,11 @@ import '../../services/university_service.dart';
 import '../../services/category_service.dart';
 import 'home_products_grid.dart';
 import '../../services/announcement_service.dart';
-import '../../services/api_config.dart';
+//import '../../services/api_config.dart';
 
 class AddNewProductScreen extends StatefulWidget {
-  const AddNewProductScreen({super.key});
+  final Map<String, dynamic>? product;
+  const AddNewProductScreen({super.key, this.product});
 
   @override
   State<AddNewProductScreen> createState() => _AddNewProductScreenState();
@@ -22,7 +23,13 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _nameContactController = TextEditingController();
   int _currentImageIndex = 0;
+
+  // ✅ FIX: prevents double-submit when user taps button multiple times
+  bool _isSubmitting = false;
 
   final List<String> _types = [
     'Books',
@@ -38,12 +45,23 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
   List<dynamic> _universitiesList = [];
   List<dynamic> _categoriesList = [];
   bool _isLoadingUniversities = true;
+  bool _universitiesFailed = false;
   String? _selectedUniversity;
 
   @override
   void initState() {
     super.initState();
     _fetchData();
+
+    if (widget.product != null) {
+      final p = widget.product!;
+      _nameController.text = p['name'] ?? '';
+      _priceController.text = (p['priceValue'] ?? p['price'] ?? '')
+          .toString()
+          .replaceAll(RegExp(r'[^0-9]'), '');
+      _descriptionController.text = p['description'] ?? '';
+      _selectedType = p['category'] ?? 'Books';
+    }
   }
 
   @override
@@ -51,10 +69,19 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
     _nameController.dispose();
     _priceController.dispose();
     _descriptionController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _nameContactController.dispose();
     super.dispose();
   }
 
   Future<void> _fetchData() async {
+    if (mounted) {
+      setState(() {
+        _isLoadingUniversities = true;
+        _universitiesFailed = false;
+      });
+    }
     try {
       final results = await Future.wait([
         UniversityService.getUniversities(),
@@ -65,11 +92,146 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
           _universitiesList = results[0];
           _categoriesList = results[1];
           _isLoadingUniversities = false;
+          _universitiesFailed = false;
         });
       }
     } catch (e) {
       print('❌ Failed to load data: $e');
-      if (mounted) setState(() => _isLoadingUniversities = false);
+      if (mounted) {
+        setState(() {
+          _isLoadingUniversities = false;
+          _universitiesFailed = true;
+        });
+      }
+    }
+  }
+
+  Future<void> _submitForm() async {
+    // ✅ FIX: if already submitting, do nothing (prevents 3x requests)
+    if (_isSubmitting) return;
+
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_selectedImages.isEmpty && widget.product == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please add at least one picture')),
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final categoryId = () {
+  final c = _categoriesList.firstWhere(
+    (c) => c['name'].toString().toLowerCase() == _selectedType.toLowerCase(),
+    orElse: () => {'id': ''},
+  );
+    print('🔍 Category lookup: $_selectedType → ${c['id']}'); 
+  return c['id'].toString();
+}();
+
+    final universityId = () {
+      final u = _universitiesList.firstWhere(
+        (u) => u['name'] == _selectedUniversity,
+        orElse: () => {'id': ''},
+      );
+      return u['id'].toString();
+    }();
+
+    // ── EDIT MODE ──
+    if (widget.product != null) {
+      try {
+        final id = int.tryParse(widget.product!['id'].toString()) ?? 0;
+
+        await AnnouncementService.updateAnnouncement(
+          id,
+          {
+            'title': _nameController.text.trim(),
+            'description': _descriptionController.text.trim(),
+            'price': _priceController.text.trim(),
+            'category': categoryId,
+            'university': universityId,
+            'location': _selectedUniversity ?? '',
+          },
+          _selectedImages.isNotEmpty
+              ? _selectedImages.map((f) => f.path).toList()
+              : null,
+        );
+
+        Navigator.pop(context); // close loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Product updated successfully! ✅')),
+        );
+        Navigator.pop(context, true);
+      } catch (e) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update product: $e')),
+        );
+      } finally {
+        if (mounted) setState(() => _isSubmitting = false);
+      }
+
+    // ── ADD MODE ──
+    } else {
+      try {
+        // 1️⃣ Call API first — never add locally before API confirms
+        final apiProduct = await AnnouncementService.createAnnouncement(
+          title: _nameController.text.trim(),
+          description: _descriptionController.text.trim(),
+          price: _priceController.text.trim(),
+          categoryId: categoryId,
+          universityId: universityId,
+          location: _selectedUniversity ?? '',
+          phoneNumber: _phoneController.text.trim(),
+          photos: _selectedImages,
+        );
+
+        // 2️⃣ Only add locally AFTER API succeeds, using the real API id
+        globalRealProductsNotifier.value = [
+          {
+            'id': apiProduct['id'].toString(),
+            'name': apiProduct['title'] ?? _nameController.text.trim(),
+            'price':
+                '${apiProduct['price'] ?? _priceController.text.trim()} DA',
+            'priceValue': double.tryParse(
+                    (apiProduct['price'] ?? _priceController.text.trim())
+                        .toString()) ??
+                0.0,
+            'category': _selectedType,
+            'rating': 0.0,
+            'isRated': false,
+            'image': _selectedImages.isNotEmpty
+                ? _selectedImages.first.path
+                : '',
+            'images': _selectedImages.map((f) => f.path).toList(),
+            'description': _descriptionController.text.trim(),
+            'isReal': true,
+            'isUserAdded': true,
+          },
+          ...globalRealProductsNotifier.value,
+        ];
+
+        Navigator.pop(context); // close loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Product posted successfully! ✅')),
+        );
+        Navigator.pop(context); // go back to home
+      } catch (e) {
+        // 3️⃣ If API fails, do NOT add locally — show error
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to post product: $e')),
+        );
+      } finally {
+        if (mounted) setState(() => _isSubmitting = false);
+      }
     }
   }
 
@@ -99,9 +261,8 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                         height: screenHeight * 0.065,
                         decoration: BoxDecoration(
                           color: const Color(0xFFF2F2F2),
-                          borderRadius: BorderRadius.circular(
-                            screenWidth * 0.08,
-                          ),
+                          borderRadius:
+                              BorderRadius.circular(screenWidth * 0.08),
                         ),
                         child: Center(
                           child: Icon(
@@ -115,7 +276,9 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                     Expanded(
                       child: Center(
                         child: Text(
-                          'Add Product',
+                          widget.product != null
+                              ? 'Edit Product'
+                              : 'Add Product',
                           style: TextStyle(
                             fontSize: screenWidth * 0.065,
                             fontWeight: FontWeight.bold,
@@ -215,6 +378,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                 _buildTextField(
                   label: 'Name',
                   hint: 'Enter Your Name',
+                  controller: _nameContactController,
                   validator: (value) {
                     if (value != null && value.trim().isNotEmpty) {
                       if (RegExp(r'[0-9]').hasMatch(value))
@@ -228,6 +392,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                 _buildTextField(
                   label: 'Phone number',
                   hint: 'Enter Your Phone number',
+                  controller: _phoneController,
                   keyboardType: TextInputType.phone,
                   validator: (value) {
                     if (value != null && value.trim().isNotEmpty) {
@@ -242,12 +407,12 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                 _buildTextField(
                   label: 'Email',
                   hint: 'Enter Your Email',
+                  controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     if (value != null && value.trim().isNotEmpty) {
-                      if (!RegExp(
-                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                      ).hasMatch(value.trim())) {
+                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                          .hasMatch(value.trim())) {
                         return 'Please enter a valid email address';
                       }
                     }
@@ -258,107 +423,20 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
 
                 const Text(
                   'University',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  style:
+                      TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 8),
                 _buildUniversityDropdown(),
                 const SizedBox(height: 16),
 
                 // ── POST BUTTON ──
-                _buildMainButton(context, 'Post product', () async {
-                  if (_formKey.currentState!.validate()) {
-                    if (_selectedImages.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Please add at least one picture'),
-                        ),
-                      );
-                      return;
-                    }
-
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (_) =>
-                          const Center(child: CircularProgressIndicator()),
-                    );
-
-                    try {
-                      // ── Add locally FIRST so it always appears ──
-                      final newProduct = {
-                        'id': DateTime.now().millisecondsSinceEpoch.toString(),
-                        'name': _nameController.text.trim(),
-                        'price': '${_priceController.text.trim()} DA',
-                        'priceValue':
-                            double.tryParse(_priceController.text.trim()) ??
-                            0.0,
-                        'category': _selectedType,
-                        'rating': 0.0,
-                        'isRated': false,
-                        'image': _selectedImages.first.path,
-                        'images': _selectedImages.map((f) => f.path).toList(),
-                        'description': _descriptionController.text.trim(),
-                        'isReal': false,
-                        'isUserAdded': true,
-                      };
-
-                      globalRealProductsNotifier.value = [
-                        newProduct,
-                        ...globalRealProductsNotifier.value,
-                      ];
-
-                      // ── Then try to send to API ──
-                      const categoryMap = {
-                        'Books': '1',
-                        'Clothing': '2',
-                        'Electronics': '3',
-                        'Furniture': '4',
-                        'Sports': '5',
-                        'Vehicles': '6',
-                        'Accessories': '7',
-                      };
-                      final categoryId = categoryMap[_selectedType] ?? '1';
-
-                      final universityId = () {
-                        final u = _universitiesList.firstWhere(
-                          (u) => u['name'] == _selectedUniversity,
-                          orElse: () => {'id': ''},
-                        );
-                        return u['id'].toString();
-                      }();
-
-                      try {
-                        await AnnouncementService.createAnnouncement(
-                          title: _nameController.text.trim(),
-                          description: _descriptionController.text.trim(),
-                          price: _priceController.text.trim(),
-                          categoryId: categoryId,
-                          universityId: universityId,
-                          location: _selectedUniversity ?? '',
-                          phoneNumber: '',
-                          photos: _selectedImages,
-                        );
-                      } catch (apiError) {
-                        print(
-                          '⚠️ API failed but product shown locally: $apiError',
-                        );
-                      }
-
-                      Navigator.pop(context); // close loading
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Product posted successfully! ✅'),
-                        ),
-                      );
-                      Navigator.pop(context); // go back to home
-                    } catch (e) {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Failed to post product: $e')),
-                      );
-                    }
-                  }
-                }),
+                // ✅ FIX: pass null when submitting so button is disabled
+                _buildMainButton(
+                  context,
+                  widget.product != null ? 'Save Changes' : 'Post product',
+                  _isSubmitting ? null : _submitForm,
+                ),
                 const SizedBox(height: 40),
               ],
             ),
@@ -389,7 +467,8 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
           autovalidateMode: AutovalidateMode.onUserInteraction,
           decoration: InputDecoration(
             hintText: hint,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            border:
+                OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
       ],
@@ -406,7 +485,8 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
             onTap: () => setState(() => _selectedType = type),
             child: Container(
               margin: const EdgeInsets.only(right: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color: isSelected
                     ? Colors.blue.withOpacity(0.15)
@@ -674,18 +754,32 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
         child: const Center(child: CircularProgressIndicator()),
       );
     }
-    if (_universitiesList.isEmpty) {
+
+    // ✅ FIX: show a retry button if universities failed to load
+    if (_universitiesFailed || _universitiesList.isEmpty) {
       return Container(
         height: 50,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey),
+          border: Border.all(color: Colors.red.shade300),
         ),
-        child: const Center(
-          child: Text('Failed to load universities or none available'),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'Failed to load universities',
+              style: TextStyle(color: Colors.red),
+            ),
+            const SizedBox(width: 8),
+            TextButton(
+              onPressed: _fetchData,
+              child: const Text('Retry'),
+            ),
+          ],
         ),
       );
     }
+
     return DropdownButtonFormField<String>(
       isExpanded: true,
       decoration: InputDecoration(
@@ -707,14 +801,16 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
         );
       }).toList(),
       onChanged: (value) => setState(() => _selectedUniversity = value),
-      validator: (value) => value == null ? 'Please select a university' : null,
+      validator: (value) =>
+          value == null ? 'Please select a university' : null,
     );
   }
 
+  // ✅ FIX: accepts nullable VoidCallback so passing null disables the button
   Widget _buildMainButton(
     BuildContext context,
     String text,
-    VoidCallback onPressed,
+    VoidCallback? onPressed,
   ) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
@@ -723,7 +819,9 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF1A73E8),
+          backgroundColor: onPressed == null
+              ? Colors.grey
+              : const Color(0xFF1A73E8),
           padding: EdgeInsets.symmetric(vertical: screenHeight * 0.02),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(screenWidth * 0.03),

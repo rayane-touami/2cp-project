@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class MsgService {
-  static const String baseUrl = 'https://2cp-project-production-4365.up.railway.app/api';  
+  static const String baseUrl = 'https://twocp-project-1-gtam.onrender.com/api';  
   static const String wsBase = 'wss://2cp-project-production-4365.up.railway.app/ws'; 
 
   static String currentUserEmail = '';

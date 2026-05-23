@@ -92,6 +92,10 @@ class AnnouncementService {
     final streamedResponse = await request.send();
     final response = await http.Response.fromStream(streamedResponse);
 
+print('📥 Response status: ${response.statusCode}');
+print('📥 Response body: ${response.body}');
+
+
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
@@ -139,7 +143,7 @@ class AnnouncementService {
   }) async {
     final request = http.MultipartRequest(
       'POST',
-      Uri.parse('${ApiConfig.baseUrl}/announcements/create'),
+      Uri.parse('${ApiConfig.baseUrl}/announcements/create/'),
     );
 
     final headers = await ApiConfig.getHeaders(isMultipart: true);

@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 
 class ProfileApiService {
-  static const String baseUrl = 'http://10.0.2.2:8000/api';
+  static const String baseUrl = 'https://twocp-project-1-gtam.onrender.com/api';
 
   static String token = '';
 
@@ -35,8 +35,8 @@ class ProfileApiService {
     headers: headers,
   );
 
-  debugPrint('STATUS: ${res.statusCode}');  // 👈 check status
-  debugPrint('BODY: ${res.body}');          // 👈 check response
+  debugPrint('STATUS: ${res.statusCode}'); 
+  debugPrint('BODY: ${res.body}');         
 
   if (res.statusCode == 200) return jsonDecode(res.body);
   throw Exception('Failed to load my profile');
