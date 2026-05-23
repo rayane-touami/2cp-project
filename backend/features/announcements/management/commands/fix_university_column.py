@@ -50,5 +50,27 @@ class Command(BaseCommand):
             cursor.execute("""
                 ALTER TABLE announcement ADD COLUMN student_id uuid;
             """)
+            # Fix user_id type in favorite
+            cursor.execute("""
+                ALTER TABLE favorite DROP COLUMN IF EXISTS user_id;
+            """)
+            cursor.execute("""
+                ALTER TABLE favorite ADD COLUMN user_id uuid;
+            """)
+            # Fix user_id type in comment
+            cursor.execute("""
+                ALTER TABLE comment DROP COLUMN IF EXISTS user_id;
+            """)
+            cursor.execute("""
+                ALTER TABLE comment ADD COLUMN user_id uuid;
+            """)
+
+            # Fix user_id type in review
+            cursor.execute("""
+                ALTER TABLE review DROP COLUMN IF EXISTS user_id;
+            """)
+            cursor.execute("""
+                ALTER TABLE review ADD COLUMN user_id uuid;
+            """)
 
         self.stdout.write('Done')
