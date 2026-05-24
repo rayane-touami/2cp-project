@@ -84,18 +84,27 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     );
   }
 
-  void _toggleRating() {
-    setState(() {
-      isRated = !isRated;
-      if (isRated) {
-        globalRatedProducts.add(widget.product);
-      } else {
-        globalRatedProducts.removeWhere(
-          (p) => (p['name'] ?? p['title']) == _productName,
-        );
-      }
-    });
+  void _toggleRating() async {
+  final bool isReal = widget.product['isReal'] == true;
+  setState(() {
+    isRated = !isRated;
+    if (isRated) {
+      globalRatedProducts.add(widget.product);
+    } else {
+      globalRatedProducts.removeWhere(
+        (p) => (p['name'] ?? p['title']) == _productName,
+      );
+    }
+  });
+
+  if (isReal && isRated) {
+    try {
+      await AnnouncementService.rateAnnouncement(widget.product['id']);
+    } catch (e) {
+      print('❌ Rating failed: $e');
+    }
   }
+}
 
   // ── Build image widget based on product type ──
   Widget _buildImage(String imagePath, {BoxFit fit = BoxFit.cover}) {
@@ -674,12 +683,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                '$_productRating Rate',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.amber,
-                                ),
-                              ),
+  'Rate',
+  style: const TextStyle(
+    fontWeight: FontWeight.bold,
+    color: Colors.amber,
+  ),
+),
                             ],
                           ),
                         ),

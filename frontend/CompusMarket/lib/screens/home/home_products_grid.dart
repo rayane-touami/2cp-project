@@ -74,18 +74,21 @@ class _HomeProductsGridState extends State<HomeProductsGrid> {
       );
       final List results = data['results'] ?? [];
       final real = results.take(5).map((item) {
-        return {
-          'id': item['id'],
-          'name': item['title'] ?? '',
-          'price': '${item['price']} DA',
-          'priceValue': double.tryParse(item['price'].toString()) ?? 0.0,
-          'category': item['category'] ?? '',
-          'rating': (item['average_rating'] ?? 0.0).toDouble(),
-          'isRated': false,
-          'image': item['photo'] ?? '',
-          'isReal': true,
-        };
-      }).toList();
+  return {
+    'id': item['id'],
+    'name': item['title'] ?? '',
+    'price': '${item['price']} DA',
+    'priceValue': double.tryParse(item['price'].toString()) ?? 0.0,
+    'category': item['category'] ?? '',
+    'rating': (item['average_rating'] ?? 0.0).toDouble(),
+    'isRated': false,
+    'image': item['photo'] ?? '',
+    'isReal': true,
+    'seller': item['seller'] ?? '',
+    'university': item['university'] ?? '',
+    'photos': item['photos'],
+  };
+}).toList();
 
       if (mounted) {
         setState(() {
@@ -411,24 +414,13 @@ class ProductCard extends StatelessWidget {
                         ),
                       ),
                       GestureDetector(
-                        onTap: onRatingToggle,
-                        child: Row(
-                          children: [
-                            Icon(
-                              isRated ? Icons.star : Icons.star_border,
-                              color: isRated ? Colors.amber : Colors.grey,
-                              size: screenWidth * 0.055 * 0.7,
-                            ),
-                            SizedBox(width: screenWidth * 0.01),
-                            Text(
-                              '${product['rating']}',
-                              style: TextStyle(
-                                  fontSize: screenWidth * 0.028,
-                                  color: Colors.grey),
-                            ),
-                          ],
-                        ),
-                      ),
+  onTap: onRatingToggle,
+  child: Icon(
+    isRated ? Icons.star : Icons.star_border,
+    color: isRated ? Colors.amber : Colors.grey,
+    size: screenWidth * 0.055 * 0.7,
+  ),
+),
                     ],
                   ),
                 ],

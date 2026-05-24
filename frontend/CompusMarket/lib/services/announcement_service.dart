@@ -202,4 +202,19 @@ print('📥 Response body: ${response.body}');
       throw Exception('Failed to post comment: ${response.body}');
     }
   }
+  /// Rate an announcement
+  static Future<void> rateAnnouncement(int announcementId) async {
+    final response = await http.post(
+      Uri.parse('${ApiConfig.baseUrl}/announcements/$announcementId/reviews/'),
+      headers: await ApiConfig.getHeaders(),
+      body: jsonEncode({
+        'rating': 5,
+        'comment': '',
+      }),
+    );
+
+    if (response.statusCode != 201) {
+      throw Exception('Failed to rate announcement: ${response.body}');
+    }
+  }
 }
