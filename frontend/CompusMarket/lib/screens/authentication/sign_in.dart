@@ -164,7 +164,24 @@ Widget build(BuildContext context) {
                       borderRadius: BorderRadius.circular(screenWidth * 0.025),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(screenWidth * 0.025),
-                        onTap: () {},
+                       onTap: () async {
+  try {
+    await AuthService.signInWithGoogle();
+    if (context.mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => HomeScreen()),
+        (route) => false,
+      );
+    }
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('❌ Google sign in failed: $e')),
+      );
+    }
+  }
+},
                         child: SizedBox(
                           width: screenWidth * 0.2,
                           height: screenHeight * 0.058,
@@ -178,7 +195,24 @@ Widget build(BuildContext context) {
                       borderRadius: BorderRadius.circular(10),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(10),
-                        onTap: () {},
+                       onTap: () async {
+  try {
+    await AuthService.signInWithApple();
+    if (context.mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => HomeScreen()),
+        (route) => false,
+      );
+    }
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('❌ Apple sign in failed: $e')),
+      );
+    }
+  }
+},
                         child: SizedBox(
                           width: screenWidth * 0.2,
                           height: screenHeight * 0.058,

@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "487741193559",
+    "project_id": "compusmarket-3d77b",
+    "storage_bucket": "compusmarket-3d77b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:487741193559:android:dca060e212537540f6d212",
+        "android_client_info": {
+          "package_name": "com.example.compusmarket"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "487741193559-th7ret7g6cdcj05a3chskkp0ehmfdauv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.compusmarket",
+            "certificate_hash": "da056d7db70f7cd7440931f81ad160a5067876fe"
+          }
+        },
+        {
+          "client_id": "487741193559-9e1h8s176ahqaar9so7uapeliu3vrfq9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDvf27h-RiEXBPMRdroRmw9VQPHR_vA1KI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "487741193559-9e1h8s176ahqaar9so7uapeliu3vrfq9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

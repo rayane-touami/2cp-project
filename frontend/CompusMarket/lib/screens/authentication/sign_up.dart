@@ -1,3 +1,4 @@
+import 'package:compusmarket/screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/standard_Title.dart';
 import '../../widgets/standard_textfield.dart';
@@ -175,7 +176,24 @@ SizedBox(height: screenHeight * 0.021,),
       borderRadius: BorderRadius.circular(screenWidth * 0.025),
       child: InkWell(
         borderRadius: BorderRadius.circular(screenWidth * 0.025),
-        onTap: () {},
+        onTap: () async {
+  try {
+    await AuthService.signInWithGoogle();
+    if (context.mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => HomeScreen()),
+        (route) => false,
+      );
+    }
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('❌ Google sign in failed: $e')),
+      );
+    }
+  }
+},
         child: SizedBox(
           width: screenWidth * 0.2,
           height: screenHeight * 0.058,
@@ -191,7 +209,24 @@ SizedBox(height: screenHeight * 0.021,),
       borderRadius: BorderRadius.circular(screenWidth * 0.025),
       child: InkWell(
         borderRadius: BorderRadius.circular(screenWidth * 0.025),
-        onTap: () {},
+      onTap: () async {
+  try {
+    await AuthService.signInWithApple();
+    if (context.mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => HomeScreen()),
+        (route) => false,
+      );
+    }
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('❌ Apple sign in failed: $e')),
+      );
+    }
+  }
+},
         child: SizedBox(
           width: screenWidth * 0.2,
           height:  screenHeight * 0.058,

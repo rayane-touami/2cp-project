@@ -138,7 +138,7 @@ print('📥 Response body: ${response.body}');
     required String categoryId,
     required String universityId,
     required String location,
-    required String phoneNumber,
+    String? phoneNumber,
     required List<File> photos,
   }) async {
     final request = http.MultipartRequest(
@@ -155,7 +155,9 @@ print('📥 Response body: ${response.body}');
     request.fields['category'] = categoryId;
     request.fields['university'] = universityId;
     request.fields['location'] = location;
-    request.fields['phone_number'] = phoneNumber;
+    if (phoneNumber != null && phoneNumber.isNotEmpty) {
+  request.fields['phone_number'] = phoneNumber;
+}
 
     for (final photo in photos) {
       request.files.add(await http.MultipartFile.fromPath('photos', photo.path));
@@ -167,6 +169,8 @@ print('📥 Response body: ${response.body}');
 
     final streamedResponse = await request.send();
     final response = await http.Response.fromStream(streamedResponse);
+    print('📥 POST Status: ${response.statusCode}');  // ← ADD THIS
+print('📥 POST Body: ${response.body}');     
 
     if (response.statusCode == 201) {
       return jsonDecode(response.body);
