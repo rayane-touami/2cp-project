@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -87,7 +88,7 @@ class UnreadCountView(APIView):
 class UserStatusView(APIView):
     def get(self, request, user_id):
         async def check_status():
-            r = aioredis.from_url("redis://127.0.0.1:6379")
+            r = aioredis.from_url(settings.REDIS_URL)  # was hardcoded 127.0.0.1
             result = await r.get(f"user_{user_id}_online")
             await r.aclose()
             return result
