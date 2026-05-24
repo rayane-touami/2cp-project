@@ -32,6 +32,7 @@ class PhotoSerializer(serializers.ModelSerializer):
 class AnnouncementListSerializer(serializers.ModelSerializer):
     photo = serializers.SerializerMethodField()
     seller = serializers.CharField(source='student_full_name')
+    seller_id = serializers.UUIDField(source='student_id')
     category = serializers.CharField(source='category.name')
     university = serializers.CharField(source='university.name', read_only=True)
     price = serializers.DecimalField(max_digits=10, decimal_places=2, coerce_to_string=False)
@@ -41,7 +42,7 @@ class AnnouncementListSerializer(serializers.ModelSerializer):
         model = Announcement
         fields = [
             'id', 'title', 'price', 'photo',
-            'seller', 'category', 'created_at', 'university',
+            'seller', 'seller_id','category', 'created_at', 'university',
             'is_favorited'
         ]
 
