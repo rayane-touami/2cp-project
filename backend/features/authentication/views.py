@@ -341,24 +341,32 @@ class GoogleLoginView(APIView):
         if not token:
             return Response({'error': 'id_token is required'}, status=400)
 
-        try:
-            # verify the token with Google
-            CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID') # ← we'll fill this in Step 4
-            idinfo = id_token.verify_oauth2_token(
-                token,
-                google_requests.Request(),
-                CLIENT_ID
-            )
-        except ValueError:
+        ALLOWED_CLIENT_IDS = [
+            os.environ.get('GOOGLE_CLIENT_ID'),
+            os.environ.get('GOOGLE_ANDROID_CLIENT_ID'),
+        ]
+
+        idinfo = None
+        for client_id in ALLOWED_CLIENT_IDS:
+            try:
+                idinfo = id_token.verify_oauth2_token(
+                    token,
+                    google_requests.Request(),
+                    client_id
+                )
+                break
+            except ValueError:
+                continue
+
+        if idinfo is None:
             return Response({'error': 'Invalid Google token'}, status=400)
 
         email     = idinfo.get('email')
         full_name = idinfo.get('name', '')
-        
+
         if not email:
             return Response({'error': 'Could not get email from Google'}, status=400)
 
-        # get or create the user
         user, created = User.objects.get_or_create(
             email=email,
             defaults={
@@ -367,18 +375,15 @@ class GoogleLoginView(APIView):
             }
         )
 
-        # if user already existed, make sure they're active
         if not created and not user.is_active:
             user.is_active = True
             user.save()
 
-        # create Student profile if doesn't exist
         if not hasattr(user, 'student_profile'):
             Student.objects.create(user=user, verified=True)
 
         return Response(_issue_tokens(user), status=200)
-
-
+    
 # ─── Apple OAuth ──────────────────────────────────────────────────────────────
 
 class AppleLoginView(APIView):
