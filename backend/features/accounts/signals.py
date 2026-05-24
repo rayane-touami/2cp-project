@@ -8,6 +8,6 @@ from .models import Profile
 def create_student_profile(sender, instance, created, **kwargs):
     """
     Auto-creates a Profile when a Student is created.
+    Uses get_or_create to be safe against duplicate calls.
     """
-    if created:
-        Profile.objects.create(student=instance)
+    Profile.objects.get_or_create(student=instance)
