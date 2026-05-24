@@ -185,13 +185,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
           categoryId: categoryId,
           universityId: universityId,
           location: _selectedUniversity ?? '',
-<<<<<<< Updated upstream
           phoneNumber: '',
-=======
-          phoneNumber: _phoneController.text.trim().isEmpty 
-    ? null 
-    : _phoneController.text.trim(),
->>>>>>> Stashed changes
           photos: _selectedImages,
         );
 
