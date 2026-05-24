@@ -174,7 +174,10 @@ class AnnouncementCreateAPIView(generics.CreateAPIView):
         
 
     def perform_create(self, serializer):
-        serializer.save()
+     serializer.save(
+        student_id=self.request.user.id,
+        student_full_name=f"{self.request.user.first_name} {self.request.user.last_name}".strip()
+    )
 
 
 class AnnouncementDetailAPIView(generics.RetrieveAPIView):
