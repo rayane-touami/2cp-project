@@ -380,7 +380,13 @@ class GoogleLoginView(APIView):
             user.save()
 
         if not hasattr(user, 'student_profile'):
-            Student.objects.create(user=user, verified=True)
+            student = Student.objects.create(user=user, verified=True)
+        else:
+            student = user.student_profile
+
+        # Ensure Profile exists (in case signal didn't fire)
+        from features.accounts.models import Profile
+        Profile.objects.get_or_create(student=student)
 
         return Response(_issue_tokens(user), status=200)
     
