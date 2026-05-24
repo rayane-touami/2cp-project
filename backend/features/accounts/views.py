@@ -6,12 +6,12 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from .models import Profile
-from .serializers import ProfileReadSerializer, ProfileWriteSerializer
+from .serializers import ProfileReadSerializer, ProfileWriteSerializer, ProfileOwnerSerializer
 from features.authentication.models import Student
 
 
 class PublicProfileView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, student_id):
         profile = get_object_or_404(Profile, student__id=student_id)
@@ -26,7 +26,7 @@ class MyProfileView(APIView):
         profile = get_object_or_404(Profile, student__user=request.user)
         profile.last_seen = timezone.now()
         profile.save(update_fields=['last_seen'])
-        serializer = ProfileReadSerializer(profile, context={'request': request})
+        serializer = ProfileOwnerSerializer(profile, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 

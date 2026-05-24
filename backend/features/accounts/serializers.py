@@ -17,7 +17,7 @@ class ProfileReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = [
-            'id', 'full_name', 'email', 'phone', 'avatar',
+            'id', 'full_name', 'email','avatar',
             'university', 'is_verified', 'member_since',
             'last_seen_display', 'bio',
             'average_rating', 'total_reviews',
@@ -97,8 +97,8 @@ class ProfileWriteSerializer(serializers.ModelSerializer):
         return instance
 
 
-class ProfileOwnerSerializer(ProfileReadSerializer):  # ✅ added missing class
+class ProfileOwnerSerializer(ProfileReadSerializer):
     class Meta(ProfileReadSerializer.Meta):
         fields = ProfileReadSerializer.Meta.fields + [
-            'notifications_enabled', 'show_email',
+            'phone', 'notifications_enabled', 'show_email',  # ← added phone
         ]
