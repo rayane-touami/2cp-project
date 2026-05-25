@@ -46,6 +46,15 @@ def notify_new_favorite(request, recipient_id, announcement_id, announcement_tit
 
 
 def notify_new_comment(request, recipient_id, announcement_id, comment_id, comment_preview):
+    if recipient_id is None:
+        # Log this for debugging
+        print(f"Warning: Cannot create notification - recipient_id is None for announcement {announcement_id}")
+        return  # Exit early without creating notification
+    
+    if not request or not request.user:
+        print(f"Warning: No request or user context for notification")
+        return
+    
     Notification.objects.create(
         user_id=recipient_id,
         type=Notification.Type.NEW_COMMENT,

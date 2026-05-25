@@ -174,10 +174,7 @@ class AnnouncementCreateAPIView(generics.CreateAPIView):
         
 
     def perform_create(self, serializer):
-     serializer.save(
-        student_id=self.request.user.id,
-        student_full_name=f"{self.request.user.first_name} {self.request.user.last_name}".strip()
-    )
+     serializer.save()
 
 
 class AnnouncementDetailAPIView(generics.RetrieveAPIView):
@@ -270,6 +267,8 @@ class MyAnnouncementsAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        qs = Announcement.objects.filter(student_id=self.request.user.id)
+        print(f"DEBUG: user={self.request.user.id}, count={qs.count()}")
         return Announcement.objects.filter(
             student_id=self.request.user.id
         ).select_related(
