@@ -4,6 +4,8 @@ from django.db import transaction
 from django.core.files.images import get_image_dimensions
 from .models import Announcement, Category, Photo, Favorite, Review, Comment
 from features.universities.models import University
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -206,14 +208,22 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     replies = serializers.SerializerMethodField()
+    user_full_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
-        fields = ['id', 'content', 'parent', 'replies', 'created_at', 'updated_at']
+        fields = ['id', 'content', 'parent', 'replies', 'user_id', 'user_full_name', 'created_at', 'updated_at']
         read_only_fields = ['user_id']
 
+    def get_user_full_name(self, obj):
+        try:
+            user = User.objects.get(id=obj.user_id)
+            return user.full_name
+        except User.DoesNotExist:
+            return 'Unknown'
+
     def get_replies(self, obj):
-        replies = obj.replies.all() 
+        replies = obj.replies.all()
         if replies:
             return CommentSerializer(replies, many=True, context=self.context).data
         return []
