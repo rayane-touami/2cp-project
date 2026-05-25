@@ -53,6 +53,7 @@ class MsgService {
       'listing': listingId,
     }),
   );
+  print('DEBUG 400 body: ${res.body}'); 
   if (res.statusCode == 200 || res.statusCode == 201) {
     return jsonDecode(res.body);
   }
