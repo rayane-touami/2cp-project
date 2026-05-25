@@ -14,7 +14,7 @@ class PublicProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, student_id):
-        profile = get_object_or_404(Profile, student__id=student_id)
+        profile = get_object_or_404(Profile, student__user__id=student_id)
         serializer = ProfileReadSerializer(profile, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
