@@ -2,6 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'home_products_grid.dart';
 import '../../services/announcement_service.dart';
+import '../../services/msg_service.dart';
+import '../../services/auth_services.dart';
+import '../chats/chat_in.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> product;
@@ -22,8 +25,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   late List<String> galleryImages;
 
   @override
-  void initState() {
-    super.initState();
+void initState() {
+  super.initState();
+  debugPrint('PRODUCT DATA: ${widget.product}'); // add this
 
     final productName = widget.product['name'] ?? widget.product['title'] ?? '';
 
@@ -787,13 +791,37 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           padding: EdgeInsets.symmetric(
               horizontal: screenWidth * 0.05, vertical: 15),
           child: ElevatedButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Connecting you to the seller...'),
-                ),
-              );
-            },
+            onPressed: () async {
+  try {
+final sellerId = widget.product['seller_id']?.toString();    if (sellerId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Seller info not available')),
+      );
+      return;
+    }
+    final conversation = await MsgService.getOrCreateConversation(
+      AuthService.accessToken,
+      sellerId,
+    );
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ChatsInScreen(
+            name: widget.product['seller'] ?? widget.product['sellerName'] ?? 'Seller',
+            conversationId: conversation['id'],
+            isNetwork: false,
+            isOnline: false,
+          ),
+        ),
+      );
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Could not open chat: $e')),
+    );
+  }
+},
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF1A73E8),
               shape: RoundedRectangleBorder(

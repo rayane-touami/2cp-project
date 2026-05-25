@@ -85,6 +85,7 @@ class _HomeProductsGridState extends State<HomeProductsGrid> {
     'image': item['photo'] ?? '',
     'isReal': true,
     'seller': item['seller'] ?? '',
+    'seller_id': item['seller_id']?.toString() ?? '',  // 👈 add this
     'university': item['university'] ?? '',
     'photos': item['photos'],
   };
