@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:compusmarket/services/api_config.dart';
+import 'package:compusmarket/services/auth_services.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 
@@ -10,11 +11,11 @@ class ProfileApiService {
   static String token = '';
 
   static Map<String, String> get headers => {
-    'Authorization': 'Bearer $token',
+    'Authorization': 'Bearer ${AuthService.accessToken}', 
     'Content-Type': 'application/json',
   };
  static Map<String, String> get multipartHeaders => {
-    'Authorization': 'Bearer $token',
+   'Authorization': 'Bearer ${AuthService.accessToken}',
   };
 
    // GET /api/profiles/{student_id}/

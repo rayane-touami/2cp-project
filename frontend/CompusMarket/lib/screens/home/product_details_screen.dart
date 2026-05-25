@@ -5,6 +5,7 @@ import '../../services/announcement_service.dart';
 import '../../services/msg_service.dart';
 import '../../services/auth_services.dart';
 import '../chats/chat_in.dart';
+import '../profiles/His_profile.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> product;
@@ -601,15 +602,23 @@ void initState() {
                     ),
                   ),
                   TextButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content:
-                                Text('Navigating to Seller Profile...')),
-                      );
-                    },
-                    child: const Text('View Profile'),
-                  ),
+  onPressed: () {
+    final sellerId = widget.product['seller_id']?.toString();
+    if (sellerId == null || sellerId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Seller profile not available')),
+      );
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => HisProfileScreen(sellerId: sellerId),
+      ),
+    );
+  },
+  child: const Text('View Profile'),
+),
                 ],
               ),
             ),
