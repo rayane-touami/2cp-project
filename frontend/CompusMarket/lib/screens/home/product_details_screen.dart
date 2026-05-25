@@ -5,12 +5,8 @@ import '../../services/announcement_service.dart';
 import '../../services/msg_service.dart';
 import '../../services/auth_services.dart';
 import '../chats/chat_in.dart';
-<<<<<<< HEAD
 import 'package:compusmarket/screens/profiles/My_profile.dart';
 
-=======
-import '../profiles/His_profile.dart';
->>>>>>> c5e4ec1d6b63001dbbcf80477f22e005769b9191
 
 class ProductDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> product;
@@ -650,33 +646,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   ),
                   TextButton(
   onPressed: () {
-<<<<<<< HEAD
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => MyProfileScreen(), // or HisProfileScreen if you want another user’s profile
-=======
-    final sellerId = widget.product['seller_id']?.toString();
-    if (sellerId == null || sellerId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Seller profile not available')),
-      );
-      return;
-    }
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => HisProfileScreen(sellerId: sellerId),
->>>>>>> c5e4ec1d6b63001dbbcf80477f22e005769b9191
       ),
     );
   },
   child: const Text('View Profile'),
 ),
-<<<<<<< HEAD
-
-=======
->>>>>>> c5e4ec1d6b63001dbbcf80477f22e005769b9191
                 ],
               ),
             ),

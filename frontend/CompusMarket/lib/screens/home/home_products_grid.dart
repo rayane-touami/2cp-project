@@ -15,20 +15,9 @@ final ValueNotifier<List<Map<String, dynamic>>> globalRealProductsNotifier =
 // ── 15 FIXED FAKE PRODUCTS ──
 const List<Map<String, dynamic>> _fakeProducts = [
   {'name': 'AirPods', 'price': '4500.00 DA', 'priceValue': 4500.00, 'category': 'Electronics', 'rating': 4.5, 'isRated': false, 'image': 'assets/images/products/airpods.jpg'},
-  {'name': 'Skate Board', 'price': '3000.00 DA', 'priceValue': 3000.00, 'category': 'Accessories', 'rating': 4.0, 'isRated': false, 'image': 'assets/images/products/skate.jpg'},
   {'name': 'Apple Watch', 'price': '15500.00 DA', 'priceValue': 15500.00, 'category': 'Electronics', 'rating': 3.5, 'isRated': false, 'image': 'assets/images/products/applewatch.jpg'},
-  {'name': 'Longhchamp Bag', 'price': '3500.00 DA', 'priceValue': 3500.00, 'category': 'Clothes', 'rating': 5.0, 'isRated': false, 'image': 'assets/images/products/bag.jpg'},
   {'name': 'Bike', 'price': '22500.00 DA', 'priceValue': 22500.00, 'category': 'Accessories', 'rating': 4.0, 'isRated': false, 'image': 'assets/images/products/bike.jpg'},
   {'name': 'Black Airpods', 'price': '2500.00 DA', 'priceValue': 2500.00, 'category': 'Electronics', 'rating': 3.5, 'isRated': false, 'image': 'assets/images/products/blackairpods.jpg'},
-  {'name': 'Sport Water Bottle', 'price': '1000.00 DA', 'priceValue': 1000.00, 'category': 'Accessories', 'rating': 4.0, 'isRated': false, 'image': 'assets/images/products/bottle.jpg'},
-  {'name': 'Casio Vintage Watch', 'price': '2000.00 DA', 'priceValue': 2000.00, 'category': 'Accessories', 'rating': 5.0, 'isRated': false, 'image': 'assets/images/products/casiowatch.jpg'},
-  {'name': 'Go Pro Camera', 'price': '345000.00 DA', 'priceValue': 345000.00, 'category': 'Electronics', 'rating': 3.5, 'isRated': false, 'image': 'assets/images/products/gopro.jpg'},
-  {'name': 'Apple Ipad', 'price': '900000.00 DA', 'priceValue': 900000.00, 'category': 'Electronics', 'rating': 4.0, 'isRated': false, 'image': 'assets/images/products/ipad.jpg'},
-  {'name': 'Iphone 17 Pro Max', 'price': '300000.00 DA', 'priceValue': 300000.00, 'category': 'Electronics', 'rating': 5.0, 'isRated': false, 'image': 'assets/images/products/iphone17promax.jpg'},
-  {'name': 'Macbook Air', 'price': '114500.00 DA', 'priceValue': 114500.00, 'category': 'Electronics', 'rating': 4.0, 'isRated': false, 'image': 'assets/images/products/macbookair.jpg'},
-  {'name': 'Microphone Professional', 'price': '9000.00 DA', 'priceValue': 9000.00, 'category': 'Electronics', 'rating': 3.5, 'isRated': false, 'image': 'assets/images/products/mic.jpg'},
-  {'name': 'Nintendo', 'price': '52500.00 DA', 'priceValue': 52500.00, 'category': 'Electronics', 'rating': 5.0, 'isRated': false, 'image': 'assets/images/products/nintendo.jpg'},
-  {'name': 'Play Station 5', 'price': '114500.00 DA', 'priceValue': 114500.00, 'category': 'Electronics', 'rating': 4.5, 'isRated': false, 'image': 'assets/images/products/ps5.jpg'},
 ];
 
 class HomeProductsGrid extends StatefulWidget {
