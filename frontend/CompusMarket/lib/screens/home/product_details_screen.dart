@@ -229,8 +229,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               commentsData.map(
                 (e) => {
                   'text': e['content'] ?? e['text'] ?? '',
-                  'user': e['user']?['username'] ?? e['author'] ?? 'User',
-                },
+'user': e['user_full_name'] ?? e['user']?['full_name'] ?? 'User',                },
               ),
             );
           });

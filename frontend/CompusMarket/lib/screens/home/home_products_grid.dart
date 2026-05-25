@@ -40,7 +40,6 @@ class HomeProductsGrid extends StatefulWidget {
 class _HomeProductsGridState extends State<HomeProductsGrid> {
   List<Map<String, dynamic>> _realProducts = [];
   
-  get listing => null;
 
   @override
   void initState() {
@@ -80,7 +79,6 @@ class _HomeProductsGridState extends State<HomeProductsGrid> {
     'id': item['id'],
     'name': item['title'] ?? '',
     'price': '${item['price']} DA',
-      'sellerId': listing['seller']?['id'],   // 👈 add this
     'priceValue': double.tryParse(item['price'].toString()) ?? 0.0,
     'category': item['category'] ?? '',
     'rating': (item['average_rating'] ?? 0.0).toDouble(),
