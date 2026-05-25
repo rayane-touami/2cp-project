@@ -9,6 +9,9 @@ from drf_spectacular.utils import extend_schema
 import redis.asyncio as aioredis
 from asgiref.sync import async_to_sync
 
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
 class StartConversationView(APIView):
     @extend_schema(request=StartConversationSerializer)
     def post(self, request):
@@ -16,18 +19,25 @@ class StartConversationView(APIView):
         listing = request.data.get('listing')
         buyer = request.user
 
+        try:
+            seller = User.objects.get(id=seller_id)
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'Seller not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
         conversation, created = Conversation.objects.get_or_create(
             buyer=buyer,
-            seller_id=seller_id,
+            seller=seller,
             listing=listing
         )
 
         serializer = ConversationSerializer(conversation)
-        if created:
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        )
 
 class ConversationListView(APIView):
     def get(self, request):
