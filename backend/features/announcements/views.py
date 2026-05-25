@@ -267,6 +267,8 @@ class MyAnnouncementsAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        qs = Announcement.objects.filter(student_id=self.request.user.id)
+        print(f"DEBUG: user={self.request.user.id}, count={qs.count()}")
         return Announcement.objects.filter(
             student_id=self.request.user.id
         ).select_related(

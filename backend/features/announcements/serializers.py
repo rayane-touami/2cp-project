@@ -69,6 +69,7 @@ class AnnouncementListSerializer(serializers.ModelSerializer):
 class AnnouncementDetailSerializer(serializers.ModelSerializer):
     photos = PhotoSerializer(many=True, read_only=True)
     seller = serializers.CharField(source='student_full_name')
+    seller_id = serializers.UUIDField(source='student_id')
     category = CategorySerializer(read_only=True)
     university = serializers.CharField(source='university.name', read_only=True)
     category_id = serializers.PrimaryKeyRelatedField(
@@ -92,7 +93,7 @@ class AnnouncementDetailSerializer(serializers.ModelSerializer):
         model = Announcement
         fields = [
             'id', 'title', 'description', 'price',
-            'photos', 'seller', 'category', 'university',
+            'photos', 'seller', 'seller_id', 'category', 'university',
             'category_id', 'university_id', 'location',
             'phone_number', 'whatsapp', 'telegram', 'instagram',
             'facebook', 'allow_chat', 'condition', 'url',
