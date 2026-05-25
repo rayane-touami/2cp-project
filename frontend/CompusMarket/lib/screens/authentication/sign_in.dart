@@ -275,11 +275,13 @@ Widget build(BuildContext context) {
 );
 
   } catch (e) {
-    // ignore: use_build_context_synchronously
+  // ignore: use_build_context_synchronously
+  if (mounted) { // ✅ Add this check
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('❌ Wrong email or password')),
+      SnackBar(content: Text(e.toString())),
     );
-  } finally {
+  }
+}finally {
     setState(() => _isLoading = false);
   }
 }
