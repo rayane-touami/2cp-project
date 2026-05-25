@@ -5,6 +5,8 @@ import '../../services/announcement_service.dart';
 import '../../services/msg_service.dart';
 import '../../services/auth_services.dart';
 import '../chats/chat_in.dart';
+import 'package:compusmarket/screens/profiles/My_profile.dart';
+
 
 class ProductDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> product;
@@ -25,9 +27,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   late List<String> galleryImages;
 
   @override
-void initState() {
-  super.initState();
-  debugPrint('PRODUCT DATA: ${widget.product}'); // add this
+  void initState() {
+    super.initState();
+    debugPrint('PRODUCT DATA: ${widget.product}'); // add this
 
     final productName = widget.product['name'] ?? widget.product['title'] ?? '';
 
@@ -46,8 +48,10 @@ void initState() {
           .where((url) => url.isNotEmpty)
           .toList();
     } else {
-      final image = widget.product['photo']?.toString() ??
-          widget.product['image']?.toString() ?? '';
+      final image =
+          widget.product['photo']?.toString() ??
+          widget.product['image']?.toString() ??
+          '';
       galleryImages = image.isNotEmpty ? [image] : [];
     }
 
@@ -57,11 +61,9 @@ void initState() {
   String get _productName =>
       widget.product['name'] ?? widget.product['title'] ?? '';
 
-  String get _productPrice =>
-      widget.product['price']?.toString() ?? '';
+  String get _productPrice => widget.product['price']?.toString() ?? '';
 
-  String get _productDescription =>
-      widget.product['description'] ?? '';
+  String get _productDescription => widget.product['description'] ?? '';
 
   double get _productRating =>
       (widget.product['average_rating'] ?? widget.product['rating'] ?? 0.0)
@@ -89,26 +91,26 @@ void initState() {
   }
 
   void _toggleRating() async {
-  final bool isReal = widget.product['isReal'] == true;
-  setState(() {
-    isRated = !isRated;
-    if (isRated) {
-      globalRatedProducts.add(widget.product);
-    } else {
-      globalRatedProducts.removeWhere(
-        (p) => (p['name'] ?? p['title']) == _productName,
-      );
-    }
-  });
+    final bool isReal = widget.product['isReal'] == true;
+    setState(() {
+      isRated = !isRated;
+      if (isRated) {
+        globalRatedProducts.add(widget.product);
+      } else {
+        globalRatedProducts.removeWhere(
+          (p) => (p['name'] ?? p['title']) == _productName,
+        );
+      }
+    });
 
-  if (isReal && isRated) {
-    try {
-      await AnnouncementService.rateAnnouncement(widget.product['id']);
-    } catch (e) {
-      print('❌ Rating failed: $e');
+    if (isReal && isRated) {
+      try {
+        await AnnouncementService.rateAnnouncement(widget.product['id']);
+      } catch (e) {
+        print('❌ Rating failed: $e');
+      }
     }
   }
-}
 
   // ── Build image widget based on product type ──
   Widget _buildImage(String imagePath, {BoxFit fit = BoxFit.cover}) {
@@ -118,8 +120,11 @@ void initState() {
 
     if (imagePath.isEmpty) {
       return Center(
-        child: Icon(Icons.image_outlined,
-            size: screenWidth * 0.2, color: Colors.grey[400]),
+        child: Icon(
+          Icons.image_outlined,
+          size: screenWidth * 0.2,
+          color: Colors.grey[400],
+        ),
       );
     }
 
@@ -129,8 +134,11 @@ void initState() {
         File(imagePath),
         fit: fit,
         errorBuilder: (context, error, stackTrace) => Center(
-          child: Icon(Icons.image_outlined,
-              size: screenWidth * 0.2, color: Colors.grey[400]),
+          child: Icon(
+            Icons.image_outlined,
+            size: screenWidth * 0.2,
+            color: Colors.grey[400],
+          ),
         ),
       );
     }
@@ -146,15 +154,18 @@ void initState() {
             child: CircularProgressIndicator(
               value: loadingProgress.expectedTotalBytes != null
                   ? loadingProgress.cumulativeBytesLoaded /
-                      loadingProgress.expectedTotalBytes!
+                        loadingProgress.expectedTotalBytes!
                   : null,
               color: const Color(0xFF1A73E8),
             ),
           );
         },
         errorBuilder: (context, error, stackTrace) => Center(
-          child: Icon(Icons.image_outlined,
-              size: screenWidth * 0.2, color: Colors.grey[400]),
+          child: Icon(
+            Icons.image_outlined,
+            size: screenWidth * 0.2,
+            color: Colors.grey[400],
+          ),
         ),
       );
     }
@@ -164,8 +175,11 @@ void initState() {
       imagePath,
       fit: fit,
       errorBuilder: (context, error, stackTrace) => Center(
-        child: Icon(Icons.image_outlined,
-            size: screenWidth * 0.2, color: Colors.grey[400]),
+        child: Icon(
+          Icons.image_outlined,
+          size: screenWidth * 0.2,
+          color: Colors.grey[400],
+        ),
       ),
     );
   }
@@ -204,17 +218,20 @@ void initState() {
       if (isFetching) return;
       isFetching = true;
       try {
-        final commentsData =
-            await AnnouncementService.getComments(widget.product['id']);
-            debugPrint('COMMENT DATA: ${commentsData.first}'); // ← add this
+        final commentsData = await AnnouncementService.getComments(
+          widget.product['id'],
+        );
+        debugPrint('COMMENT DATA: ${commentsData.first}'); // ← add this
 
         if (mounted) {
           setState(() {
             _comments = List<Map<String, dynamic>>.from(
-              commentsData.map((e) => {
-                'text': e['content'] ?? e['text'] ?? '',
-                'user': e['user']?['username'] ?? e['author'] ?? 'User',
-              }),
+              commentsData.map(
+                (e) => {
+                  'text': e['content'] ?? e['text'] ?? '',
+                  'user': e['user']?['username'] ?? e['author'] ?? 'User',
+                },
+              ),
             );
           });
           setStateBottomSheet(() {
@@ -258,76 +275,79 @@ void initState() {
                     const Text(
                       'Comments',
                       style: TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold),
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 10),
                     Expanded(
                       child: localIsLoading
                           ? const Center(child: CircularProgressIndicator())
                           : errorMessage.isNotEmpty
-                              ? Center(
-                                  child: Text(errorMessage,
-                                      style: const TextStyle(
-                                          color: Colors.red)))
-                              : _comments.isEmpty
-                                  ? const Center(
-                                      child: Text(
-                                        'No comments yet. Be the first!',
-                                        style: TextStyle(color: Colors.grey),
-                                      ),
-                                    )
-                                  : ListView.builder(
-                                      itemCount: _comments.length,
-                                      itemBuilder: (context, index) {
-                                        return Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 8.0),
-                                          child: Container(
-                                            padding: const EdgeInsets.all(12),
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey[100],
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                            ),
-                                            child: Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                const CircleAvatar(
-                                                  backgroundColor:
-                                                      Color(0xFF1A73E8),
-                                                  child: Icon(Icons.person,
-                                                      color: Colors.white),
-                                                ),
-                                                const SizedBox(width: 12),
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        _comments[index]
-                                                                ['user'] ??
-                                                            'User',
-                                                        style: const TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            fontSize: 13),
-                                                      ),
-                                                      const SizedBox(height: 4),
-                                                      Text(_comments[index]
-                                                              ['text'] ??
-                                                          ''),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      },
+                          ? Center(
+                              child: Text(
+                                errorMessage,
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            )
+                          : _comments.isEmpty
+                          ? const Center(
+                              child: Text(
+                                'No comments yet. Be the first!',
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: _comments.length,
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8.0,
+                                  ),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[100],
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const CircleAvatar(
+                                          backgroundColor: Color(0xFF1A73E8),
+                                          child: Icon(
+                                            Icons.person,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                _comments[index]['user'] ??
+                                                    'User',
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 13,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                _comments[index]['text'] ?? '',
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                     ),
                     const SizedBox(height: 10),
                     Row(
@@ -341,7 +361,8 @@ void initState() {
                                 borderRadius: BorderRadius.circular(25),
                               ),
                               contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 20),
+                                horizontal: 20,
+                              ),
                             ),
                           ),
                         ),
@@ -355,11 +376,15 @@ void initState() {
                               if (widget.product['isReal'] == true) {
                                 try {
                                   await AnnouncementService.createComment(
-                                      widget.product['id'], text);
+                                    widget.product['id'],
+                                    text,
+                                  );
                                   if (mounted) {
                                     setState(() {
-                                      _comments.add(
-                                          {'text': text, 'user': 'You'});
+                                      _comments.add({
+                                        'text': text,
+                                        'user': 'You',
+                                      });
                                     });
                                     setStateBottomSheet(() {});
                                   }
@@ -367,15 +392,14 @@ void initState() {
                                   if (mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
-                                          content: Text(
-                                              'Failed to post comment')),
+                                        content: Text('Failed to post comment'),
+                                      ),
                                     );
                                   }
                                 }
                               } else {
                                 setState(() {
-                                  _comments
-                                      .add({'text': text, 'user': 'You'});
+                                  _comments.add({'text': text, 'user': 'You'});
                                 });
                                 setStateBottomSheet(() {});
                               }
@@ -410,6 +434,20 @@ void initState() {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 60, left: 140),
+              child: Text(
+                'Product Info',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+
+            SizedBox(height: 20),
+
             // ── IMAGE SLIDESHOW + HEADER ──
             Stack(
               children: [
@@ -435,8 +473,10 @@ void initState() {
                           onPageChanged: (index) =>
                               setState(() => selectedImageIndex = index),
                           itemBuilder: (context, index) {
-                            return _buildImage(galleryImages[index],
-                                fit: BoxFit.cover);
+                            return _buildImage(
+                              galleryImages[index],
+                              fit: BoxFit.cover,
+                            );
                           },
                         ),
                         // ── Page indicator dots ──
@@ -450,12 +490,11 @@ void initState() {
                               children: List.generate(
                                 galleryImages.length,
                                 (index) => AnimatedContainer(
-                                  duration:
-                                      const Duration(milliseconds: 300),
+                                  duration: const Duration(milliseconds: 300),
                                   margin: const EdgeInsets.symmetric(
-                                      horizontal: 4),
-                                  width:
-                                      selectedImageIndex == index ? 20 : 8,
+                                    horizontal: 4,
+                                  ),
+                                  width: selectedImageIndex == index ? 20 : 8,
                                   height: 8,
                                   decoration: BoxDecoration(
                                     color: selectedImageIndex == index
@@ -476,7 +515,9 @@ void initState() {
                 SafeArea(
                   child: Padding(
                     padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.05, vertical: 10),
+                      horizontal: screenWidth * 0.05,
+                      vertical: 10,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -490,12 +531,15 @@ void initState() {
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 5)
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 5,
+                                ),
                               ],
                             ),
-                            child: const Icon(Icons.arrow_back,
-                                color: Colors.black),
+                            child: const Icon(
+                              Icons.arrow_back,
+                              color: Colors.black,
+                            ),
                           ),
                         ),
                         GestureDetector(
@@ -508,16 +552,16 @@ void initState() {
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 5)
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 5,
+                                ),
                               ],
                             ),
                             child: Icon(
                               isFavorite
                                   ? Icons.favorite
                                   : Icons.favorite_border,
-                              color:
-                                  isFavorite ? Colors.red : Colors.grey,
+                              color: isFavorite ? Colors.red : Colors.grey,
                             ),
                           ),
                         ),
@@ -535,14 +579,12 @@ void initState() {
               SizedBox(
                 height: 70,
                 child: ListView.builder(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.05),
+                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
                   scrollDirection: Axis.horizontal,
                   itemCount: galleryImages.length,
                   itemBuilder: (context, index) {
                     return GestureDetector(
-                      onTap: () =>
-                          setState(() => selectedImageIndex = index),
+                      onTap: () => setState(() => selectedImageIndex = index),
                       child: Container(
                         width: 70,
                         margin: const EdgeInsets.only(right: 15),
@@ -557,8 +599,10 @@ void initState() {
                           ),
                         ),
                         clipBehavior: Clip.hardEdge,
-                        child: _buildImage(galleryImages[index],
-                            fit: BoxFit.cover),
+                        child: _buildImage(
+                          galleryImages[index],
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     );
                   },
@@ -569,8 +613,7 @@ void initState() {
 
             // ── SELLER PROFILE ──
             Padding(
-              padding:
-                  EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
               child: Row(
                 children: [
                   const CircleAvatar(
@@ -595,21 +638,25 @@ void initState() {
                           widget.product['university']?.toString() ??
                               'Verified User',
                           style: const TextStyle(
-                              color: Colors.grey, fontSize: 13),
+                            color: Colors.grey,
+                            fontSize: 13,
+                          ),
                         ),
                       ],
                     ),
                   ),
                   TextButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content:
-                                Text('Navigating to Seller Profile...')),
-                      );
-                    },
-                    child: const Text('View Profile'),
-                  ),
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MyProfileScreen(), // or HisProfileScreen if you want another user’s profile
+      ),
+    );
+  },
+  child: const Text('View Profile'),
+),
+
                 ],
               ),
             ),
@@ -618,8 +665,7 @@ void initState() {
 
             // ── PRODUCT INFO ──
             Padding(
-              padding:
-                  EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -673,12 +719,15 @@ void initState() {
                         onTap: _toggleRating,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.amber.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                                color: Colors.amber.withOpacity(0.5)),
+                              color: Colors.amber.withOpacity(0.5),
+                            ),
                           ),
                           child: Row(
                             children: [
@@ -689,12 +738,12 @@ void initState() {
                               ),
                               const SizedBox(width: 6),
                               Text(
-  'Rate',
-  style: const TextStyle(
-    fontWeight: FontWeight.bold,
-    color: Colors.amber,
-  ),
-),
+                                'Rate',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.amber,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -704,17 +753,23 @@ void initState() {
                         onTap: () => _showCommentsSheet(context),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.grey.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                                color: Colors.grey.withOpacity(0.3)),
+                              color: Colors.grey.withOpacity(0.3),
+                            ),
                           ),
                           child: const Row(
                             children: [
-                              Icon(Icons.comment_outlined,
-                                  color: Colors.black87, size: 20),
+                              Icon(
+                                Icons.comment_outlined,
+                                color: Colors.black87,
+                                size: 20,
+                              ),
                               SizedBox(width: 6),
                               Text(
                                 'Comments',
@@ -735,25 +790,24 @@ void initState() {
                   // ── DESCRIPTION ──
                   const Text(
                     'Description',
-                    style: TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
                   _productDescription.isEmpty
                       ? Text(
                           'No description available.',
                           style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.grey[500],
-                              height: 1.5),
+                            fontSize: 15,
+                            color: Colors.grey[500],
+                            height: 1.5,
+                          ),
                         )
                       : Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               _productDescription,
-                              maxLines:
-                                  isDescriptionExpanded ? null : 3,
+                              maxLines: isDescriptionExpanded ? null : 3,
                               overflow: isDescriptionExpanded
                                   ? TextOverflow.visible
                                   : TextOverflow.ellipsis,
@@ -765,9 +819,10 @@ void initState() {
                             ),
                             const SizedBox(height: 5),
                             GestureDetector(
-                              onTap: () => setState(() =>
-                                  isDescriptionExpanded =
-                                      !isDescriptionExpanded),
+                              onTap: () => setState(
+                                () => isDescriptionExpanded =
+                                    !isDescriptionExpanded,
+                              ),
                               child: Text(
                                 isDescriptionExpanded
                                     ? 'Show less'
@@ -791,53 +846,55 @@ void initState() {
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(
-              horizontal: screenWidth * 0.05, vertical: 15),
-          child: ElevatedButton(
-       onPressed: () async {
-  try {
-    final sellerId = widget.product['seller_id']?.toString();
-    final listingId = widget.product['id']?.toString();
-print('DEBUG seller_id: $sellerId');   // ← add
-    print('DEBUG listing id: $listingId'); // ← add
-    if (sellerId == null || listingId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Seller info not available')),
-      );
-      return;
-    }
-
-    if (sellerId == MsgService.currentUserId) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text('This is your own listing')),
-  );
-  return;
-}
-
-    final conversation = await MsgService.getOrCreateConversation(
-      AuthService.accessToken,
-      sellerId,
-      listingId,
-    );
-
-    if (mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ChatsInScreen(
-            name: widget.product['seller'] ?? 'Seller',
-            conversationId: conversation['id'],
-            isNetwork: false,
-            isOnline: false,
+            horizontal: screenWidth * 0.05,
+            vertical: 15,
           ),
-        ),
-      );
-    }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Could not open chat: $e')),
-    );
-  }
-},
+          child: ElevatedButton(
+            onPressed: () async {
+              try {
+                final sellerId = widget.product['seller_id']?.toString();
+                final listingId = widget.product['id']?.toString();
+                print('DEBUG seller_id: $sellerId'); // ← add
+                print('DEBUG listing id: $listingId'); // ← add
+                if (sellerId == null || listingId == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Seller info not available')),
+                  );
+                  return;
+                }
+
+                if (sellerId == MsgService.currentUserId) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('This is your own listing')),
+                  );
+                  return;
+                }
+
+                final conversation = await MsgService.getOrCreateConversation(
+                  AuthService.accessToken,
+                  sellerId,
+                  listingId,
+                );
+
+                if (mounted) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ChatsInScreen(
+                        name: widget.product['seller'] ?? 'Seller',
+                        conversationId: conversation['id'],
+                        isNetwork: false,
+                        isOnline: false,
+                      ),
+                    ),
+                  );
+                }
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Could not open chat: $e')),
+                );
+              }
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF1A73E8),
               shape: RoundedRectangleBorder(

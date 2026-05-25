@@ -417,6 +417,8 @@ Positioned(
   'isReal': true,
   'isUserAdded': false,
   'id': listing['id'],
+    'sellerId': listing['seller']?['id'],   // 👈 add this
+
   'description': listing['description'] ?? '',
 };
 
