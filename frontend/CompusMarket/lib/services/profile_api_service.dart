@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:compusmarket/services/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 
@@ -279,5 +281,26 @@ class ProfileApiService {
       throw Exception('Failed to cancel deal: ${res.body}');
     }
   }
- 
+
+static Future<void> uploadProfilePicture(File image) async {
+  final request = http.MultipartRequest(
+    'POST',
+    Uri.parse('$baseUrl/auth/upload-picture/'),  // ✅ use baseUrl not ApiConfig
+  );
+  
+  // ✅ use multipartHeaders like the rest of the class
+  request.headers.addAll(multipartHeaders);
+  request.files.add(await http.MultipartFile.fromPath('profile_picture', image.path));
+
+  final streamedResponse = await request.send();
+  final response = await http.Response.fromStream(streamedResponse);
+  
+  print('📥 Avatar upload status: ${response.statusCode}');
+  print('📥 Avatar upload body: ${response.body}');
+  
+  if (response.statusCode != 200 && response.statusCode != 201) {
+    throw Exception('Failed to upload picture: ${response.body}');
+  }
+}
+
 }

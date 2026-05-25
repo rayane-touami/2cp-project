@@ -8,6 +8,8 @@ import 'package:compusmarket/services/profile_api_service.dart';
 import 'package:compusmarket/services/auth_services.dart';
 import 'package:flutter/material.dart';
 import 'package:compusmarket/screens/home/home_products_grid.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 class MyProfileScreen extends StatefulWidget {
   const MyProfileScreen({super.key});
@@ -35,6 +37,11 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
   bool _showEmail = false;
   bool _isLoading = true;
 
+  String? _avatarUrl;
+
+   File? _avatarImage;
+  final ImagePicker _picker = ImagePicker();
+
   @override
   void initState() {
     super.initState();
@@ -53,13 +60,16 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
   }
 
   Future<void> _loadAll() async {
-    setState(() => _isLoading = true);
+    if (mounted) setState(() => _isLoading = true);
     try {
       // Fetch all data in parallel
       final results = await Future.wait([
   ProfileApiService.getMyProfile(),
-  AuthService.getMe(),
-  AnnouncementService.getMyAnnouncements().catchError((_) => <dynamic>[]), // ← change this line
+   AuthService.getMe().catchError((_) => <String, dynamic>{}),
+ AnnouncementService.getMyAnnouncements().catchError((e) {
+  print('❌ getMyAnnouncements error: $e');
+  return <dynamic>[];
+}),
   ProfileApiService.getMyDeals().catchError((_) => <dynamic>[]),
   AuthService.getUniversities().catchError((_) => <dynamic>[]),
 ]);
@@ -74,7 +84,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
       debugPrint('PROFILE KEYS: ${profile.keys.toList()}');
       debugPrint('PROFILE DATA: $profile');
 
-      setState(() {
+     if (mounted) setState(() {
         _userName = profile['full_name'] ?? profile['name'] ?? '';
         _userEmail = authMe['email'] ?? '';
         _userPhone = authMe['phone'] ?? profile['phone'] ?? '';
@@ -92,6 +102,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
             ) ??
             0.0;
         _universities = universities;
+         _avatarUrl = profile['avatar'] ?? authMe['profile_picture'];
       });
     } catch (e) {
       debugPrint('Error loading profile: $e');
@@ -101,7 +112,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
         );
       }
     } finally {
-      setState(() => _isLoading = false);
+     if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -289,32 +300,29 @@ globalRealProductsNotifier.value = [];
                         ),
 
                         // ── Avatar ──
-                        Positioned(
-                          top: 0,
-                          child: Container(
-                            width: 120,
-                            height: 120,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.grey[400], // ✅ fixed from grey[350]
-                              border: Border.all(color: Colors.white, width: 3),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Colors.black26,
-                                  blurRadius: 8,
-                                  offset: Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: ClipOval(
-                              child: Icon(
-                                Icons.person,
-                                size: 60,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ),
-                        ),
+                       // In MyProfileScreen — replace the GestureDetector avatar with this simple version:
+Positioned(
+  top: 0,
+  child: Container(
+    width: 120,
+    height: 120,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: Colors.grey[400],
+      border: Border.all(color: Colors.white, width: 3),
+      boxShadow: const [
+        BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4)),
+      ],
+    ),
+   child: ClipOval(
+  child: _avatarImage != null
+      ? Image.file(_avatarImage!, fit: BoxFit.cover)
+      : _avatarUrl != null
+          ? Image.network(_avatarUrl!, fit: BoxFit.cover)
+          : Icon(Icons.person, size: 60, color: Colors.grey[600]),
+),
+  ),
+),
                       ],
                     ),
 
@@ -393,9 +401,8 @@ globalRealProductsNotifier.value = [];
                           itemCount: visibleListings.length,
                           itemBuilder: (context, index) {
                             final listing = visibleListings[index];
-                            final bool isUserAdded = listing['isUserAdded'] == true;
-                             print('📸 Listing photos: ${listing['photos']}');
-  print('📸 Full listing: $listing');
+                           
+                      
 
                             final product = {
   'name': listing['title'] ?? listing['name'] ?? '',
@@ -510,23 +517,31 @@ globalRealProductsNotifier.value = [];
                     title: const Text("Edit Profile",
                         style: TextStyle(fontWeight: FontWeight.bold)),
                     trailing: Text(">", style: TextStyle(fontSize: screenWidth * 0.04)),
-                    onTap: () async {
-                      Navigator.pop(context);
-                      final updated = await Navigator.push<bool>(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => EditProfileScreen(
-                            name: _userName,
-                            email: _userEmail,
-                            phone: _userPhone,
-                            bio: _userBio,
-                            universityId: _userUniversityId,
-                            universities: _universities,
-                          ),
-                        ),
-                      );
-                      if (updated == true) _loadAll();
-                    },
+                    // ✅ Replace with this:
+onTap: () async {
+  Navigator.pop(context);
+  final result = await Navigator.push<Map<String, dynamic>>(
+    context,
+    MaterialPageRoute(
+      builder: (_) => EditProfileScreen(
+        name: _userName,
+        email: _userEmail,
+        phone: _userPhone,
+        bio: _userBio,
+        universityId: _userUniversityId,
+        universities: _universities,
+      ),
+    ),
+  );
+  if (result?['updated'] == true) {
+    if (result?['avatar'] != null) {
+      setState(() => _avatarImage = result!['avatar'] as File);
+    } else {
+      setState(() => _avatarImage = null);
+    }
+    _loadAll();
+  }
+},
                   ),
                   const Divider(height: 1, color: Color(0xffdfe1e6)),
 
@@ -593,4 +608,76 @@ globalRealProductsNotifier.value = [];
       color: const Color(0xffdfe1e6),
     );
   }
+
+
+  void _showAvatarPickerSheet() {
+  showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) {
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildPickerOption(
+                icon: Icons.camera_alt,
+                label: 'Camera',
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickAvatar(ImageSource.camera);
+                },
+              ),
+              _buildPickerOption(
+                icon: Icons.photo_library,
+                label: 'Gallery',
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickAvatar(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+Future<void> _pickAvatar(ImageSource source) async {
+  final XFile? picked = await _picker.pickImage(source: source, imageQuality: 80);
+  if (picked != null && mounted) {
+    setState(() => _avatarImage = File(picked.path));
+    // TODO: upload to backend
+    // await ProfileApiService.updateAvatar(File(picked.path));
+  }
+}
+
+Widget _buildPickerOption({
+  required IconData icon,
+  required String label,
+  required VoidCallback onTap,
+}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.blue.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: Colors.blue, size: 30),
+        ),
+        const SizedBox(height: 8),
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+      ],
+    ),
+  );
+}
 }

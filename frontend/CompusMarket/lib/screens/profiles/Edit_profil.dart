@@ -1,7 +1,10 @@
+import 'package:compusmarket/services/auth_services.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/standard_textfield.dart';
 import '../../widgets/standard_Button.dart';
 import '../../services/profile_api_service.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final String name;
@@ -36,6 +39,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String? _selectedUniversityId;
   bool _submitted = false;
   bool _isLoading = false;
+
+  File? _avatarImage;
+bool _avatarRemoved = false;
+final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -98,24 +105,38 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               Center(
   child: GestureDetector(
     onTap: () => _showImagePickerOptions(context),
-    child: Container(
-      width: 100,
-      height: 100,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.grey[350],
-        border: Border.all(color: Colors.white, width: 3),
-        boxShadow: const [
-          BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4)),
-        ],
-      ),
-      child: ClipOval(
-        child: Icon(
-          Icons.person,
-          size: 55,
-          color: Colors.grey[600],
+    child: Stack(
+      children: [
+        Container(
+          width: 100,
+          height: 100,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.grey[400],
+            border: Border.all(color: Colors.white, width: 3),
+            boxShadow: const [
+              BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4)),
+            ],
+          ),
+          child: ClipOval(
+            child: _avatarRemoved || _avatarImage == null
+                ? Icon(Icons.person, size: 55, color: Colors.grey[600])
+                : Image.file(_avatarImage!, fit: BoxFit.cover),
+          ),
         ),
-      ),
+        Positioned(
+          bottom: 2,
+          right: 2,
+          child: Container(
+            padding: const EdgeInsets.all(5),
+            decoration: const BoxDecoration(
+              color: Color(0xFF1A73E8),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.camera_alt, size: 14, color: Colors.white),
+          ),
+        ),
+      ],
     ),
   ),
 ),
@@ -249,7 +270,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void _showImagePickerOptions(BuildContext context) {
   showModalBottomSheet(
     context: context,
-    shape: RoundedRectangleBorder(
+    shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (context) => Padding(
@@ -257,32 +278,57 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // little bar on top
           Container(
-            width: 40,
-            height: 4,
+            width: 40, height: 4,
             decoration: BoxDecoration(
               color: Colors.grey[300],
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           ListTile(
-            leading: Icon(Icons.photo_library, color: Colors.blue),
-            title: Text("Gallery"),
-            onTap: () {
+            leading: const Icon(Icons.photo_library, color: Colors.blue),
+            title: const Text("Gallery"),
+            onTap: () async {
               Navigator.pop(context);
-              // TODO: open gallery
+              final picked = await _picker.pickImage(
+                source: ImageSource.gallery, imageQuality: 80);
+              if (picked != null && mounted) {
+                setState(() {
+                  _avatarImage = File(picked.path);
+                  _avatarRemoved = false;
+                });
+              }
             },
           ),
           ListTile(
-            leading: Icon(Icons.camera_alt, color: Colors.blue),
-            title: Text("Camera"),
-            onTap: () {
+            leading: const Icon(Icons.camera_alt, color: Colors.blue),
+            title: const Text("Camera"),
+            onTap: () async {
               Navigator.pop(context);
-              // TODO: open camera
+              final picked = await _picker.pickImage(
+                source: ImageSource.camera, imageQuality: 80);
+              if (picked != null && mounted) {
+                setState(() {
+                  _avatarImage = File(picked.path);
+                  _avatarRemoved = false;
+                });
+              }
             },
           ),
+          // ✅ Remove photo option
+          if (_avatarImage != null && !_avatarRemoved)
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: Colors.red),
+              title: const Text("Remove photo", style: TextStyle(color: Colors.red)),
+              onTap: () {
+                Navigator.pop(context);
+                setState(() {
+                  _avatarImage = null;
+                  _avatarRemoved = true;
+                });
+              },
+            ),
         ],
       ),
     ),
@@ -328,13 +374,22 @@ await ProfileApiService.updateMyProfile(
   bio: bioController.text.trim(),
 );
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated! ✅')),
-        );
-        // Return true so MyProfileScreen knows to reload
-        Navigator.pop(context, true);
-      }
+     if (mounted) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('Profile updated! ✅')),
+  );
+  
+  // ✅ Upload avatar first
+  if (_avatarImage != null) {
+    await ProfileApiService.uploadProfilePicture(_avatarImage!);
+  }
+  
+  // ✅ Then navigate back
+  Navigator.pop(context, {
+    'updated': true,
+    'avatar': _avatarImage,
+  });
+}
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

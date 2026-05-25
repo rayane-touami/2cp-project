@@ -61,16 +61,29 @@ class AnnouncementService {
 
   /// 19. My announcements
   static Future<List<dynamic>> getMyAnnouncements() async {
-    final response = await http.get(
-      Uri.parse('${ApiConfig.baseUrl}/announcements/my/'),
-      headers: await ApiConfig.getHeaders(),
-    );
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+  final response = await http.get(
+    Uri.parse('${ApiConfig.baseUrl}/announcements/my/'),
+    headers: await ApiConfig.getHeaders(),
+  );
+
+  print('🔍 My announcements status: ${response.statusCode}');
+  print('🔍 My announcements body: ${response.body}');
+
+  if (response.statusCode == 200) {
+    final decoded = jsonDecode(response.body);
+    
+    // ✅ Handle both paginated and plain list responses
+    if (decoded is List) {
+      return decoded;
+    } else if (decoded is Map && decoded.containsKey('results')) {
+      return decoded['results'] as List<dynamic>;
     } else {
-      throw Exception('Failed to load my announcements: ${response.body}');
+      return [];
     }
+  } else {
+    throw Exception('Failed to load my announcements: ${response.body}');
   }
+}
 
   /// 16. Update announcement
   static Future<Map<String, dynamic>> updateAnnouncement(

@@ -23,11 +23,15 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+final TextEditingController _phoneController = TextEditingController();
+final TextEditingController _nameContactController = TextEditingController();
   
   int _currentImageIndex = 0;
 
-  // ✅ FIX: prevents double-submit when user taps button multiple times
+  
   bool _isSubmitting = false;
+  bool _isReserved = false;
 
   final List<String> _types = [
     'Books',
@@ -54,11 +58,14 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
     if (widget.product != null) {
       final p = widget.product!;
       _nameController.text = p['name'] ?? '';
-      _priceController.text = (p['priceValue'] ?? p['price'] ?? '')
-          .toString()
-          .replaceAll(RegExp(r'[^0-9]'), '');
+      final rawPrice = p['priceValue'] ?? p['price'] ?? '0';
+final parsedPrice = double.tryParse(rawPrice.toString().replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
+_priceController.text = parsedPrice.toInt().toString();
       _descriptionController.text = p['description'] ?? '';
       _selectedType = p['category'] ?? 'Books';
+     final location = p['location']?.toString() ?? '';
+_selectedUniversity = location.isNotEmpty ? location : null;
+       _isReserved = p['status'] == 'reserved';
     }
   }
 
@@ -67,6 +74,9 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
     _nameController.dispose();
     _priceController.dispose();
     _descriptionController.dispose();
+     _emailController.dispose();        
+  _phoneController.dispose();      
+  _nameContactController.dispose();  
     
     super.dispose();
   }
@@ -154,6 +164,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
             'category': categoryId,
             'university': universityId,
             'location': _selectedUniversity ?? '',
+            'status': _isReserved ? 'reserved' : 'active',
           },
           _selectedImages.isNotEmpty
               ? _selectedImages.map((f) => f.path).toList()
@@ -185,7 +196,6 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
           categoryId: categoryId,
           universityId: universityId,
           location: _selectedUniversity ?? '',
-          phoneNumber: '',
           photos: _selectedImages,
         );
 
@@ -363,6 +373,57 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                 const SizedBox(height: 8),
                 _buildUniversityDropdown(),
                 const SizedBox(height: 16),
+                const Text(
+  'Contact info',
+  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+),
+const SizedBox(height: 16),
+
+_buildTextField(
+  label: 'Name',
+  hint: 'Enter Your Name',
+  controller: _nameContactController,
+  validator: (value) {
+    if (value != null && value.trim().isNotEmpty) {
+      if (RegExp(r'[0-9]').hasMatch(value))
+        return 'Name must be string, not numbers';
+    }
+    return null;
+  },
+),
+const SizedBox(height: 16),
+
+_buildTextField(
+  label: 'Phone number',
+  hint: 'Enter Your Phone number',
+  controller: _phoneController,
+  keyboardType: TextInputType.phone,
+  validator: (value) {
+    if (value != null && value.trim().isNotEmpty) {
+      if (!RegExp(r'^\d+$').hasMatch(value.trim()))
+        return 'Please enter only numbers';
+    }
+    return null;
+  },
+),
+const SizedBox(height: 16),
+
+_buildTextField(
+  label: 'Email',
+  hint: 'Enter Your Email',
+  controller: _emailController,
+  keyboardType: TextInputType.emailAddress,
+  validator: (value) {
+    if (value != null && value.trim().isNotEmpty) {
+      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+          .hasMatch(value.trim())) {
+        return 'Please enter a valid email address';
+      }
+    }
+    return null;
+  },
+),
+const SizedBox(height: 16),
 
 
                 const Text(
@@ -378,11 +439,31 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                 
                 // ── POST BUTTON ──
                 // ✅ FIX: pass null when submitting so button is disabled
+// ── RESERVED TOGGLE (edit mode only) ──
+                if (widget.product != null) ...[
+                  SwitchListTile(
+                    title: const Text(
+                      'Mark as Reserved',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: const Text(
+                      'Product will appear as reserved in the home feed',
+                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                    value: _isReserved,
+                    activeColor: const Color(0xFF1A73E8),
+                    onChanged: (val) => setState(() => _isReserved = val),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // ── POST BUTTON ──
                 _buildMainButton(
                   context,
                   widget.product != null ? 'Save Changes' : 'Post product',
                   _isSubmitting ? null : _submitForm,
                 ),
+                const SizedBox(height: 40),
                 const SizedBox(height: 40),
               ],
             ),
@@ -752,7 +833,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
     );
   }
 
-  // ✅ FIX: accepts nullable VoidCallback so passing null disables the button
+  // accepts nullable VoidCallback so passing null disables the button
   Widget _buildMainButton(
     BuildContext context,
     String text,
@@ -785,4 +866,6 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
       ),
     );
   }
+
+  
 }

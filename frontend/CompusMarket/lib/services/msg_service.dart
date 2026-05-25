@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class MsgService {
   static const String baseUrl = 'https://twocp-project-1-gtam.onrender.com/api';  
-  static const String wsBase = 'wss://2cp-project-production-4365.up.railway.app/ws'; 
+  static const String wsBase = 'wss://twocp-project-1-gtam.onrender.com/ws';
 
   static String currentUserEmail = '';
   static String currentUserId = '';  // String because Me returns UUID
