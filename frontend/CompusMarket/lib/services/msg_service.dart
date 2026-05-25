@@ -39,7 +39,7 @@ class MsgService {
   }
 
   static String wsUrl(int conversationId, String token) =>
-      '$wsBase/$conversationId/?token=$token';
+      '$wsBase/chat/$conversationId/?token=$token';
       static Future<Map<String, dynamic>> getOrCreateConversation(
   String token,
   String sellerId,
