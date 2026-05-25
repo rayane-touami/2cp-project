@@ -1,80 +1,74 @@
 import 'dart:convert';
 import 'package:compusmarket/services/profile_api_service.dart';
+import 'package:compusmarket/services/msg_service.dart';
 import 'package:http/http.dart' as http;
-// add this import at the top
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
-
 const String baseUrl = 'https://twocp-project-1-gtam.onrender.com/api/auth';
+
 class AuthService {
-    static String accessToken = '';
+  static String accessToken = '';
   static String refreshToken = '';
 
   static Future<Map<String, dynamic>> login(String email, String password) async {
     final response = await http.post(
       Uri.parse('$baseUrl/login/'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'email': email,
-        'password': password,
-      }),
+      body: jsonEncode({'email': email, 'password': password}),
     );
-
-     if (response.statusCode == 200) {
+    if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       accessToken = data['access'];
       ProfileApiService.token = data['access'];
       final prefs = await SharedPreferences.getInstance();
-await prefs.setString('auth_token', data['access']);
+      await prefs.setString('auth_token', data['access']);
       refreshToken = data['refresh'];
+      final me = await getMe();
+      MsgService.currentUserId = me['id']?.toString() ?? '';
       return data;
     } else {
       throw Exception('Login failed');
     }
   }
- static Future<List<dynamic>> getUniversities() async {
-  final response = await http.get(Uri.parse('$baseUrl/universities/'));
-  print('🌐 Universities status: ${response.statusCode}');
-  print('🌐 Universities body: ${response.body}');
-  if (response.statusCode == 200) {
-    return jsonDecode(response.body);
-  } else {
-    throw Exception('Failed to load universities');
-  }
-}
 
-static Future<void> register(String email, String password, String fullName, String universityId,String phoneNumber,) async {
-  final response = await http.post(
-    Uri.parse('$baseUrl/register/'),
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({
-      'email': email,
-      'password': password,
-      'full_name': fullName,
-      'university_id': universityId,
-       'phone_number': phoneNumber,
-    }),
-  );
-
-if (response.headers['content-type']?.contains('application/json') == true) {
-    // Safe to parse JSON
-    final data = jsonDecode(response.body);
-    print('Success: $data');
-  } else {
-    // Server returned HTML error (like 502)
-    print('Server error: ${response.statusCode}');
-    // Show error message to user
+  static Future<List<dynamic>> getUniversities() async {
+    final response = await http.get(Uri.parse('$baseUrl/universities/'));
+    print('🌐 Universities status: ${response.statusCode}');
+    print('🌐 Universities body: ${response.body}');
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load universities');
+    }
   }
 
-    print('📦 Register response: ${response.body}'); 
-  if (response.statusCode != 200 && response.statusCode != 201) {
-    throw Exception('Register failed: ${response.body}');
+  static Future<void> register(String email, String password, String fullName, String universityId, String phoneNumber) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/register/'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': email,
+        'password': password,
+        'full_name': fullName,
+        'university_id': universityId,
+        'phone_number': phoneNumber,
+      }),
+    );
+    if (response.headers['content-type']?.contains('application/json') == true) {
+      final data = jsonDecode(response.body);
+      print('Success: $data');
+    } else {
+      print('Server error: ${response.statusCode}');
+    }
+    print('📦 Register response: ${response.body}');
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('Register failed: ${response.body}');
+    }
   }
-}
 
-static Future<Map<String, dynamic>> getMe() async {
+  static Future<Map<String, dynamic>> getMe() async {
     final response = await http.get(
       Uri.parse('$baseUrl/me/'),
       headers: {
@@ -86,7 +80,7 @@ static Future<Map<String, dynamic>> getMe() async {
     throw Exception('Failed to get user info');
   }
 
-static Future<void> logout() async {
+  static Future<void> logout() async {
     await http.post(
       Uri.parse('$baseUrl/logout/'),
       headers: {
@@ -97,115 +91,114 @@ static Future<void> logout() async {
     );
     accessToken = '';
     refreshToken = '';
+    MsgService.currentUserId = '';
     final prefs = await SharedPreferences.getInstance();
-  await prefs.remove('auth_token');
+    await prefs.remove('auth_token');
   }
 
   static Future<void> verifyEmail(String email, String code) async {
-  final response = await http.post(
-    Uri.parse('$baseUrl/verify-email/'),
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({'email': email, 'code': code}),
-  );
-  if (response.statusCode != 200) {
-    throw Exception('Invalid or expired code');
-  }
-  final data = jsonDecode(response.body);
-  accessToken = data['access'];
-  ProfileApiService.token = data['access'];
-  final prefs = await SharedPreferences.getInstance();
-await prefs.setString('auth_token', data['access']);
-  refreshToken = data['refresh'];
-}
-
-static Future<void> forgotPassword(String email) async {
-  final response = await http.post(
-    Uri.parse('$baseUrl/forgot-password/'),
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({'email': email}),
-  );
-  if (response.statusCode != 200) {
-    throw Exception('Email not found');
-  }
-}
-
-static Future<void> resetPassword(String email, String code, String newPassword) async {
-  final response = await http.post(
-    Uri.parse('$baseUrl/reset-password/'),
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({
-      'email': email,
-      'code': code,
-      'new_password': newPassword,
-    }),
-  );
-  if (response.statusCode != 200) {
-    throw Exception('Reset failed');
-  }
-}
-
-
-// Add inside AuthService class:
-static final GoogleSignIn _googleSignIn = GoogleSignIn(
-  serverClientId: '487741193559-9e1h8s176ahqaar9so7uapeliu3vrfq9.apps.googleusercontent.com',
-);
-
-static Future<Map<String, dynamic>> signInWithGoogle() async {
-  final googleUser = await _googleSignIn.signIn();
-  if (googleUser == null) throw Exception('Google sign in cancelled');
-
-  final googleAuth = await googleUser.authentication;
-  final idToken = googleAuth.idToken;
-  if (idToken == null) throw Exception('Failed to get ID token');
-
-  final response = await http.post(
-    Uri.parse('$baseUrl/google/'),
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({'id_token': idToken}),
-  );
-
-  if (response.statusCode == 200) {
+    final response = await http.post(
+      Uri.parse('$baseUrl/verify-email/'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'code': code}),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Invalid or expired code');
+    }
     final data = jsonDecode(response.body);
     accessToken = data['access'];
-    refreshToken = data['refresh'];
     ProfileApiService.token = data['access'];
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('auth_token', data['access']);
-    return data;
-  } else {
-    throw Exception('Google login failed: ${response.body}');
-  }
-}
-
-static Future<Map<String, dynamic>> signInWithApple() async {
-  final credential = await SignInWithApple.getAppleIDCredential(
-    scopes: [
-      AppleIDAuthorizationScopes.email,
-      AppleIDAuthorizationScopes.fullName,
-    ],
-  );
-
-  final response = await http.post(
-    Uri.parse('$baseUrl/apple/'),
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({
-      'id_token': credential.identityToken,
-      'email': credential.email ?? '',
-      'full_name': '${credential.givenName ?? ''} ${credential.familyName ?? ''}'.trim(),
-    }),
-  );
-
-  if (response.statusCode == 200) {
-    final data = jsonDecode(response.body);
-    accessToken = data['access'];
     refreshToken = data['refresh'];
-    ProfileApiService.token = data['access'];
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth_token', data['access']);
-    return data;
-  } else {
-    throw Exception('Apple login failed: ${response.body}');
+    final me = await getMe();
+    MsgService.currentUserId = me['id']?.toString() ?? '';
   }
-}
 
+  static Future<void> forgotPassword(String email) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/forgot-password/'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email}),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Email not found');
+    }
+  }
+
+  static Future<void> resetPassword(String email, String code, String newPassword) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/reset-password/'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': email,
+        'code': code,
+        'new_password': newPassword,
+      }),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Reset failed');
+    }
+  }
+
+  static final GoogleSignIn _googleSignIn = GoogleSignIn(
+    serverClientId: '487741193559-9e1h8s176ahqaar9so7uapeliu3vrfq9.apps.googleusercontent.com',
+  );
+
+  static Future<Map<String, dynamic>> signInWithGoogle() async {
+    final googleUser = await _googleSignIn.signIn();
+    if (googleUser == null) throw Exception('Google sign in cancelled');
+    final googleAuth = await googleUser.authentication;
+    final idToken = googleAuth.idToken;
+    if (idToken == null) throw Exception('Failed to get ID token');
+    final response = await http.post(
+      Uri.parse('$baseUrl/google/'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'id_token': idToken}),
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      accessToken = data['access'];
+      refreshToken = data['refresh'];
+      ProfileApiService.token = data['access'];
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', data['access']);
+      final me = await getMe();
+      MsgService.currentUserId = me['id']?.toString() ?? '';
+      return data;
+    } else {
+      throw Exception('Google login failed: ${response.body}');
+    }
+  }
+
+  static Future<Map<String, dynamic>> signInWithApple() async {
+    final credential = await SignInWithApple.getAppleIDCredential(
+      scopes: [
+        AppleIDAuthorizationScopes.email,
+        AppleIDAuthorizationScopes.fullName,
+      ],
+    );
+    final response = await http.post(
+      Uri.parse('$baseUrl/apple/'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'id_token': credential.identityToken,
+        'email': credential.email ?? '',
+        'full_name': '${credential.givenName ?? ''} ${credential.familyName ?? ''}'.trim(),
+      }),
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      accessToken = data['access'];
+      refreshToken = data['refresh'];
+      ProfileApiService.token = data['access'];
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', data['access']);
+      final me = await getMe();
+      MsgService.currentUserId = me['id']?.toString() ?? '';
+      return data;
+    } else {
+      throw Exception('Apple login failed: ${response.body}');
+    }
+  }
 }

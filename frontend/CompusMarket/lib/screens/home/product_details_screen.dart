@@ -791,24 +791,37 @@ void initState() {
           padding: EdgeInsets.symmetric(
               horizontal: screenWidth * 0.05, vertical: 15),
           child: ElevatedButton(
-            onPressed: () async {
+       onPressed: () async {
   try {
-final sellerId = widget.product['seller_id']?.toString();    if (sellerId == null) {
+    final sellerId = widget.product['seller_id']?.toString();
+    final listingId = widget.product['id']?.toString();
+
+    if (sellerId == null || listingId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Seller info not available')),
       );
       return;
     }
+
+    if (sellerId == MsgService.currentUserId) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('This is your own listing')),
+  );
+  return;
+}
+
     final conversation = await MsgService.getOrCreateConversation(
       AuthService.accessToken,
       sellerId,
+      listingId,
     );
+
     if (mounted) {
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) => ChatsInScreen(
-            name: widget.product['seller'] ?? widget.product['sellerName'] ?? 'Seller',
+            name: widget.product['seller'] ?? 'Seller',
             conversationId: conversation['id'],
             isNetwork: false,
             isOnline: false,

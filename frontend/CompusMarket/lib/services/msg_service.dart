@@ -40,13 +40,22 @@ class MsgService {
 
   static String wsUrl(int conversationId, String token) =>
       '$wsBase/$conversationId/?token=$token';
-      static Future<Map<String, dynamic>> getOrCreateConversation(String token, String otherUserId) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/messaging/conversations/'),
-      headers: headers(token),
-      body: jsonEncode({'other_user_id': otherUserId}),
-    );
-    if (res.statusCode == 200 || res.statusCode == 201) return jsonDecode(res.body);
-    throw Exception('Failed to create conversation: ${res.body}');
+      static Future<Map<String, dynamic>> getOrCreateConversation(
+  String token,
+  String sellerId,
+  String listingId,
+) async {
+  final res = await http.post(
+    Uri.parse('$baseUrl/messaging/conversations/start/'),
+    headers: headers(token),
+    body: jsonEncode({
+      'seller_id': sellerId,
+      'listing': listingId,
+    }),
+  );
+  if (res.statusCode == 200 || res.statusCode == 201) {
+    return jsonDecode(res.body);
   }
+  throw Exception('Failed to create conversation: ${res.body}');
+}
 }
