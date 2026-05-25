@@ -15,6 +15,7 @@ User = get_user_model()
 class StartConversationView(APIView):
     @extend_schema(request=StartConversationSerializer)
     def post(self, request):
+        print(f"DEBUG start conv: {request.data}")
         serializer = StartConversationSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
