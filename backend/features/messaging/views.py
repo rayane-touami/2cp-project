@@ -15,13 +15,23 @@ User = get_user_model()
 class StartConversationView(APIView):
     @extend_schema(request=StartConversationSerializer)
     def post(self, request):
-        seller_id = request.data.get('seller_id')
-        listing = request.data.get('listing')
+        serializer = StartConversationSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        seller_id = serializer.validated_data['seller_id']
+        listing = serializer.validated_data.get('listing', '')
         buyer = request.user
+
+        if str(buyer.id) == str(seller_id):
+            return Response(
+                {'error': 'Cannot start a conversation with yourself'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             seller = User.objects.get(id=seller_id)
-        except User.DoesNotExist:
+        except (User.DoesNotExist, ValueError):
             return Response(
                 {'error': 'Seller not found'},
                 status=status.HTTP_404_NOT_FOUND
@@ -33,9 +43,9 @@ class StartConversationView(APIView):
             listing=listing
         )
 
-        serializer = ConversationSerializer(conversation)
+        out = ConversationSerializer(conversation)
         return Response(
-            serializer.data,
+            out.data,
             status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
         )
 

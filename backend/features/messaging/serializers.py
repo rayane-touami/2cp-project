@@ -23,5 +23,5 @@ class ConversationSerializer(serializers.ModelSerializer):
         fields = ['id', 'buyer', 'seller', 'listing', 'created_at']
 
 class StartConversationSerializer(serializers.Serializer):
-    seller_id = serializers.UUIDField()
-    listing = serializers.CharField(max_length=255)
+    seller_id = serializers.CharField()  # accepts UUID or int string
+    listing = serializers.CharField(max_length=255, required=False, default='')

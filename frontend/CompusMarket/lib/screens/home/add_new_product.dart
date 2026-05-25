@@ -23,9 +23,6 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-final TextEditingController _phoneController = TextEditingController();
-final TextEditingController _nameContactController = TextEditingController();
   
   int _currentImageIndex = 0;
 
@@ -74,10 +71,7 @@ _selectedUniversity = location.isNotEmpty ? location : null;
     _nameController.dispose();
     _priceController.dispose();
     _descriptionController.dispose();
-     _emailController.dispose();        
-  _phoneController.dispose();      
-  _nameContactController.dispose();  
-    
+     
     super.dispose();
   }
 
@@ -373,59 +367,7 @@ _selectedUniversity = location.isNotEmpty ? location : null;
                 const SizedBox(height: 8),
                 _buildUniversityDropdown(),
                 const SizedBox(height: 16),
-                const Text(
-  'Contact info',
-  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-),
-const SizedBox(height: 16),
-
-_buildTextField(
-  label: 'Name',
-  hint: 'Enter Your Name',
-  controller: _nameContactController,
-  validator: (value) {
-    if (value != null && value.trim().isNotEmpty) {
-      if (RegExp(r'[0-9]').hasMatch(value))
-        return 'Name must be string, not numbers';
-    }
-    return null;
-  },
-),
-const SizedBox(height: 16),
-
-_buildTextField(
-  label: 'Phone number',
-  hint: 'Enter Your Phone number',
-  controller: _phoneController,
-  keyboardType: TextInputType.phone,
-  validator: (value) {
-    if (value != null && value.trim().isNotEmpty) {
-      if (!RegExp(r'^\d+$').hasMatch(value.trim()))
-        return 'Please enter only numbers';
-    }
-    return null;
-  },
-),
-const SizedBox(height: 16),
-
-_buildTextField(
-  label: 'Email',
-  hint: 'Enter Your Email',
-  controller: _emailController,
-  keyboardType: TextInputType.emailAddress,
-  validator: (value) {
-    if (value != null && value.trim().isNotEmpty) {
-      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-          .hasMatch(value.trim())) {
-        return 'Please enter a valid email address';
-      }
-    }
-    return null;
-  },
-),
-const SizedBox(height: 16),
-
-
+                
                 const Text(
                   'Product pictures',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

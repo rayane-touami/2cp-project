@@ -206,6 +206,8 @@ void initState() {
       try {
         final commentsData =
             await AnnouncementService.getComments(widget.product['id']);
+            debugPrint('COMMENT DATA: ${commentsData.first}'); // ← add this
+
         if (mounted) {
           setState(() {
             _comments = List<Map<String, dynamic>>.from(
@@ -795,7 +797,8 @@ void initState() {
   try {
     final sellerId = widget.product['seller_id']?.toString();
     final listingId = widget.product['id']?.toString();
-
+print('DEBUG seller_id: $sellerId');   // ← add
+    print('DEBUG listing id: $listingId'); // ← add
     if (sellerId == null || listingId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Seller info not available')),
