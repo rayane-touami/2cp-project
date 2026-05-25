@@ -164,7 +164,7 @@ class AnnouncementCreateSerializer(serializers.ModelSerializer):
          with transaction.atomic():  
             announcement = Announcement.objects.create(
                 student_id=request.user.id,
-                student_full_name=request.user.username,
+                student_full_name=request.user.full_name,
                 **validated_data 
             )
             for position, photo_file in enumerate(photos_data, start=1):
