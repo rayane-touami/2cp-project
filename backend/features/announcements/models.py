@@ -102,7 +102,7 @@ class Photo(models.Model):
         on_delete=models.CASCADE,
         related_name='photos'
     )
-    image    = models.ImageField(upload_to='announcements/%Y/%m/%d/')
+    image = models.ImageField(upload_to='announcements/%Y/%m/%d/', max_length=500)
     position = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
