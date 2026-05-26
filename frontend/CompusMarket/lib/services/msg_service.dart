@@ -40,11 +40,34 @@ class MsgService {
 
   static String wsUrl(int conversationId, String token) =>
       '$wsBase/chat/$conversationId/?token=$token';
-      static Future<Map<String, dynamic>> getOrCreateConversation(
+     static Future<Map<String, dynamic>> getOrCreateConversation(
   String token,
   String sellerId,
   String listingId,
 ) async {
+  // ✅ Step 1: Check if a conversation with this seller already exists
+  try {
+    final existing = await getConversations(token);
+    for (final conv in existing) {
+      final seller = conv['seller'];
+      final buyer = conv['buyer'];
+      // Match by seller id or buyer id (depending on who we are)
+      if (seller != null &&
+          (seller['id']?.toString() == sellerId ||
+              seller['email']?.toString() == sellerId)) {
+        return conv as Map<String, dynamic>;
+      }
+      if (buyer != null &&
+          (buyer['id']?.toString() == sellerId ||
+              buyer['email']?.toString() == sellerId)) {
+        return conv as Map<String, dynamic>;
+      }
+    }
+  } catch (_) {
+    // If checking fails, proceed to create
+  }
+
+  // ✅ Step 2: Only create if none found
   final res = await http.post(
     Uri.parse('$baseUrl/messaging/conversations/start/'),
     headers: headers(token),
@@ -53,10 +76,11 @@ class MsgService {
       'listing': listingId,
     }),
   );
-  print('DEBUG 400 body: ${res.body}'); 
+  print('DEBUG start conversation body: ${res.body}');
   if (res.statusCode == 200 || res.statusCode == 201) {
     return jsonDecode(res.body);
   }
   throw Exception('Failed to create conversation: ${res.body}');
 }
+
 }

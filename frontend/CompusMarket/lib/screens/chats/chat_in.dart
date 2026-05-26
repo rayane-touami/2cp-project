@@ -115,10 +115,12 @@ const ChatsInScreen({super.key,
   }
 
    bool _isMe(dynamic message) {
-    final senderEmail = message['sender']?['email'] ?? '';
-    return senderEmail == MsgService.currentUserEmail;
-  }
-
+  final senderEmail = message['sender']?['email'] ?? '';
+  final senderId = message['sender']?['id']?.toString() ?? '';
+  return senderEmail == MsgService.currentUserEmail ||
+      (MsgService.currentUserId.isNotEmpty &&
+          senderId == MsgService.currentUserId);
+}
    String _formatTime(String? timestamp) {
     if (timestamp == null) return '';
     final dt = DateTime.tryParse(timestamp)?.toLocal();
@@ -195,14 +197,18 @@ const ChatsInScreen({super.key,
                     ),
          ],),
           SizedBox(width: screenWidth * 0.03),
-            Text(
-              widget.name,
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontWeight: FontWeight.bold,
-                fontSize: screenWidth * 0.045,
-              ),
-            ),
+           // REPLACE WITH:
+Flexible(
+  child: Text(
+    widget.name,
+    overflow: TextOverflow.ellipsis,
+    style: TextStyle(
+      fontFamily: 'Inter',
+      fontWeight: FontWeight.bold,
+      fontSize: screenWidth * 0.045,
+    ),
+  ),
+),
          ],),
                   
 

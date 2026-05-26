@@ -50,11 +50,12 @@ class ChatsOutScreen extends StatefulWidget{
   }
 
    String _getDisplayName(Map<String, dynamic> user) {
-    return user['username'] ??
-        user['first_name'] ??
-        user['email'] ??
-        'Unknown';
-  }
+  final first = (user['first_name'] ?? '').toString().trim();
+  final last = (user['last_name'] ?? '').toString().trim();
+  final full = [first, last].where((s) => s.isNotEmpty).join(' ');
+  if (full.isNotEmpty) return full;
+  return (user['username'] ?? user['email'] ?? 'Unknown').toString();
+}
 
   
     
