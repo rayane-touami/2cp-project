@@ -24,6 +24,7 @@ class ProfileReadSerializer(serializers.ModelSerializer):
             'items_listed', 'completed_sales',
             'response_rate', 'response_time',
             'is_active_seller',
+            'phone',
         ]
 
     def get_email(self, obj):

@@ -65,7 +65,7 @@ class _HisProfileScreenState extends State<HisProfileScreen> {
 
   Future<void> _fetchListings() async {
     // ✅ Safe fallback check: handles both path-based /seller/{id}/ and query-based requests
-    final url = '${ApiConfig.baseUrl}/listings/seller/${widget.sellerId}/';
+    final url = '${ApiConfig.baseUrl}/announcements/?student_id=${widget.sellerId}';
     final res = await http.get(
       Uri.parse(url),
       headers: {'Authorization': 'Bearer ${AuthService.accessToken}'},
