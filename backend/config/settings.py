@@ -6,6 +6,7 @@ import json
 from datetime import timedelta
 import firebase_admin
 from firebase_admin import credentials
+from whitenoise.storage import CompressedManifestStaticFilesStorage
 
 # ── Base ──────────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -268,6 +269,9 @@ else:
         }
     }
 
+class ForgivingCompressedManifestStaticFilesStorage(CompressedManifestStaticFilesStorage):
+    manifest_strict = False
+
 # ── Storage ───────────────────────────────────────────────────────────────────
 # Local → FileSystem | Prod → Cloudinary pour les médias
 CLOUDINARY_STORAGE = {
@@ -288,7 +292,7 @@ STORAGES = {
         "BACKEND": (
             "django.contrib.staticfiles.storage.StaticFilesStorage"
             if DEBUG else
-            "whitenoise.storage.CompressedManifestStaticFilesStorage"
+            "config.settings.ForgivingCompressedManifestStaticFilesStorage"
         ),
     },
 }
