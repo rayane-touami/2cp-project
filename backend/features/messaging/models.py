@@ -12,7 +12,14 @@ class Conversation(models.Model):
         on_delete=models.CASCADE, 
         related_name='seller_conversations'
     )
-    listing = models.CharField(max_length=255)
+    #listing = models.CharField(max_length=255)
+    announcement = models.ForeignKey(          # ← replace listing
+        'announcements.Announcement',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='conversations'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
 class Message(models.Model):

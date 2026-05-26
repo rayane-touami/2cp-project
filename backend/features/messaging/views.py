@@ -3,45 +3,39 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Conversation, Message, UserDevice
-from .serializers import ConversationSerializer, MessageSerializer, StartConversationSerializer
+from .serializers import ConversationSerializer, MessageSerializer
 from django.db.models import Q
 from drf_spectacular.utils import extend_schema
 import redis.asyncio as aioredis
 from asgiref.sync import async_to_sync
-
 from django.contrib.auth import get_user_model
+
 User = get_user_model()
 
+
 class StartConversationView(APIView):
-    @extend_schema(request=StartConversationSerializer)
     def post(self, request):
         print(f"DEBUG start conv: {request.data}")
-        serializer = StartConversationSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        seller_id = serializer.validated_data['seller_id']
-        listing = serializer.validated_data.get('listing', '')
+        seller_id = request.data.get('seller_id')
+        announcement_id = request.data.get('announcement_id')  # ← was 'listing'
         buyer = request.user
 
+        if not seller_id:
+            return Response({'error': 'seller_id required'}, status=status.HTTP_400_BAD_REQUEST)
+
         if str(buyer.id) == str(seller_id):
-            return Response(
-                {'error': 'Cannot start a conversation with yourself'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'error': 'Cannot start a conversation with yourself'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             seller = User.objects.get(id=seller_id)
         except (User.DoesNotExist, ValueError):
-            return Response(
-                {'error': 'Seller not found'},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({'error': 'Seller not found'}, status=status.HTTP_404_NOT_FOUND)
 
         conversation, created = Conversation.objects.get_or_create(
             buyer=buyer,
             seller=seller,
-            listing=listing
+            announcement_id=announcement_id  # ← was listing=listing
         )
 
         out = ConversationSerializer(conversation)
@@ -49,6 +43,7 @@ class StartConversationView(APIView):
             out.data,
             status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
         )
+
 
 class ConversationListView(APIView):
     def get(self, request):
@@ -109,7 +104,7 @@ class UnreadCountView(APIView):
 class UserStatusView(APIView):
     def get(self, request, user_id):
         async def check_status():
-            r = aioredis.from_url(settings.REDIS_URL)  # was hardcoded 127.0.0.1
+            r = aioredis.from_url(settings.REDIS_URL)
             result = await r.get(f"user_{user_id}_online")
             await r.aclose()
             return result
@@ -132,3 +127,4 @@ class SaveDeviceTokenView(APIView):
             defaults={'device_token': token}
         )
         return Response({'success': True})
+   
