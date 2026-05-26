@@ -306,6 +306,7 @@ class AnnouncementUpdateAPIView(generics.UpdateAPIView):
             context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
+        serializer.validated_data.pop('photos', None)
         serializer.save()
 
         # handle photos if sent
