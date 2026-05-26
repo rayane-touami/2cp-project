@@ -24,6 +24,7 @@ class AuthService {
       ProfileApiService.token = data['access'];
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('auth_token', data['access']);
+      await prefs.setString('refresh_token', data['refresh']);
       refreshToken = data['refresh'];
       final me = await getMe();
       MsgService.currentUserId = me['id']?.toString() ?? '';
@@ -110,6 +111,7 @@ class AuthService {
     ProfileApiService.token = data['access'];
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('auth_token', data['access']);
+    await prefs.setString('refresh_token', data['refresh']);
     refreshToken = data['refresh'];
     final me = await getMe();
     MsgService.currentUserId = me['id']?.toString() ?? '';
@@ -163,6 +165,7 @@ class AuthService {
       ProfileApiService.token = data['access'];
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('auth_token', data['access']);
+      await prefs.setString('refresh_token', data['refresh']);
       final me = await getMe();
       MsgService.currentUserId = me['id']?.toString() ?? '';
       return data;
@@ -194,6 +197,7 @@ class AuthService {
       ProfileApiService.token = data['access'];
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('auth_token', data['access']);
+      await prefs.setString('refresh_token', data['refresh']);
       final me = await getMe();
       MsgService.currentUserId = me['id']?.toString() ?? '';
       return data;
@@ -201,4 +205,27 @@ class AuthService {
       throw Exception('Apple login failed: ${response.body}');
     }
   }
+  static Future<void> refreshAccessToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    final refresh = prefs.getString('refresh_token') ?? refreshToken;
+    if (refresh.isEmpty) return;
+    
+    final response = await http.post(
+      Uri.parse('$baseUrl/refresh/'), 
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'refresh': refresh}),
+      );
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        accessToken = data['access'];
+        ProfileApiService.token = data['access'];
+        await prefs.setString('auth_token', data['access']);
+        } else {
+          accessToken = '';
+          await prefs.remove('auth_token');
+          await prefs.remove('refresh_token');
+          }
+  }
 }
+

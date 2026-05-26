@@ -10,9 +10,15 @@ void main() async {
 
   final prefs = await SharedPreferences.getInstance();
   final savedToken = prefs.getString('auth_token') ?? '';
+  final savedRefresh = prefs.getString('refresh_token') ?? '';
   ProfileApiService.token = savedToken;
   AuthService.accessToken = savedToken;
+  AuthService.refreshToken = savedRefresh;
 
+  if (savedRefresh.isNotEmpty) {
+    await AuthService.refreshAccessToken(); 
+  }
+  
   runApp(const MyApp());
 }
 
