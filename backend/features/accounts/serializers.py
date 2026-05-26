@@ -101,5 +101,5 @@ class ProfileWriteSerializer(serializers.ModelSerializer):
 class ProfileOwnerSerializer(ProfileReadSerializer):
     class Meta(ProfileReadSerializer.Meta):
         fields = ProfileReadSerializer.Meta.fields + [
-            'phone', 'notifications_enabled', 'show_email',  # ← added phone
+            'notifications_enabled', 'show_email', 
         ]
