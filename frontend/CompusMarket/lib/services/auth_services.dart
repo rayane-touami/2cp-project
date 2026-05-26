@@ -28,6 +28,10 @@ class AuthService {
       refreshToken = data['refresh'];
       final me = await getMe();
       MsgService.currentUserId = me['id']?.toString() ?? '';
+      MsgService.currentUserEmail = me['email']?.toString() ?? '';
+
+      print('DEBUG currentUserEmail: ${MsgService.currentUserEmail}');
+print('DEBUG currentUserId: ${MsgService.currentUserId}');
       return data;
     } else {
       throw Exception('Login failed');
