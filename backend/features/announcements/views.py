@@ -88,6 +88,10 @@ class AnnouncementListAPIView(generics.ListAPIView):
         if max_price and max_price.replace('.', '', 1).isdigit():
             queryset = queryset.filter(price__lte=float(max_price))
 
+        student_id = self.request.query_params.get('student_id')
+        if student_id:
+            queryset = queryset.filter(student_id=student_id)    
+
         return queryset
     
     def get(self, request, *args, **kwargs):
@@ -302,6 +306,7 @@ class AnnouncementUpdateAPIView(generics.UpdateAPIView):
             context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
+        serializer.validated_data.pop('photos', None)
         serializer.save()
 
         # handle photos if sent

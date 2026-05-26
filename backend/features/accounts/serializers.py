@@ -24,6 +24,7 @@ class ProfileReadSerializer(serializers.ModelSerializer):
             'items_listed', 'completed_sales',
             'response_rate', 'response_time',
             'is_active_seller',
+            'phone',
         ]
 
     def get_email(self, obj):
@@ -100,5 +101,5 @@ class ProfileWriteSerializer(serializers.ModelSerializer):
 class ProfileOwnerSerializer(ProfileReadSerializer):
     class Meta(ProfileReadSerializer.Meta):
         fields = ProfileReadSerializer.Meta.fields + [
-            'phone', 'notifications_enabled', 'show_email',  # ← added phone
+            'notifications_enabled', 'show_email', 
         ]
