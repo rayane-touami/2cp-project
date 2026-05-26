@@ -6,7 +6,12 @@ import '../../services/announcement_service.dart';
 import '../../services/msg_service.dart';
 import '../../services/auth_services.dart';
 import '../chats/chat_in.dart';
+<<<<<<< HEAD
+import 'package:compusmarket/screens/profiles/My_profile.dart';
 
+
+=======
+>>>>>>> 272f4d28e9b93237bc47813596266b34e647315c
 class ProductDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> product;
 
@@ -645,6 +650,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   ),
                  TextButton(
   onPressed: () {
+<<<<<<< HEAD
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MyProfileScreen(), // or HisProfileScreen if you want another user’s profile
+=======
     final sellerId = widget.product['seller_id']?.toString();
 
     if (sellerId == null || sellerId.isEmpty) {
@@ -662,6 +673,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         builder: (_) => HisProfileScreen(
           sellerId: sellerId,
         ),
+>>>>>>> 272f4d28e9b93237bc47813596266b34e647315c
       ),
     );
   },
@@ -861,11 +873,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           ),
           child: ElevatedButton(
             onPressed: () async {
-              try {
-                final sellerId = widget.product['seller_id']?.toString();
-                final listingId = widget.product['id']?.toString();
-                print('DEBUG seller_id: $sellerId'); // ← add
-                print('DEBUG listing id: $listingId'); // ← add
+  print('DEBUG product keys: ${widget.product.keys.toList()}');
+  print('DEBUG seller_id: ${widget.product['seller_id']}');
+  try {
+    final sellerId = widget.product['seller_id']?.toString();
+    final listingId = widget.product['id']?.toString();
+    print('DEBUG seller_id: $sellerId');
+    print('DEBUG listing id: $listingId');
                 if (sellerId == null || listingId == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Seller info not available')),

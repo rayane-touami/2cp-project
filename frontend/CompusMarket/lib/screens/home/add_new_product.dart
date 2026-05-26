@@ -6,6 +6,7 @@ import '../../services/category_service.dart';
 import 'home_products_grid.dart';
 import '../../services/announcement_service.dart';
 //import '../../services/api_config.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 class AddNewProductScreen extends StatefulWidget {
   final Map<String, dynamic>? product;
@@ -73,6 +74,18 @@ _selectedUniversity = location.isNotEmpty ? location : null;
     _descriptionController.dispose();
      
     super.dispose();
+  }
+
+  Future<File> _compressImage(File file) async {
+    final result = await FlutterImageCompress.compressAndGetFile(
+      file.absolute.path,
+      '${file.parent.path}/compressed_${file.uri.pathSegments.last}.jpg',
+      quality: 70,
+      minWidth: 1024,
+      minHeight: 1024,
+      format: CompressFormat.jpeg,
+    );
+    return result != null ? File(result.path) : file;
   }
 
   Future<void> _fetchData() async {
@@ -183,6 +196,9 @@ _selectedUniversity = location.isNotEmpty ? location : null;
     } else {
       try {
         // 1️⃣ Call API first — never add locally before API confirms
+       final compressedImages = await Future.wait(
+          _selectedImages.map((img) => _compressImage(img)),
+        );
         final apiProduct = await AnnouncementService.createAnnouncement(
           title: _nameController.text.trim(),
           description: _descriptionController.text.trim(),
@@ -190,7 +206,7 @@ _selectedUniversity = location.isNotEmpty ? location : null;
           categoryId: categoryId,
           universityId: universityId,
           location: _selectedUniversity ?? '',
-          photos: _selectedImages,
+          photos: compressedImages,
         );
 
         // 2️⃣ Only add locally AFTER API succeeds, using the real API id
@@ -807,6 +823,7 @@ _selectedUniversity = location.isNotEmpty ? location : null;
         ),
       ),
     );
+    
   }
 
   
