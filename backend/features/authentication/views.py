@@ -306,7 +306,6 @@ class LogoutView(APIView):
         except Exception:
             return Response({'error': 'Token invalide'}, status=400)
 
-
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -331,6 +330,42 @@ class UserProfileView(APIView):
             )
 
         return Response(data)
+
+
+class LoginView(APIView):  # ← désimbriquée, au même niveau que UserProfileView
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+
+        email       = request.data.get('email')
+        password    = request.data.get('password')
+        remember_me = request.data.get('remember_me', False)
+
+        if not email or not password:
+            return Response(
+                {'error': 'email et password sont obligatoires'},
+                status=400
+            )
+
+        try:
+            user = User.objects.get(email=email, is_active=True)
+        except User.DoesNotExist:
+            return Response({'error': 'Identifiants invalides'}, status=401)
+
+        if not user.check_password(password):
+            return Response({'error': 'Identifiants invalides'}, status=401)
+
+        refresh = RefreshToken.for_user(user)
+
+        if remember_me:
+            from datetime import timedelta
+            refresh.set_exp(lifetime=timedelta(days=30))
+
+        return Response({
+            'access':  str(refresh.access_token),
+            'refresh': str(refresh),
+        })
+    
  # ─── Google OAuth ─────────────────────────────────────────────────────────────
 
 class GoogleLoginView(APIView):
