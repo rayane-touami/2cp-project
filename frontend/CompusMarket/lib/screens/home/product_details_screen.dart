@@ -6,12 +6,7 @@ import '../../services/announcement_service.dart';
 import '../../services/msg_service.dart';
 import '../../services/auth_services.dart';
 import '../chats/chat_in.dart';
-<<<<<<< HEAD
-import 'package:compusmarket/screens/profiles/My_profile.dart';
 
-
-=======
->>>>>>> 272f4d28e9b93237bc47813596266b34e647315c
 class ProductDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> product;
 
@@ -33,7 +28,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    debugPrint('PRODUCT DATA: ${widget.product}'); // add this
+    debugPrint('PRODUCT DATA: ${widget.product}');
 
     final productName = widget.product['name'] ?? widget.product['title'] ?? '';
 
@@ -44,7 +39,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       (p) => (p['name'] ?? p['title']) == productName,
     );
 
-    // ── Handle images from API (photos list) or fallback to single image ──
     final photos = widget.product['photos'];
     if (photos != null && photos is List && photos.isNotEmpty) {
       galleryImages = photos
@@ -116,7 +110,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     }
   }
 
-  // ── Build image widget based on product type ──
   Widget _buildImage(String imagePath, {BoxFit fit = BoxFit.cover}) {
     final bool isUserAdded = widget.product['isUserAdded'] == true;
     final bool isReal = widget.product['isReal'] == true;
@@ -132,7 +125,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       );
     }
 
-    // User added product → local file
     if (isUserAdded) {
       return Image.file(
         File(imagePath),
@@ -147,7 +139,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       );
     }
 
-    // Real API product OR starts with http → network image
     if (isReal || imagePath.startsWith('http')) {
       return Image.network(
         imagePath,
@@ -174,7 +165,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       );
     }
 
-    // Fake/local asset
     return Image.asset(
       imagePath,
       fit: fit,
@@ -225,7 +215,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         final commentsData = await AnnouncementService.getComments(
           widget.product['id'],
         );
-        debugPrint('COMMENT DATA: ${commentsData.first}'); // ← add this
+        debugPrint('COMMENT DATA: ${commentsData.first}');
 
         if (mounted) {
           setState(() {
@@ -233,7 +223,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               commentsData.map(
                 (e) => {
                   'text': e['content'] ?? e['text'] ?? '',
-'user': e['user_full_name'] ?? e['user']?['full_name'] ?? 'User',                },
+                  'user': e['user_full_name'] ?? e['user']?['full_name'] ?? 'User',
+                },
               ),
             );
           });
@@ -470,7 +461,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         _showFullScreenImage(context, selectedImageIndex),
                     child: Stack(
                       children: [
-                        // ── PageView for swipeable images ──
                         PageView.builder(
                           itemCount: galleryImages.length,
                           onPageChanged: (index) =>
@@ -482,7 +472,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                             );
                           },
                         ),
-                        // ── Page indicator dots ──
                         if (galleryImages.length > 1)
                           Positioned(
                             bottom: 16,
@@ -648,37 +637,31 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       ],
                     ),
                   ),
-                 TextButton(
-  onPressed: () {
-<<<<<<< HEAD
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => MyProfileScreen(), // or HisProfileScreen if you want another user’s profile
-=======
-    final sellerId = widget.product['seller_id']?.toString();
+                  // ── VIEW PROFILE BUTTON (fixed) ──
+                  TextButton(
+                    onPressed: () {
+                      final sellerId = widget.product['seller_id']?.toString();
 
-    if (sellerId == null || sellerId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Seller profile not available'),
-        ),
-      );
-      return;
-    }
+                      if (sellerId == null || sellerId.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Seller profile not available'),
+                          ),
+                        );
+                        return;
+                      }
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => HisProfileScreen(
-          sellerId: sellerId,
-        ),
->>>>>>> 272f4d28e9b93237bc47813596266b34e647315c
-      ),
-    );
-  },
-  child: const Text('View Profile'),
-),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => HisProfileScreen(
+                            sellerId: sellerId,
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text('View Profile'),
+                  ),
                 ],
               ),
             ),
@@ -865,6 +848,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           ],
         ),
       ),
+
+      // ── CONTACT SELLER BUTTON ──
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(
@@ -873,13 +858,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           ),
           child: ElevatedButton(
             onPressed: () async {
-  print('DEBUG product keys: ${widget.product.keys.toList()}');
-  print('DEBUG seller_id: ${widget.product['seller_id']}');
-  try {
-    final sellerId = widget.product['seller_id']?.toString();
-    final listingId = widget.product['id']?.toString();
-    print('DEBUG seller_id: $sellerId');
-    print('DEBUG listing id: $listingId');
+              try {
+                final sellerId = widget.product['seller_id']?.toString();
+                final listingId = widget.product['id']?.toString();
+                print('DEBUG seller_id: $sellerId');
+                print('DEBUG listing id: $listingId');
+
                 if (sellerId == null || listingId == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Seller info not available')),
@@ -899,18 +883,18 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   sellerId,
                   listingId,
                 );
-                final seller = conversation['seller'] ?? {};
-final first = (seller['first_name'] ?? '').toString().trim();
-final last = (seller['last_name'] ?? '').toString().trim();
-final name = [first, last].where((s) => s.isNotEmpty).join(' ');
 
+                final seller = conversation['seller'] ?? {};
+                final first = (seller['first_name'] ?? '').toString().trim();
+                final last = (seller['last_name'] ?? '').toString().trim();
+                final name = [first, last].where((s) => s.isNotEmpty).join(' ');
 
                 if (mounted) {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (_) => ChatsInScreen(
-                       name: name.isNotEmpty ? name : seller['email'] ?? 'Seller',
+                        name: name.isNotEmpty ? name : seller['email'] ?? 'Seller',
                         conversationId: conversation['id'],
                         isNetwork: false,
                         isOnline: false,

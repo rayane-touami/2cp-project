@@ -79,6 +79,11 @@ class _HisProfileScreenState extends State<HisProfileScreen> {
               .map((e) => Map<String, dynamic>.from(e))
               .toList();
         });
+
+         if (_listings.isNotEmpty) {
+          debugPrint('Listing keys: ${_listings[0].keys.toList()}');
+          debugPrint('First listing: ${_listings[0]}');
+        }
       }
     } else {
   throw Exception('Listings fetch failed: ${res.statusCode}');
@@ -91,7 +96,7 @@ class _HisProfileScreenState extends State<HisProfileScreen> {
   String get _bio => _profile['bio']?.toString() ?? '';
   String get _university => _profile['university']?.toString() ?? '';
   String get _rating => _profile['average_rating']?.toString() ?? 'N/A';
-  String get _itemsListed => _profile['items_listed']?.toString() ?? '0';
+  String get _itemsListed => _listings.length.toString();
   String get _completedSales => _profile['completed_sales']?.toString() ?? '0';
   bool get _isVerified => _profile['is_verified'] == true;
   String get _lastSeen => _profile['last_seen_display']?.toString() ?? '';
@@ -228,23 +233,40 @@ class _HisProfileScreenState extends State<HisProfileScreen> {
                                         ),
                                       ),
                                     ],
-                                    if (_university.isNotEmpty) ...[
-                                      SizedBox(height: screenHeight * 0.004),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          const Icon(Icons.school_outlined, size: 14, color: Color(0xff808897)),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            _university,
-                                            style: TextStyle(
-                                              color: const Color(0xff808897),
-                                              fontSize: screenWidth * 0.032,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                                   if (_university.isNotEmpty) ...[
+  SizedBox(height: screenHeight * 0.004),
+  Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      const Icon(Icons.school_outlined, size: 14, color: Color(0xff808897)),
+      const SizedBox(width: 4),
+      Flexible(
+        child: _university.length > 30
+            ? SizedBox(
+                height: 22,
+                width: screenWidth * 0.6,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Text(
+                    _university,
+                    style: TextStyle(
+                      color: const Color(0xff808897),
+                      fontSize: screenWidth * 0.032,
+                    ),
+                  ),
+                ),
+              )
+            : Text(
+                _university,
+                style: TextStyle(
+                  color: const Color(0xff808897),
+                  fontSize: screenWidth * 0.032,
+                ),
+              ),
+      ),
+    ],
+  ),
+],
                                     if (_lastSeen.isNotEmpty) ...[
                                       SizedBox(height: screenHeight * 0.004),
                                       Text(
@@ -375,12 +397,8 @@ class _HisProfileScreenState extends State<HisProfileScreen> {
                                   : (_listings.length > 2 ? 2 : _listings.length),
                               itemBuilder: (context, index) {
                                 final listing = _listings[index];
-                              final photos = listing['photos'] as List? ?? [];
+                                final imageUrl = listing['photo']?.toString() ?? '';
 
-final imageUrl = listing['image']?.toString() ??
-    (photos.isNotEmpty
-        ? photos[0]['url']?.toString() ?? ''
-        : '');
                                 return GestureDetector(
                                   onTap: () {
                                     // ✅ Navigates dynamically to ProductDetailsScreen on listing click!
