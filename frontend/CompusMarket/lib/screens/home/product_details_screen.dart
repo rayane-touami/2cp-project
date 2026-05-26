@@ -889,19 +889,31 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 final last = (seller['last_name'] ?? '').toString().trim();
                 final name = [first, last].where((s) => s.isNotEmpty).join(' ');
 
-                if (mounted) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ChatsInScreen(
-                        name: name.isNotEmpty ? name : seller['email'] ?? 'Seller',
-                        conversationId: conversation['id'],
-                        isNetwork: false,
-                        isOnline: false,
-                      ),
-                    ),
-                  );
-                }
+               if (mounted) {
+  // ✅ Get announcement from conversation response, or build from product
+  final announcement = conversation['announcement'] != null
+      ? Map<String, dynamic>.from(conversation['announcement'])
+      : {
+          'id': widget.product['id'],
+          'title': widget.product['name'] ?? widget.product['title'] ?? '',
+          'price': widget.product['priceValue'] ?? widget.product['price'] ?? '',
+          'photo': widget.product['photo'] ?? widget.product['image'] ?? '',
+          'currency': 'DA',
+        };
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => ChatsInScreen(
+        name: name.isNotEmpty ? name : seller['email'] ?? 'Seller',
+        conversationId: conversation['id'],
+        isNetwork: false,
+        isOnline: false,
+        announcement: announcement, // ✅ now the product card shows in chat
+      ),
+    ),
+  );
+}
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Could not open chat: $e')),

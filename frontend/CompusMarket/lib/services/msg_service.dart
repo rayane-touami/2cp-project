@@ -43,7 +43,7 @@ class MsgService {
      static Future<Map<String, dynamic>> getOrCreateConversation(
   String token,
   String sellerId,
-  String listingId,
+  String announcementId,
 ) async {
   // ✅ Step 1: Check if a conversation with this seller already exists
   try {
@@ -73,7 +73,7 @@ class MsgService {
     headers: headers(token),
     body: jsonEncode({
       'seller_id': sellerId,
-      'listing': listingId,
+  'announcement_id': int.tryParse(announcementId) ?? 0,
     }),
   );
   print('DEBUG start conversation body: ${res.body}');

@@ -493,36 +493,39 @@ class _HisProfileScreenState extends State<HisProfileScreen> {
     );
   }
 
-  void _openChat(BuildContext context) async {
-    try {
-      final conversation = await MsgService.getOrCreateConversation(
-        AuthService.accessToken,
-        widget.sellerId,
-          '',
-      );
-      if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ChatsInScreen(
-              name: _fullName,
-              conversationId: conversation['id'],
-              isNetwork: false,
-              isOnline: false,
-            ),
+ // ✅ FIXED:
+void _openChat(BuildContext context) async {
+  try {
+    final conversation = await MsgService.getOrCreateConversation(
+      AuthService.accessToken,
+      widget.sellerId,
+      '',
+    );
+    final announcement = conversation['announcement'] != null
+        ? Map<String, dynamic>.from(conversation['announcement'])
+        : null;
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ChatsInScreen(
+            name: _fullName,
+            conversationId: conversation['id'],
+            isNetwork: false,
+            isOnline: false,
+            announcement: announcement,
           ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not open chat: $e')),
-        );
-      }
+        ),
+      );
+    }
+  } catch (e) {                          
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not open chat: $e')),
+      );
     }
   }
-
-  void _reportSeller() {
+}      void _reportSeller() {
     // ✅ Implement interactive, beautiful feedback modal dialog
     showDialog(
       context: context,

@@ -3,19 +3,19 @@ import 'package:compusmarket/services/auth_services.dart';
 import 'package:flutter/material.dart';
 import '../chats/chat_in.dart';
 
-
-class ChatsOutScreen extends StatefulWidget{
+class ChatsOutScreen extends StatefulWidget {
   const ChatsOutScreen({super.key});
 
   @override
   State<ChatsOutScreen> createState() => _ChatsOutScreenState();
-  }
-  class _ChatsOutScreenState extends State<ChatsOutScreen>{
-    List conversations =[];
-    bool isLoading = true;
-    String? error;
+}
 
-     @override
+class _ChatsOutScreenState extends State<ChatsOutScreen> {
+  List conversations = [];
+  bool isLoading = true;
+  String? error;
+
+  @override
   void initState() {
     super.initState();
     _loadConversations();
@@ -23,15 +23,15 @@ class ChatsOutScreen extends StatefulWidget{
 
   Future<void> _loadConversations() async {
     try {
-      // ignore: unnecessary_nullable_for_final_variable_declarations
-      final data = await MsgService.getConversations(AuthService.accessToken);
+      final data =
+          await MsgService.getConversations(AuthService.accessToken);
       if (!mounted) return;
       setState(() {
         conversations = data;
         isLoading = false;
       });
     } catch (e) {
-       if (!mounted) return; 
+      if (!mounted) return;
       setState(() {
         error = 'Failed to load chats';
         isLoading = false;
@@ -39,7 +39,7 @@ class ChatsOutScreen extends StatefulWidget{
     }
   }
 
-   Map<String, dynamic> _getOtherUser(Map<String, dynamic> conv) {
+  Map<String, dynamic> _getOtherUser(Map<String, dynamic> conv) {
     final buyer = conv['buyer'] ?? {};
     final seller = conv['seller'] ?? {};
     if ((buyer['id'] ?? buyer['email']) == MsgService.currentUserId ||
@@ -49,74 +49,132 @@ class ChatsOutScreen extends StatefulWidget{
     return buyer;
   }
 
-   String _getDisplayName(Map<String, dynamic> user) {
-  final first = (user['first_name'] ?? '').toString().trim();
-  final last = (user['last_name'] ?? '').toString().trim();
-  final full = [first, last].where((s) => s.isNotEmpty).join(' ');
-  if (full.isNotEmpty) return full;
-  return (user['username'] ?? user['email'] ?? 'Unknown').toString();
-}
+  // ✅ Try full_name first, then first+last, then username, then email
+  String _getDisplayName(Map<String, dynamic> user) {
+    final fullName = (user['full_name'] ?? '').toString().trim();
+    if (fullName.isNotEmpty) return fullName;
+    final first = (user['first_name'] ?? '').toString().trim();
+    final last = (user['last_name'] ?? '').toString().trim();
+    final combined =
+        [first, last].where((s) => s.isNotEmpty).join(' ');
+    if (combined.isNotEmpty) return combined;
+    final username = (user['username'] ?? '').toString().trim();
+    if (username.isNotEmpty) return username;
+    return (user['email'] ?? 'Unknown').toString();
+  }
 
-  
-    
+  // ✅ Get avatar URL from otherUser
+  String? _getAvatar(Map<String, dynamic> user) {
+    final avatar = user['avatar']?.toString() ??
+        user['profile_picture']?.toString() ??
+        user['photo']?.toString() ??
+        '';
+    return avatar.isNotEmpty ? avatar : null;
+  }
 
-  
-    @override
+  // ✅ Detect if last message was sent by me
+  bool _isLastMessageFromMe(Map<String, dynamic> conv) {
+    // Try explicit field from backend
+    if (conv.containsKey('last_message_is_mine')) {
+      return conv['last_message_is_mine'] == true;
+    }
+    // Try sender ID
+    final senderId =
+        conv['last_message_sender_id']?.toString() ?? '';
+    if (senderId.isNotEmpty) {
+      return senderId == MsgService.currentUserId;
+    }
+    // Fallback: unread_count == 0 and message exists → probably mine
+    return (conv['unread_count'] ?? 0) == 0 &&
+        (conv['last_message'] ?? '').toString().isNotEmpty;
+  }
+
+  // ✅ Get read status of last message
+  bool _isLastMessageRead(Map<String, dynamic> conv) {
+    return conv['last_message_is_read'] ?? false;
+  }
+
+  // ✅ Format conversation time — HH:mm if today, weekday if this week, DD/MM otherwise
+  String _formatConvTime(Map<String, dynamic> conv) {
+    final raw = conv['last_message_time']?.toString() ??
+        conv['updated_at']?.toString() ??
+        conv['created_at']?.toString() ??
+        '';
+    if (raw.isEmpty) return '';
+    final dt = DateTime.tryParse(raw)?.toLocal();
+    if (dt == null) return '';
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final msgDay = DateTime(dt.year, dt.month, dt.day);
+    final diff = today.difference(msgDay).inDays;
+    if (diff == 0) {
+      return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    } else if (diff < 7) {
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      return days[dt.weekday - 1];
+    } else {
+      return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}';
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-  final screenWidth = MediaQuery.of(context).size.width;
-    return  Scaffold(
-       backgroundColor: Colors.white,
-     appBar: AppBar(
-    scrolledUnderElevation: 0,
-    backgroundColor: Colors.white,
-      centerTitle: true,
-      title: Text("Chats" ,style: TextStyle(
-        fontWeight: FontWeight.bold,
-        fontSize: screenWidth*0.07,
-        fontFamily: 'Inter',
-      ),),
-      actions: [
-    IconButton(
-      icon: Icon(Icons.menu, size: screenWidth*0.065, ),  // or Icons.add, Icons.more_vert
-      onPressed: () {},
-    ),
-  ],
-     ),
-     body:
-      Column(
-      
-      children: [
-       Container(
-        margin: EdgeInsets.symmetric(vertical: screenHeight*0.02,horizontal: screenWidth*0.03),
-       height:screenHeight * 0.065 ,
-        child:  TextField(
-expands: true, 
- maxLines: null,  
-          decoration: InputDecoration(
-             border:OutlineInputBorder(
-               borderRadius: BorderRadius.circular(screenWidth * 0.08), 
-               borderSide: BorderSide.none,
-             ),
-            hintText: "Search",
-            hintStyle: TextStyle(fontSize:screenWidth * 0.045 ,  color: Colors.grey,),
+    final screenWidth = MediaQuery.of(context).size.width;
 
-             prefixIcon: Icon(Icons.search, color: Colors.grey, size: screenWidth * 0.06,),
-               
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.04,
-                  vertical: 0),
-                  fillColor: Color(0xffF0F0F0),
-                 
-
-                  filled: true,
-                  isDense: true,
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        scrolledUnderElevation: 0,
+        backgroundColor: Colors.white,
+        centerTitle: true,
+        title: Text(
+          "Chats",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: screenWidth * 0.07,
+            fontFamily: 'Inter',
           ),
-          
-        )
-,
-       ),
-       Expanded(
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.menu, size: screenWidth * 0.065),
+            onPressed: () {},
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Search bar
+          Container(
+            margin: EdgeInsets.symmetric(
+                vertical: screenHeight * 0.02,
+                horizontal: screenWidth * 0.03),
+            height: screenHeight * 0.065,
+            child: TextField(
+              expands: true,
+              maxLines: null,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius:
+                      BorderRadius.circular(screenWidth * 0.08),
+                  borderSide: BorderSide.none,
+                ),
+                hintText: "Search",
+                hintStyle: TextStyle(
+                    fontSize: screenWidth * 0.045, color: Colors.grey),
+                prefixIcon: Icon(Icons.search,
+                    color: Colors.grey, size: screenWidth * 0.06),
+                contentPadding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.04, vertical: 0),
+                fillColor: const Color(0xffF0F0F0),
+                filled: true,
+                isDense: true,
+              ),
+            ),
+          ),
+
+          Expanded(
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : error != null
@@ -125,7 +183,8 @@ expands: true,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(error!,
-                                style: const TextStyle(color: Colors.grey)),
+                                style:
+                                    const TextStyle(color: Colors.grey)),
                             const SizedBox(height: 12),
                             ElevatedButton(
                               onPressed: _loadConversations,
@@ -135,24 +194,47 @@ expands: true,
                         ),
                       )
                     : conversations.isEmpty
-                        ? const Center(child: Text('No conversations yet'))
+                        ? const Center(
+                            child: Text('No conversations yet'))
                         : RefreshIndicator(
                             onRefresh: _loadConversations,
                             child: ListView.builder(
                               itemCount: conversations.length,
                               itemBuilder: (context, index) {
-                                final conv =
-                                    conversations[index] as Map<String, dynamic>;
-                                final otherUser = _getOtherUser(conv);
-                                final name = _getDisplayName(otherUser);
+                                final conv = conversations[index]
+                                    as Map<String, dynamic>;
+                                final otherUser =
+                                    _getOtherUser(conv);
+                                final name =
+                                    _getDisplayName(otherUser);
+                                final avatarUrl =
+                                    _getAvatar(otherUser);
                                 final lastMessage =
-                                    conv['last_message'] ?? '';
-                                final unread = conv['unread_count'] ?? 0;
+                                    (conv['last_message'] ?? '')
+                                        .toString();
+                                final unread =
+                                    conv['unread_count'] ?? 0;
                                 final conversationId = conv['id'];
+                                final isFromMe =
+                                    _isLastMessageFromMe(conv);
+                                final isRead =
+                                    _isLastMessageRead(conv);
+                                final time =
+                                    _formatConvTime(conv);
+
+                                // ✅ Announcement/product object
+                                final announcement =
+                                    conv['announcement'] != null
+                                        ? Map<String, dynamic>.from(
+                                            conv['announcement'])
+                                        : null;
+                                final productPhoto = announcement?['photo']
+                                        ?.toString() ??
+                                    '';
 
                                 return Column(
                                   children: [
-                                    ListTile(
+                                    InkWell(
                                       onTap: () {
                                         Navigator.push(
                                           context,
@@ -160,93 +242,254 @@ expands: true,
                                             builder: (context) =>
                                                 ChatsInScreen(
                                               name: name,
-                                              image: null,
-                                              isNetwork: false,
+                                              image: avatarUrl,
+                                              isNetwork:
+                                                  avatarUrl != null,
                                               isOnline: false,
-                                              conversationId: conversationId,
+                                              conversationId:
+                                                  conversationId,
+                                              announcement:
+                                                  announcement, // ✅ pass it
                                             ),
                                           ),
                                         );
                                       },
-                                      minVerticalPadding: 20,
-                                      leading: Stack(
-                                        children: [
-                                          CircleAvatar(
-                                            radius: 26,
-                                            backgroundColor: Colors.grey[300],
-                                            child: Icon(Icons.person,
-                                                size: 28,
-                                                color: Colors.grey[600]),
-                                          ),
-                                          // Online dot — optionally fetch per user
-                                        ],
-                                      ),
-                                      title: Text(
-                                        name,
-                                        style: const TextStyle(
-                                          fontFamily: 'Inter',
-                                          fontWeight: FontWeight.bold,
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal:
+                                              screenWidth * 0.04,
+                                          vertical:
+                                              screenHeight * 0.012,
                                         ),
-                                      ),
-                                      subtitle: Text(
-                                        lastMessage,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontFamily: 'Inter',
-                                          fontSize: screenWidth * 0.03,
-                                          color: unread > 0
-                                              ? Colors.black
-                                              : Colors.grey,
-                                          fontWeight: unread > 0
-                                              ? FontWeight.w600
-                                              : FontWeight.normal,
-                                        ),
-                                      ),
-                                      trailing: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          if (unread > 0)
-                                            Container(
-                                              width: 20,
-                                              height: 20,
-                                              decoration: const BoxDecoration(
-                                                color: Colors.blue,
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: Center(
-                                                child: Text(
-                                                  unread.toString(),
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.bold,
+                                        child: Row(
+                                          children: [
+                                            // ✅ Avatar with photo support
+                                            CircleAvatar(
+                                              radius: 26,
+                                              backgroundColor:
+                                                  Colors.grey[300],
+                                              backgroundImage:
+                                                  avatarUrl != null
+                                                      ? NetworkImage(
+                                                          avatarUrl)
+                                                      : null,
+                                              child: avatarUrl == null
+                                                  ? Icon(Icons.person,
+                                                      size: 28,
+                                                      color: Colors
+                                                          .grey[600])
+                                                  : null,
+                                            ),
+
+                                            SizedBox(
+                                                width:
+                                                    screenWidth * 0.03),
+
+                                            // Name + last message
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment
+                                                        .start,
+                                                children: [
+                                                  // Name row + time
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: Text(
+                                                          name,
+                                                          style:
+                                                              const TextStyle(
+                                                            fontFamily:
+                                                                'Inter',
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold,
+                                                            fontSize: 15,
+                                                          ),
+                                                          overflow:
+                                                              TextOverflow
+                                                                  .ellipsis,
+                                                        ),
+                                                      ),
+                                                      // ✅ Time
+                                                      if (time.isNotEmpty)
+                                                        Text(
+                                                          time,
+                                                          style: TextStyle(
+                                                            fontSize:
+                                                                screenWidth *
+                                                                    0.03,
+                                                            color: unread >
+                                                                    0
+                                                                ? const Color(
+                                                                    0xff2853af)
+                                                                : Colors
+                                                                    .grey,
+                                                          ),
+                                                        ),
+                                                    ],
                                                   ),
-                                                ),
+                                                  const SizedBox(
+                                                      height: 3),
+                                                  // Last message row
+                                                  Row(
+                                                    children: [
+                                                      // ✅ Read receipt if from me
+                                                      if (isFromMe &&
+                                                          lastMessage
+                                                              .isNotEmpty) ...[
+                                                        Icon(
+                                                          isRead
+                                                              ? Icons
+                                                                  .done_all
+                                                              : Icons.done,
+                                                          size: screenWidth *
+                                                              0.038,
+                                                          color: isRead
+                                                              ? Colors
+                                                                  .blue
+                                                              : Colors
+                                                                  .grey,
+                                                        ),
+                                                        SizedBox(
+                                                            width:
+                                                                screenWidth *
+                                                                    0.01),
+                                                      ],
+                                                      // ✅ Last message text
+                                                      Expanded(
+                                                        child: Text(
+                                                          lastMessage
+                                                                  .isNotEmpty
+                                                              ? lastMessage
+                                                              : (announcement !=
+                                                                      null
+                                                                  ? '📦 ${announcement['title'] ?? 'Product'}'
+                                                                  : ''),
+                                                          maxLines: 1,
+                                                          overflow:
+                                                              TextOverflow
+                                                                  .ellipsis,
+                                                          style:
+                                                              TextStyle(
+                                                            fontFamily:
+                                                                'Inter',
+                                                            fontSize:
+                                                                screenWidth *
+                                                                    0.033,
+                                                            // ✅ Bold if from other & unread
+                                                            fontWeight:
+                                                                (!isFromMe &&
+                                                                        unread >
+                                                                            0)
+                                                                    ? FontWeight
+                                                                        .bold
+                                                                    : FontWeight
+                                                                        .normal,
+                                                            color: (!isFromMe &&
+                                                                    unread >
+                                                                        0)
+                                                                ? Colors
+                                                                    .black
+                                                                : Colors
+                                                                    .grey,
+                                                          ),
+                                                        ),
+                                                      ),
+
+                                                      SizedBox(
+                                                          width:
+                                                              screenWidth *
+                                                                  0.02),
+
+                                                      // ✅ Product thumbnail + unread badge column
+                                                      Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .end,
+                                                        children: [
+                                                          if (unread > 0)
+                                                            Container(
+                                                              width: 20,
+                                                              height: 20,
+                                                              decoration:
+                                                                  const BoxDecoration(
+                                                                color: Color(
+                                                                    0xff2853af),
+                                                                shape: BoxShape
+                                                                    .circle,
+                                                              ),
+                                                              child:
+                                                                  Center(
+                                                                child:
+                                                                    Text(
+                                                                  unread
+                                                                      .toString(),
+                                                                  style: const TextStyle(
+                                                                      color:
+                                                                          Colors.white,
+                                                                      fontSize:
+                                                                          11,
+                                                                      fontWeight:
+                                                                          FontWeight.bold),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                        ],
+                                                      ),
+
+                                                      // ✅ Product thumbnail
+                                                      if (productPhoto
+                                                          .isNotEmpty) ...[
+                                                        SizedBox(
+                                                            width:
+                                                                screenWidth *
+                                                                    0.02),
+                                                        ClipRRect(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      6),
+                                                          child: Image
+                                                              .network(
+                                                            productPhoto,
+                                                            width: screenWidth *
+                                                                0.11,
+                                                            height: screenWidth *
+                                                                0.11,
+                                                            fit: BoxFit
+                                                                .cover,
+                                                            errorBuilder:
+                                                                (_, __,
+                                                                    ___) =>
+                                                                    const SizedBox
+                                                                        .shrink(),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ],
+                                                  ),
+                                                ],
                                               ),
                                             ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     ),
-             Divider(
-      height: 1,
-      indent: 80, // starts after the avatar
-      color: Colors.grey[300],
-    ),
-    ]
+                                    Divider(
+                                      height: 1,
+                                      indent: 80,
+                                      color: Colors.grey[200],
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+          ),
+        ],
+      ),
     );
-            
-          },
-          
-          )
-        ),),
-
-        
-
-     ],
-     ),
-    );
-    
   }
-  }
+}
