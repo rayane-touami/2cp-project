@@ -6,7 +6,6 @@ import json
 from datetime import timedelta
 import firebase_admin
 from firebase_admin import credentials
-from whitenoise.storage import CompressedManifestStaticFilesStorage
 
 # ── Base ──────────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -291,7 +290,7 @@ STORAGES = {
         "BACKEND": (
             "django.contrib.staticfiles.storage.StaticFilesStorage"
             if DEBUG else
-            "config.settings.ForgivingCompressedManifestStaticFilesStorage"
+            "whitenoise.storage.CompressedManifestStaticFilesStorage"
         ),
     },
 }
@@ -304,16 +303,6 @@ STATIC_URL       = '/static/'
 STATIC_ROOT      = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-class ForgivingCompressedManifestStaticFilesStorage(CompressedManifestStaticFilesStorage):
-    manifest_strict = False
-
-    def post_process(self, paths, dry_run=False, **options):
-        for result in super().post_process(paths, dry_run, **options):
-            # result is either a 3-tuple (original, processed, True/False)
-            # or an exception — skip exceptions instead of crashing
-            if isinstance(result, Exception):
-                continue
-            yield result
 
 # ── Password validation ───────────────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
