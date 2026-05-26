@@ -64,6 +64,7 @@ class _HomeProductsGridState extends State<HomeProductsGrid> {
       );
       final List results = data['results'] ?? [];
       final real = results.take(5).map((item) {
+  print('DEBUG item: id=${item['id']}, seller=${item['seller']}, seller_id=${item['seller_id']}');
   return {
     'id': item['id'],
     'name': item['title'] ?? '',
