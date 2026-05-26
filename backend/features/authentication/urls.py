@@ -6,7 +6,7 @@ from .views import GoogleLoginView, AppleLoginView
 urlpatterns = [
     path('universities/',   views.UniversityListView.as_view()),
     path('register/',       views.RegisterView.as_view()),
-    path('login/',          TokenObtainPairView.as_view()),
+    path('login/', views.LoginView.as_view()),  
     path('refresh/',        TokenRefreshView.as_view()),
     path('logout/',         views.LogoutView.as_view()),
     path('me/',             views.UserProfileView.as_view()),

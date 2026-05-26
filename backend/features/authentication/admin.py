@@ -1,150 +1,125 @@
-from django.contrib import admin
-
 
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.admin import UserAdmin
 from django.utils.html import format_html
-from django.utils import timezone
-from django.db.models import Count
 from .models import User, Student, EmailVerification
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-#  INLINE : Student dans User
-# ══════════════════════════════════════════════════════════════════════════════
-
-class StudentInline(admin.StackedInline):
-    model   = Student
-    extra   = 0
-    fields  = ('university', 'student_id', 'verified', 'campus_location',
-                'description', 'profile_picture')
-    readonly_fields = ('profile_picture',)
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-#  USER ADMIN
-# ══════════════════════════════════════════════════════════════════════════════
-
+ 
+ 
+# ══════════════════════════════════════════════════════════════════
+#  USER
+# ══════════════════════════════════════════════════════════════════
 @admin.register(User)
-class UserAdmin(BaseUserAdmin):
-    inlines         = [StudentInline]
-    list_display    = ('email', 'full_name', 'phone', 'is_active',
-                       'is_staff', 'role_badge', 'announcements_count', 'created_at')
-    list_filter     = ('is_active', 'is_staff', 'is_superuser')
-    search_fields   = ('email', 'full_name', 'phone')
-    ordering        = ('-created_at',)
-    readonly_fields = ('id', 'created_at', 'last_login')
-
-    # Champs affichés dans le formulaire de détail
+class CustomUserAdmin(UserAdmin):
+    list_display   = ('email', 'full_name', 'phone', 'role_badge', 'is_active_badge', 'created_at')
+    list_filter    = ('is_active', 'is_staff', 'is_superuser')
+    search_fields  = ('email', 'full_name', 'phone')
+    ordering       = ('-created_at',)
+ 
     fieldsets = (
-        ('Identité', {
-            'fields': ('id', 'email', 'full_name', 'phone', 'password')
-        }),
-        ('Statut du compte', {
-            'fields': ('is_active', 'created_at', 'last_login')
-        }),
-        ('Rôle admin', {
-            'fields': ('is_staff', 'is_superuser'),
-            'classes': ('collapse',),
-            'description': '⚠️ Réservé aux Owners. '
-                           'is_staff = Admin | is_superuser = Owner',
-        }),
-        ('Permissions détaillées', {
-            'fields': ('groups', 'user_permissions'),
+        (None, {'fields': ('email', 'password')}),
+        ('Informations personnelles', {'fields': ('full_name', 'phone')}),
+        ('Permissions', {
+            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
             'classes': ('collapse',),
         }),
+        ('Dates', {'fields': ('created_at', 'last_login')}),
     )
-
+    readonly_fields = ('created_at', 'last_login')
+ 
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'full_name', 'phone', 'password1', 'password2',
-                       'is_active', 'is_staff'),
+            'fields':  ('email', 'full_name', 'password1', 'password2', 'is_active', 'is_staff'),
         }),
     )
-
-    # ── Colonne "Rôle" avec badge coloré ─────────────────────────────────────
+ 
     @admin.display(description='Rôle')
     def role_badge(self, obj):
         if obj.is_superuser:
-            return format_html(
-                '<span style="background:#7c3aed;color:#fff;padding:2px 8px;'
-                'border-radius:4px;font-size:11px;">👑 Owner</span>'
-            )
+            return format_html('<span class="cm-badge cm-badge-admin">Superadmin</span>')
         if obj.is_staff:
+            return format_html('<span class="cm-badge cm-badge-spam">Staff</span>')
+        return format_html('<span class="cm-badge cm-badge-student">Student</span>')
+ 
+    @admin.display(description='Statut')
+    def is_active_badge(self, obj):
+        if obj.is_active:
+            return format_html('<span class="cm-badge cm-badge-resolved">✓ Actif</span>')
+        return format_html('<span class="cm-badge cm-badge-pending">⏳ Inactif</span>')
+ 
+ 
+# ══════════════════════════════════════════════════════════════════
+#  STUDENT
+# ══════════════════════════════════════════════════════════════════
+@admin.register(Student)
+class StudentAdmin(admin.ModelAdmin):
+    list_display  = ('avatar_preview', 'full_name', 'email_display', 'university', 'verified_badge', 'campus_location')
+    list_filter   = ('verified', 'university')
+    search_fields = ('user__full_name', 'user__email', 'student_id', 'campus_location')
+    raw_id_fields = ('user',)
+    ordering      = ('-user__created_at',)
+ 
+    fieldsets = (
+        ('Compte utilisateur', {'fields': ('user', 'university', 'student_id')}),
+        ('Profil', {'fields': ('profile_picture', 'campus_location', 'description')}),
+        ('Vérification', {'fields': ('verified',)}),
+    )
+ 
+    @admin.display(description='')
+    def avatar_preview(self, obj):
+        if obj.profile_picture:
             return format_html(
-                '<span style="background:#0284c7;color:#fff;padding:2px 8px;'
-                'border-radius:4px;font-size:11px;">🛡 Admin</span>'
+                '<img src="{}" height="34" width="34" '
+                'style="border-radius:50%; object-fit:cover;"/>',
+                obj.profile_picture.url
             )
+        initials = obj.user.full_name[:1].upper() if obj.user.full_name else '?'
         return format_html(
-            '<span style="background:#6b7280;color:#fff;padding:2px 8px;'
-            'border-radius:4px;font-size:11px;">👤 User</span>'
+            '<div style="width:34px; height:34px; border-radius:50%; '
+            'background:#3076E0; color:#fff; display:flex; align-items:center; '
+            'justify-content:center; font-size:13px; font-weight:600;">{}</div>',
+            initials
         )
-
-    # ── Nombre d'annonces ────────────────────────────────────────────────────
-    @admin.display(description='Annonces')
-    def announcements_count(self, obj):
-        # student_id dans Announcement est un UUID = user.id
-        from features.announcements.models import Announcement
-        count = Announcement.objects.filter(student_id=obj.id).count()
-        return count
-
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        # Un admin (non-owner) ne voit pas les autres admins/owners
-        if not request.user.is_superuser:
-            qs = qs.filter(is_staff=False, is_superuser=False)
-        return qs
-
-    def get_readonly_fields(self, request, obj=None):
-        """
-        Un admin ne peut pas modifier les champs de permission.
-        Seul le owner peut promouvoir/rétrograder.
-        """
-        rf = list(super().get_readonly_fields(request, obj))
-        if not request.user.is_superuser:
-            rf += ['is_staff', 'is_superuser', 'groups', 'user_permissions']
-        return rf
-
-    def has_delete_permission(self, request, obj=None):
-        """
-        Un admin peut supprimer des users normaux.
-        Seul le owner peut supprimer un admin/owner.
-        """
-        if obj and (obj.is_staff or obj.is_superuser):
-            return request.user.is_superuser
-        return super().has_delete_permission(request, obj)
-
-    # Actions sur la liste
-    actions = ['activate_users', 'deactivate_users']
-
-    @admin.action(description='✅ Activer les comptes sélectionnés')
-    def activate_users(self, request, queryset):
-        updated = queryset.update(is_active=True)
-        self.message_user(request, f'{updated} compte(s) activé(s).')
-
-    @admin.action(description='🚫 Désactiver les comptes sélectionnés')
-    def deactivate_users(self, request, queryset):
-        updated = queryset.update(is_active=False)
-        self.message_user(request, f'{updated} compte(s) désactivé(s).')
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-#  EMAIL VERIFICATION — lecture seule pour l'admin
-# ══════════════════════════════════════════════════════════════════════════════
-
+ 
+    @admin.display(description='Nom')
+    def full_name(self, obj):
+        return obj.user.full_name
+ 
+    @admin.display(description='Email')
+    def email_display(self, obj):
+        return obj.user.email
+ 
+    @admin.display(description='OTP Status')
+    def verified_badge(self, obj):
+        if obj.verified:
+            return format_html('<span class="cm-badge cm-badge-resolved">Verified</span>')
+        return format_html('<span class="cm-badge cm-badge-pending">Pending</span>')
+ 
+ 
+# ══════════════════════════════════════════════════════════════════
+#  EMAIL VERIFICATION
+# ══════════════════════════════════════════════════════════════════
 @admin.register(EmailVerification)
 class EmailVerificationAdmin(admin.ModelAdmin):
-    list_display  = ('user', 'purpose', 'code', 'is_used', 'expires_at', 'created_at')
+    list_display  = ('user', 'purpose_badge', 'otp_status', 'created_at', 'expires_at')
     list_filter   = ('purpose', 'is_used')
-    search_fields = ('user__email',)
-    readonly_fields = ('user', 'code', 'purpose', 'is_used', 'created_at', 'expires_at')
+    search_fields = ('user__email', 'user__full_name')
     ordering      = ('-created_at',)
-
+    readonly_fields = ('user', 'code', 'purpose', 'created_at', 'expires_at', 'is_used')
+ 
+    @admin.display(description='Type')
+    def purpose_badge(self, obj):
+        if obj.purpose == 'register':
+            return format_html('<span class="cm-badge cm-badge-spam">Inscription</span>')
+        return format_html('<span class="cm-badge cm-badge-pending">Reset MDP</span>')
+ 
+    @admin.display(description='Statut OTP')
+    def otp_status(self, obj):
+        if obj.is_used:
+            return format_html('<span class="cm-badge cm-badge-ignored">Utilisé</span>')
+        if obj.is_valid():
+            return format_html('<span class="cm-badge cm-badge-resolved">✓ Valide</span>')
+        return format_html('<span class="cm-badge cm-badge-scam">Expiré</span>')
+ 
     def has_add_permission(self, request):
-        return False   # géré programmatiquement uniquement
-
-    def has_change_permission(self, request, obj=None):
         return False
-    
-    

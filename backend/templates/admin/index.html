@@ -1,0 +1,181 @@
+{% extends "admin/index.html" %}
+{% load i18n static %}
+
+{% block content %}
+
+{# ══════════════════════════════════════════════════════════════ #}
+{#   CARTES STATISTIQUES                                         #}
+{# ══════════════════════════════════════════════════════════════ #}
+<div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px;">
+
+  {# — Total Students — #}
+  <div style="background:#fff; border:0.5px solid #E2E8F0; border-radius:12px; padding:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div>
+        <div style="color:#22C55E; font-size:11px; font-weight:600; margin-bottom:6px;">+12%</div>
+        <div style="font-size:28px; font-weight:700; color:#1A2535; margin-bottom:4px;">{{ total_students }}</div>
+        <div style="color:#6B7A90; font-size:13px;">Total Students</div>
+      </div>
+      <div style="background:#E6F1FB; border-radius:10px; padding:12px; color:#3076E0; font-size:18px; line-height:1;">
+        <i class="fas fa-users"></i>
+      </div>
+    </div>
+  </div>
+
+  {# — Pending Approvals — #}
+  <div style="background:#fff; border:0.5px solid #E2E8F0; border-radius:12px; padding:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div>
+        <div style="color:#EF4444; font-size:11px; font-weight:600; margin-bottom:6px;">Urgent</div>
+        <div style="font-size:28px; font-weight:700; color:#1A2535; margin-bottom:4px;">{{ pending_approvals }}</div>
+        <div style="color:#6B7A90; font-size:13px;">Pending Approvals</div>
+      </div>
+      <div style="background:#FEF3C7; border-radius:10px; padding:12px; color:#D97706; font-size:18px; line-height:1;">
+        <i class="fas fa-clock"></i>
+      </div>
+    </div>
+  </div>
+
+  {# — Active Listings — #}
+  <div style="background:#fff; border:0.5px solid #E2E8F0; border-radius:12px; padding:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div>
+        <div style="color:#22C55E; font-size:11px; font-weight:600; margin-bottom:6px;">+8%</div>
+        <div style="font-size:28px; font-weight:700; color:#1A2535; margin-bottom:4px;">{{ active_listings }}</div>
+        <div style="color:#6B7A90; font-size:13px;">Active Listings</div>
+      </div>
+      <div style="background:#DCFCE7; border-radius:10px; padding:12px; color:#16A34A; font-size:18px; line-height:1;">
+        <i class="fas fa-store"></i>
+      </div>
+    </div>
+  </div>
+
+  {# — Flagged Reports — #}
+  <div style="background:#fff; border:0.5px solid #E2E8F0; border-radius:12px; padding:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div>
+        <div style="color:#EF4444; font-size:11px; font-weight:600; margin-bottom:6px;">High</div>
+        <div style="font-size:28px; font-weight:700; color:#1A2535; margin-bottom:4px;">{{ flagged_reports }}</div>
+        <div style="color:#6B7A90; font-size:13px;">Flagged Reports</div>
+      </div>
+      <div style="background:#FEE2E2; border-radius:10px; padding:12px; color:#DC2626; font-size:18px; line-height:1;">
+        <i class="fas fa-flag"></i>
+      </div>
+    </div>
+  </div>
+
+</div>{# /grid stats #}
+
+{# ══════════════════════════════════════════════════════════════ #}
+{#   DEUX TABLEAUX : Annonces récentes + File de vérification    #}
+{# ══════════════════════════════════════════════════════════════ #}
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+
+  {# ── Recently Uploaded Products ─────────────────────────────── #}
+  <div style="background:#fff; border:0.5px solid #E2E8F0; border-radius:12px; overflow:hidden;">
+    <div style="padding:16px 20px; border-bottom:0.5px solid #E2E8F0;">
+      <div style="font-weight:600; color:#1A2535; font-size:14px; margin-bottom:2px;">Recently Uploaded Products</div>
+      <div style="color:#6B7A90; font-size:12px;">Latest product submissions awaiting approval</div>
+    </div>
+    <table style="width:100%; border-collapse:collapse;">
+      <thead>
+        <tr style="background:#FAFBFC;">
+          <th style="padding:9px 20px; text-align:left; font-size:11px; font-weight:600; color:#6B7A90; text-transform:uppercase; letter-spacing:0.5px; border-bottom:0.5px solid #E2E8F0;">Product</th>
+          <th style="padding:9px 12px; text-align:left; font-size:11px; font-weight:600; color:#6B7A90; text-transform:uppercase; letter-spacing:0.5px; border-bottom:0.5px solid #E2E8F0;">Price</th>
+          <th style="padding:9px 12px; text-align:left; font-size:11px; font-weight:600; color:#6B7A90; text-transform:uppercase; letter-spacing:0.5px; border-bottom:0.5px solid #E2E8F0;">University</th>
+          <th style="padding:9px 12px; text-align:left; font-size:11px; font-weight:600; color:#6B7A90; text-transform:uppercase; letter-spacing:0.5px; border-bottom:0.5px solid #E2E8F0;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ann in recent_announcements %}
+        <tr>
+          <td style="padding:11px 20px; border-bottom:0.5px solid #E2E8F0;">
+            <div style="font-weight:500; color:#1A2535; font-size:13px;">{{ ann.title|truncatechars:28 }}</div>
+            <div style="color:#6B7A90; font-size:11px; margin-top:2px;">{{ ann.category }}</div>
+          </td>
+          <td style="padding:11px 12px; border-bottom:0.5px solid #E2E8F0; font-size:13px; color:#1A2535; font-weight:500; white-space:nowrap;">
+            {{ ann.price }} DA
+          </td>
+          <td style="padding:11px 12px; border-bottom:0.5px solid #E2E8F0; font-size:12px; color:#6B7A90;">
+            {{ ann.university.name|default:"—"|truncatechars:10 }}
+          </td>
+          <td style="padding:11px 12px; border-bottom:0.5px solid #E2E8F0; white-space:nowrap;">
+            {# Lien vers l'action "mark_active" dans la vue changelist #}
+            <a href="/admin/announcements/announcement/{{ ann.id }}/change/"
+               style="background:#3076E0; color:#fff; border-radius:6px; padding:5px 12px; font-size:12px; font-weight:500; text-decoration:none; margin-right:6px;">
+              Approve
+            </a>
+            <a href="/admin/announcements/announcement/{{ ann.id }}/change/"
+               style="background:#F4F7FC; color:#6B7A90; border:0.5px solid #E2E8F0; border-radius:6px; padding:5px 11px; font-size:12px; font-weight:500; text-decoration:none;">
+              Reject
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" style="padding:24px; text-align:center; color:#6B7A90; font-size:13px;">
+            <i class="fas fa-check-circle" style="color:#22C55E; margin-right:6px;"></i>
+            Aucune annonce en attente d'approbation
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {# ── User Verification Queue ─────────────────────────────────── #}
+  <div style="background:#fff; border:0.5px solid #E2E8F0; border-radius:12px; overflow:hidden;">
+    <div style="padding:16px 20px; border-bottom:0.5px solid #E2E8F0;">
+      <div style="font-weight:600; color:#1A2535; font-size:14px; margin-bottom:2px;">User Verification Queue</div>
+      <div style="color:#6B7A90; font-size:12px;">Students pending email verification</div>
+    </div>
+    <table style="width:100%; border-collapse:collapse;">
+      <thead>
+        <tr style="background:#FAFBFC;">
+          <th style="padding:9px 20px; text-align:left; font-size:11px; font-weight:600; color:#6B7A90; text-transform:uppercase; letter-spacing:0.5px; border-bottom:0.5px solid #E2E8F0;">Student</th>
+          <th style="padding:9px 12px; text-align:left; font-size:11px; font-weight:600; color:#6B7A90; text-transform:uppercase; letter-spacing:0.5px; border-bottom:0.5px solid #E2E8F0;">Email</th>
+          <th style="padding:9px 12px; text-align:left; font-size:11px; font-weight:600; color:#6B7A90; text-transform:uppercase; letter-spacing:0.5px; border-bottom:0.5px solid #E2E8F0;">OTP Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student in pending_students %}
+        <tr>
+          <td style="padding:11px 20px; border-bottom:0.5px solid #E2E8F0;">
+            <div style="font-weight:500; color:#1A2535; font-size:13px;">{{ student.user.full_name }}</div>
+            <div style="color:#6B7A90; font-size:11px; margin-top:2px;">{{ student.university|default:"—" }}</div>
+          </td>
+          <td style="padding:11px 12px; border-bottom:0.5px solid #E2E8F0; font-size:12px; color:#6B7A90;">
+            {{ student.user.email }}
+          </td>
+          <td style="padding:11px 12px; border-bottom:0.5px solid #E2E8F0;">
+            {% if student.user.is_active %}
+              <span class="cm-badge cm-badge-resolved">Verified</span>
+            {% else %}
+              {% with last_verif=student.user.verifications.first %}
+                {% if last_verif and not last_verif.is_valid %}
+                  <span class="cm-badge cm-badge-scam">Failed</span>
+                {% else %}
+                  <span class="cm-badge cm-badge-pending">Pending</span>
+                {% endif %}
+              {% endwith %}
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="3" style="padding:24px; text-align:center; color:#6B7A90; font-size:13px;">
+            <i class="fas fa-check-circle" style="color:#22C55E; margin-right:6px;"></i>
+            Aucun étudiant en attente de vérification
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>{# /grid deux tableaux #}
+
+{# ── Modules Django Admin par défaut (Recent Actions etc.) ──────── #}
+{{ block.super }}
+
+{% endblock content %}
