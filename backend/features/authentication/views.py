@@ -342,10 +342,15 @@ class LoginView(APIView):  # ← désimbriquée, au même niveau que UserProfile
         remember_me = request.data.get('remember_me', False)
 
         if not email or not password:
-            return Response(
-                {'error': 'email et password sont obligatoires'},
-                status=400
-            )
+            return Response({
+                'access':  str(refresh.access_token),
+                'refresh': str(refresh),
+                'user': {
+                          'id':        str(user.id),
+                          'email':     user.email,
+                        'full_name': user.full_name,
+                          }
+                                    })
 
         try:
             user = User.objects.get(email=email, is_active=True)
