@@ -47,12 +47,13 @@ class StartConversationView(APIView):
 
 class ConversationListView(APIView):
     def get(self, request):
+        user = request.user
         conversations = Conversation.objects.filter(
-            Q(buyer=request.user) | Q(seller=request.user)
+            Q(buyer=user, is_deleted_by_buyer=False) |
+            Q(seller=user, is_deleted_by_seller=False)
         ).order_by('-created_at')
         serializer = ConversationSerializer(conversations, many=True)
         return Response(serializer.data)
-
 
 class MessageListView(APIView):
     def get(self, request, conversation_id):
@@ -127,4 +128,20 @@ class SaveDeviceTokenView(APIView):
             defaults={'device_token': token}
         )
         return Response({'success': True})
-   
+    
+class DeleteConversationView(APIView):
+    def delete(self, request, conversation_id):
+        try:
+            conversation = Conversation.objects.get(id=conversation_id)
+        except Conversation.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if request.user == conversation.buyer:
+            conversation.is_deleted_by_buyer = True
+        elif request.user == conversation.seller:
+            conversation.is_deleted_by_seller = True
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        conversation.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)

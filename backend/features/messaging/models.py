@@ -21,6 +21,10 @@ class Conversation(models.Model):
         related_name='conversations'
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    # ── ADD THESE TWO LINES ──────────────────
+    is_deleted_by_buyer = models.BooleanField(default=False)
+    is_deleted_by_seller = models.BooleanField(default=False)
+    # ────────────────────────────────────────
 
 class Message(models.Model):
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
