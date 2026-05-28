@@ -5,7 +5,6 @@ import '../../services/university_service.dart';
 import '../../services/category_service.dart';
 import 'home_products_grid.dart';
 import '../../services/announcement_service.dart';
-//import '../../services/api_config.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 class AddNewProductScreen extends StatefulWidget {
@@ -19,15 +18,19 @@ class AddNewProductScreen extends StatefulWidget {
 class _AddNewProductScreenState extends State<AddNewProductScreen> {
   final _formKey = GlobalKey<FormState>();
   List<File> _selectedImages = [];
+
+  // existing image URLs shown in edit mode
+  List<String> _existingImageUrls = [];
+
   final ImagePicker _picker = ImagePicker();
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  
+  final TextEditingController _modelController = TextEditingController();
+
   int _currentImageIndex = 0;
 
-  
   bool _isSubmitting = false;
   bool _isReserved = false;
 
@@ -46,25 +49,65 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
   List<dynamic> _categoriesList = [];
   bool _isLoadingUniversities = true;
   bool _universitiesFailed = false;
+
+  String? _pendingUniversityName;
   String? _selectedUniversity;
 
   @override
   void initState() {
     super.initState();
-    _fetchData();
 
     if (widget.product != null) {
       final p = widget.product!;
-      _nameController.text = p['name'] ?? '';
-      final rawPrice = p['priceValue'] ?? p['price'] ?? '0';
-final parsedPrice = double.tryParse(rawPrice.toString().replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
-_priceController.text = parsedPrice.toInt().toString();
+
+      _nameController.text = p['name'] ?? p['title'] ?? '';
+      _modelController.text = p['model']?.toString() ?? '';
       _descriptionController.text = p['description'] ?? '';
-      _selectedType = p['category'] ?? 'Books';
-     final location = p['location']?.toString() ?? '';
-_selectedUniversity = location.isNotEmpty ? location : null;
-       _isReserved = p['status'] == 'reserved';
+      _isReserved = p['status'] == 'reserved';
+
+      // ✅ category: match case-insensitively against _types list
+      final rawCategory = (p['category'] ?? '').toString();
+      final matchedType = _types.firstWhere(
+        (t) => t.toLowerCase() == rawCategory.toLowerCase(),
+        orElse: () => 'Books',
+      );
+      _selectedType = matchedType;
+
+      // ✅ price: prefer priceValue (already a number), fall back to price string
+      final dynamic rawPrice = p['priceValue'] ?? p['price'] ?? '0';
+      double parsedPrice = 0.0;
+      if (rawPrice is num) {
+        parsedPrice = rawPrice.toDouble();
+      } else {
+        // strip everything except digits and dot (handles "42444.00 DA")
+        parsedPrice = double.tryParse(
+                rawPrice.toString().replaceAll(RegExp(r'[^0-9.]'), '')) ??
+            0.0;
+      }
+      _priceController.text = parsedPrice.toInt().toString();
+      print('💰 Price raw=$rawPrice parsed=${_priceController.text}');
+
+      // ✅ university: normalize apostrophes before comparing
+      final location = p['location']?.toString().trim() ??
+          p['university']?.toString().trim() ??
+          '';
+      // replace curly/fancy apostrophes with straight apostrophe
+      _pendingUniversityName = location.isNotEmpty
+          ? location.replaceAll('\u2019', "'").replaceAll('\u2018', "'")
+          : null;
+      print('🏫 Pending university: $_pendingUniversityName');
+
+      // load existing image URLs
+      final images = p['images'];
+      if (images is List) {
+        _existingImageUrls = images.map((e) => e.toString()).toList();
+      } else {
+        final singleImage = p['image']?.toString() ?? '';
+        if (singleImage.isNotEmpty) _existingImageUrls = [singleImage];
+      }
     }
+
+    _fetchData();
   }
 
   @override
@@ -72,7 +115,7 @@ _selectedUniversity = location.isNotEmpty ? location : null;
     _nameController.dispose();
     _priceController.dispose();
     _descriptionController.dispose();
-     
+    _modelController.dispose();
     super.dispose();
   }
 
@@ -106,6 +149,34 @@ _selectedUniversity = location.isNotEmpty ? location : null;
           _categoriesList = results[1];
           _isLoadingUniversities = false;
           _universitiesFailed = false;
+
+          // match pending university name now that the list is loaded
+          if (_pendingUniversityName != null) {
+            // normalize both sides: replace curly apostrophes with straight
+            final normalizedPending = _pendingUniversityName!
+                .trim()
+                .replaceAll('\u2019', "'")
+                .replaceAll('\u2018', "'");
+            print('🔍 Matching university: "$normalizedPending"');
+            for (final u in _universitiesList) {
+              if (u is Map) {
+                final uName = u['name']
+                    .toString()
+                    .trim()
+                    .replaceAll('\u2019', "'")
+                    .replaceAll('\u2018', "'");
+                print('   vs "$uName"');
+                if (uName == normalizedPending) {
+                  _selectedUniversity = u['name'].toString();
+                  print('✅ University matched: $_selectedUniversity');
+                  break;
+                }
+              }
+            }
+            if (_selectedUniversity == null) {
+              print('❌ No university match found for "$normalizedPending"');
+            }
+          }
         });
       }
     } catch (e) {
@@ -120,12 +191,12 @@ _selectedUniversity = location.isNotEmpty ? location : null;
   }
 
   Future<void> _submitForm() async {
-    // ✅ FIX: if already submitting, do nothing (prevents 3x requests)
     if (_isSubmitting) return;
-
     if (!_formKey.currentState!.validate()) return;
 
-    if (_selectedImages.isEmpty && widget.product == null) {
+    if (_selectedImages.isEmpty &&
+        _existingImageUrls.isEmpty &&
+        widget.product == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please add at least one picture')),
       );
@@ -140,22 +211,26 @@ _selectedUniversity = location.isNotEmpty ? location : null;
       builder: (_) => const Center(child: CircularProgressIndicator()),
     );
 
-    final categoryId = () {
-  final c = _categoriesList.firstWhere(
-    (c) => c['name'].toString().toLowerCase() == _selectedType.toLowerCase(),
-    orElse: () => {'id': ''},
-  );
-    print('🔍 Category lookup: $_selectedType → ${c['id']}'); 
-  return c['id'].toString();
-}();
+    // ✅ FIX: safe category lookup
+    String categoryId = '';
+    for (final c in _categoriesList) {
+      if (c is Map &&
+          c['name'].toString().toLowerCase() ==
+              _selectedType.toLowerCase()) {
+        categoryId = c['id'].toString();
+        break;
+      }
+    }
+    print('🔍 Category lookup: $_selectedType → $categoryId');
 
-    final universityId = () {
-      final u = _universitiesList.firstWhere(
-        (u) => u['name'] == _selectedUniversity,
-        orElse: () => {'id': ''},
-      );
-      return u['id'].toString();
-    }();
+    // ✅ FIX: safe university lookup
+    String universityId = '';
+    for (final u in _universitiesList) {
+      if (u is Map && u['name'].toString() == _selectedUniversity) {
+        universityId = u['id'].toString();
+        break;
+      }
+    }
 
     // ── EDIT MODE ──
     if (widget.product != null) {
@@ -178,7 +253,7 @@ _selectedUniversity = location.isNotEmpty ? location : null;
               : null,
         );
 
-        Navigator.pop(context); // close loading
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Product updated successfully! ✅')),
         );
@@ -195,8 +270,7 @@ _selectedUniversity = location.isNotEmpty ? location : null;
     // ── ADD MODE ──
     } else {
       try {
-        // 1️⃣ Call API first — never add locally before API confirms
-       final compressedImages = await Future.wait(
+        final compressedImages = await Future.wait(
           _selectedImages.map((img) => _compressImage(img)),
         );
         final apiProduct = await AnnouncementService.createAnnouncement(
@@ -209,7 +283,6 @@ _selectedUniversity = location.isNotEmpty ? location : null;
           photos: compressedImages,
         );
 
-        // 2️⃣ Only add locally AFTER API succeeds, using the real API id
         globalRealProductsNotifier.value = [
           {
             'id': apiProduct['id'].toString(),
@@ -234,13 +307,12 @@ _selectedUniversity = location.isNotEmpty ? location : null;
           ...globalRealProductsNotifier.value,
         ];
 
-        Navigator.pop(context); // close loading
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Product posted successfully! ✅')),
         );
-        Navigator.pop(context); // go back to home
+        Navigator.pop(context);
       } catch (e) {
-        // 3️⃣ If API fails, do NOT add locally — show error
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to post product: $e')),
@@ -316,20 +388,18 @@ _selectedUniversity = location.isNotEmpty ? location : null;
                     if (value == null || value.trim().isEmpty)
                       return 'Please enter a correct product name';
                     if (!RegExp(r'[a-zA-Z]').hasMatch(value))
-                      return 'Product name must contain letters, not just numbers';
+                      return 'Product name must contain letters';
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
 
+                // ✅ FIX: model field is optional (no required validator)
                 _buildTextField(
                   label: 'Product model',
                   hint: 'Enter Your Product Model ...',
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty)
-                      return 'Please enter the product model';
-                    return null;
-                  },
+                  controller: _modelController,
+                  validator: (_) => null, // optional field
                 ),
                 const SizedBox(height: 16),
 
@@ -356,7 +426,7 @@ _selectedUniversity = location.isNotEmpty ? location : null;
                   validator: (value) {
                     if (value != null && value.trim().isNotEmpty) {
                       if (!RegExp(r'[a-zA-Z]').hasMatch(value))
-                        return 'Description must contain letters, not just numbers';
+                        return 'Description must contain letters';
                     }
                     return null;
                   },
@@ -383,21 +453,16 @@ _selectedUniversity = location.isNotEmpty ? location : null;
                 const SizedBox(height: 8),
                 _buildUniversityDropdown(),
                 const SizedBox(height: 16),
-                
+
                 const Text(
                   'Product pictures',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
                 _buildImageUploadPlaceholder(),
-                const SizedBox(height: 16),
                 const SizedBox(height: 40),
 
-                
-                
-                // ── POST BUTTON ──
-                // ✅ FIX: pass null when submitting so button is disabled
-// ── RESERVED TOGGLE (edit mode only) ──
+                // ── RESERVED TOGGLE (edit mode only) ──
                 if (widget.product != null) ...[
                   SwitchListTile(
                     title: const Text(
@@ -415,13 +480,11 @@ _selectedUniversity = location.isNotEmpty ? location : null;
                   const SizedBox(height: 16),
                 ],
 
-                // ── POST BUTTON ──
                 _buildMainButton(
                   context,
                   widget.product != null ? 'Save Changes' : 'Post product',
                   _isSubmitting ? null : _submitForm,
                 ),
-                const SizedBox(height: 40),
                 const SizedBox(height: 40),
               ],
             ),
@@ -496,13 +559,14 @@ _selectedUniversity = location.isNotEmpty ? location : null;
   }
 
   Future<void> _pickImage(ImageSource source) async {
+    final totalAllowed = 10 - _existingImageUrls.length - _selectedImages.length;
     if (source == ImageSource.gallery) {
       final List<XFile> pickedFiles = await _picker.pickMultiImage();
       if (pickedFiles.isNotEmpty) {
         setState(() {
           int added = 0;
           for (var xfile in pickedFiles) {
-            if (_selectedImages.length < 10) {
+            if (added < totalAllowed) {
               _selectedImages.add(File(xfile.path));
               added++;
             }
@@ -510,20 +574,21 @@ _selectedUniversity = location.isNotEmpty ? location : null;
           if (pickedFiles.length > added) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('You can only select up to 10 images.'),
-              ),
+                  content: Text('You can only select up to 10 images.')),
             );
           }
         });
       }
     } else {
-      if (_selectedImages.length >= 10) {
+      if (totalAllowed <= 0) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('You have already added 10 images.')),
+          const SnackBar(
+              content: Text('You have already added 10 images.')),
         );
         return;
       }
-      final XFile? pickedFile = await _picker.pickImage(source: source);
+      final XFile? pickedFile =
+          await _picker.pickImage(source: source);
       if (pickedFile != null)
         setState(() => _selectedImages.add(File(pickedFile.path)));
     }
@@ -592,7 +657,10 @@ _selectedUniversity = location.isNotEmpty ? location : null;
   }
 
   Widget _buildImageUploadPlaceholder() {
-    if (_selectedImages.isEmpty) {
+    final hasExisting = _existingImageUrls.isNotEmpty;
+    final hasNew = _selectedImages.isNotEmpty;
+
+    if (!hasExisting && !hasNew) {
       return GestureDetector(
         onTap: _showImagePickerBottomSheet,
         child: Container(
@@ -620,6 +688,8 @@ _selectedUniversity = location.isNotEmpty ? location : null;
       );
     }
 
+    final totalCount = _existingImageUrls.length + _selectedImages.length;
+
     return Column(
       children: [
         SizedBox(
@@ -627,17 +697,23 @@ _selectedUniversity = location.isNotEmpty ? location : null;
           child: Stack(
             children: [
               PageView.builder(
-                itemCount: _selectedImages.length,
+                itemCount: totalCount,
                 onPageChanged: (index) {
                   setState(() => _currentImageIndex = index);
                 },
                 itemBuilder: (context, index) {
+                  final isExisting = index < _existingImageUrls.length;
                   return Container(
                     margin: const EdgeInsets.symmetric(horizontal: 4),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       image: DecorationImage(
-                        image: FileImage(_selectedImages[index]),
+                        image: isExisting
+                            ? NetworkImage(
+                                    _existingImageUrls[index])
+                                as ImageProvider
+                            : FileImage(_selectedImages[
+                                index - _existingImageUrls.length]),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -649,19 +725,15 @@ _selectedUniversity = location.isNotEmpty ? location : null;
                 right: 10,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
+                      horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
                     color: Colors.black.withOpacity(0.6),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    '${_currentImageIndex + 1} / ${_selectedImages.length}',
+                    '${_currentImageIndex + 1} / $totalCount',
                     style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+                        color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -671,8 +743,18 @@ _selectedUniversity = location.isNotEmpty ? location : null;
                 child: GestureDetector(
                   onTap: () {
                     setState(() {
-                      _selectedImages.removeAt(_currentImageIndex);
-                      if (_currentImageIndex >= _selectedImages.length &&
+                      final isExisting =
+                          _currentImageIndex < _existingImageUrls.length;
+                      if (isExisting) {
+                        _existingImageUrls
+                            .removeAt(_currentImageIndex);
+                      } else {
+                        _selectedImages.removeAt(_currentImageIndex -
+                            _existingImageUrls.length);
+                      }
+                      final newTotal = _existingImageUrls.length +
+                          _selectedImages.length;
+                      if (_currentImageIndex >= newTotal &&
                           _currentImageIndex > 0) {
                         _currentImageIndex--;
                       }
@@ -684,18 +766,15 @@ _selectedUniversity = location.isNotEmpty ? location : null;
                       color: Colors.redAccent,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.delete_outline,
-                      size: 20,
-                      color: Colors.white,
-                    ),
+                    child: const Icon(Icons.delete_outline,
+                        size: 20, color: Colors.white),
                   ),
                 ),
               ),
             ],
           ),
         ),
-        if (_selectedImages.length < 10) ...[
+        if (totalCount < 10) ...[
           const SizedBox(height: 12),
           GestureDetector(
             onTap: _showImagePickerBottomSheet,
@@ -705,20 +784,18 @@ _selectedUniversity = location.isNotEmpty ? location : null;
               decoration: BoxDecoration(
                 color: Colors.blue.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue.withOpacity(0.5)),
+                border:
+                    Border.all(color: Colors.blue.withOpacity(0.5)),
               ),
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.add_a_photo, color: Colors.blue),
                   SizedBox(width: 8),
-                  Text(
-                    'Add more pictures',
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  Text('Add more pictures',
+                      style: TextStyle(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
@@ -740,7 +817,6 @@ _selectedUniversity = location.isNotEmpty ? location : null;
       );
     }
 
-    // ✅ FIX: show a retry button if universities failed to load
     if (_universitiesFailed || _universitiesList.isEmpty) {
       return Container(
         height: 50,
@@ -751,15 +827,10 @@ _selectedUniversity = location.isNotEmpty ? location : null;
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'Failed to load universities',
-              style: TextStyle(color: Colors.red),
-            ),
+            const Text('Failed to load universities',
+                style: TextStyle(color: Colors.red)),
             const SizedBox(width: 8),
-            TextButton(
-              onPressed: _fetchData,
-              child: const Text('Retry'),
-            ),
+            TextButton(onPressed: _fetchData, child: const Text('Retry')),
           ],
         ),
       );
@@ -768,7 +839,8 @@ _selectedUniversity = location.isNotEmpty ? location : null;
     return DropdownButtonFormField<String>(
       isExpanded: true,
       decoration: InputDecoration(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        border:
+            OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 12,
@@ -791,7 +863,6 @@ _selectedUniversity = location.isNotEmpty ? location : null;
     );
   }
 
-  // accepts nullable VoidCallback so passing null disables the button
   Widget _buildMainButton(
     BuildContext context,
     String text,
@@ -804,9 +875,8 @@ _selectedUniversity = location.isNotEmpty ? location : null;
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: onPressed == null
-              ? Colors.grey
-              : const Color(0xFF1A73E8),
+          backgroundColor:
+              onPressed == null ? Colors.grey : const Color(0xFF1A73E8),
           padding: EdgeInsets.symmetric(vertical: screenHeight * 0.02),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(screenWidth * 0.03),
@@ -823,8 +893,5 @@ _selectedUniversity = location.isNotEmpty ? location : null;
         ),
       ),
     );
-    
   }
-
-  
 }

@@ -28,6 +28,7 @@ class _ChatsOutScreenState extends State<ChatsOutScreen> {
       if (!mounted) return;
       setState(() {
         conversations = data;
+        print('💬 CONV SAMPLE: ${data.isNotEmpty ? data[0] : "empty"}');
         isLoading = false;
       });
     } catch (e) {

@@ -404,22 +404,35 @@ Positioned(
                            
                       
 
-                            final product = {
+                            // ✅ strip " DA" and parse price correctly
+final rawPriceValue = listing['priceValue'];
+final rawPriceStr = listing['price']?.toString() ?? '0';
+final parsedPrice = rawPriceValue is num
+    ? rawPriceValue.toDouble()
+    : (double.tryParse(
+            rawPriceStr.replaceAll(RegExp(r'[^0-9.]'), '')) ??
+        0.0);
+
+final product = {
   'name': listing['title'] ?? listing['name'] ?? '',
- 'price': listing['price']?.toString() ?? '',
-  'priceValue': double.tryParse(listing['price']?.toString() ?? '0') ?? 0.0,
+  'price': rawPriceStr,         // keep original string e.g. "42444.00 DA"
+  'priceValue': parsedPrice,    // ✅ correct number e.g. 42444.0
   'category': listing['category'] ?? '',
   'rating': (listing['average_rating'] ?? listing['rating'] ?? 0.0).toDouble(),
   'isRated': false,
-  'image': listing['image'] ?? 
+  'image': listing['image'] ??
            listing['photos']?[0]?['image'] ??
            'assets/images/products/airpods.jpg',
   'isReal': true,
   'isUserAdded': false,
   'id': listing['id'],
-    'sellerId': listing['seller']?['id'],   // 👈 add this
-
+  'sellerId': listing['seller']?['id'],
   'description': listing['description'] ?? '',
+  // ✅ these two were completely missing — university and location for edit mode
+  'location': listing['location']?.toString() ?? listing['university']?.toString() ?? '',
+  'university': listing['university']?.toString() ?? listing['location']?.toString() ?? '',
+  'images': listing['images'] ?? (listing['image'] != null ? [listing['image']] : []),
+  'status': listing['status'] ?? 'active',
 };
 
                             return Container(
