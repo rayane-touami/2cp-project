@@ -98,7 +98,7 @@ class AnnouncementDetailSerializer(serializers.ModelSerializer):
             'photos', 'seller', 'seller_id', 'category', 'university',
             'category_id', 'university_id', 'location',
             'phone_number', 'whatsapp', 'telegram', 'instagram',
-            'facebook', 'allow_chat', 'condition', 'url',
+            'facebook', 'allow_chat', 'condition', 'model','url',
             'status', 'created_at', 'updated_at',
             'views_count', 'average_rating', 'reviews_count', 'comments_count'
             ]
@@ -135,7 +135,7 @@ class AnnouncementCreateSerializer(serializers.ModelSerializer):
             'title', 'description', 'price',
             'category', 'location', 'university',
             'phone_number', 'whatsapp', 'telegram', 'instagram', 
-            'facebook', 'allow_chat', 'condition', 'url',
+            'facebook', 'allow_chat', 'condition','model', 'url',
             'photos'
             ]
 
@@ -243,7 +243,7 @@ class MyAnnouncementSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'title', 'price', 'priceValue',
             'description', 'category', 'university',
-            'location', 'image', 'images', 'status', 'created_at'
+            'location', 'image', 'images', 'status', 'created_at','model'
         ]
 
     def get_price(self, obj):

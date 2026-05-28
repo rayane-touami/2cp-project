@@ -80,6 +80,7 @@ class Announcement(models.Model):
         choices=[('new', 'New'), ('used', 'Used'), ('good', 'Good'), ('damaged', 'Damaged')],
         blank=True
     )
+    model = models.CharField(max_length=100, blank=True, null=True)   # ← ADD THIS
     url = models.URLField(blank=True, null=True)
 
     class Meta:
