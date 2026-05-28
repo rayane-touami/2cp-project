@@ -4,9 +4,11 @@ import redis.asyncio as aioredis
 from channels.generic.websocket import AsyncWebsocketConsumer
 from firebase_admin import messaging
 from .models import Message, Conversation, UserDevice
-from django.conf import settings          # ← ADDED
+from django.conf import settings
+from features.notifications.utils import create_notification
+from features.notifications.models import Notification
 
-REDIS_URL = settings.REDIS_URL            # ← CHANGED (was hardcoded before)
+REDIS_URL = settings.REDIS_URL
 
 
 def send_push_notification(token, title, body):
@@ -57,13 +59,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = text_data_json['message']
 
         msg = await Message.objects.acreate(
-      conversation_id=self.conversation_id,
-      sender=self.scope['user'],
-     content=message
-    )
+            conversation_id=self.conversation_id,
+            sender=self.scope['user'],
+            content=message
+        )
 
         payload = {
-            "id": msg.id,
+            "id": str(msg.id),
             "content": msg.content,
             "timestamp": str(msg.timestamp),
             "is_read": msg.is_read,
@@ -90,25 +92,31 @@ class ChatConsumer(AsyncWebsocketConsumer):
             conversation = await Conversation.objects.aget(
                 id=self.conversation_id
             )
-
             sender = self.scope['user']
 
-            if sender.id == conversation.buyer_id:
-                receiver_id = conversation.seller_id
-            else:
-                receiver_id = conversation.buyer_id
+            receiver_id = conversation.seller_id if sender.id == conversation.buyer_id else conversation.buyer_id
 
-            r = aioredis.from_url(REDIS_URL)
-            is_online = await r.get(f"user_{receiver_id}_online")
-            await r.aclose()
+            # ── Save notification to DB ───────────────────────────────────
+            await asyncio.to_thread(
+                create_notification,
+                user_id=receiver_id,
+                notif_type=Notification.Type.NEW_MESSAGE,
+                content=f"New message from {sender.full_name}",
+                actor_id=sender.id,
+                actor_full_name=sender.full_name,
+                conversation_id=int(self.conversation_id),
+                message_preview=message[:100],
+            )
 
+            # ── Send Firebase push only if receiver is offline ────────────
+            is_online = await self.redis.get(f"user_{receiver_id}_online")
             if not is_online:
                 try:
                     device = await UserDevice.objects.aget(user_id=receiver_id)
                     await asyncio.to_thread(
                         send_push_notification,
                         device.device_token,
-                        f"New message from {sender.email}",
+                        f"New message from {sender.full_name}",
                         message
                     )
                 except UserDevice.DoesNotExist:
