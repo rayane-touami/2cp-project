@@ -1,17 +1,12 @@
 import 'dart:io';
-import 'package:compusmarket/screens/profiles/His_profile.dart';
+import 'package:compusmarket/screens/profiles/My_profile.dart';
 import 'package:flutter/material.dart';
 import 'home_products_grid.dart';
 import '../../services/announcement_service.dart';
 import '../../services/msg_service.dart';
 import '../../services/auth_services.dart';
 import '../chats/chat_in.dart';
-<<<<<<< HEAD
-import 'package:compusmarket/screens/profiles/My_profile.dart';
 
-
-=======
->>>>>>> 272f4d28e9b93237bc47813596266b34e647315c
 class ProductDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> product;
 

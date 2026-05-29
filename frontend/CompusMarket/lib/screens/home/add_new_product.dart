@@ -247,6 +247,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
             'university': universityId,
             'location': _selectedUniversity ?? '',
             'status': _isReserved ? 'reserved' : 'active',
+            'model':_modelController.text.trim(),
           },
           _selectedImages.isNotEmpty
               ? _selectedImages.map((f) => f.path).toList()
@@ -280,6 +281,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
           categoryId: categoryId,
           universityId: universityId,
           location: _selectedUniversity ?? '',
+          model: _modelController.text.trim(),
           photos: compressedImages,
         );
 
