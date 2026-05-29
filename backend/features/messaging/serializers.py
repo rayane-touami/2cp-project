@@ -8,9 +8,22 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
+
+    def get_avatar(self, obj):
+        try:
+            profile_picture = obj.student_profile.profile_picture
+            if profile_picture:
+                request = self.context.get('request')
+                if request:
+                    return request.build_absolute_uri(profile_picture.url)
+                return profile_picture.url
+        except Exception:
+            return None
+
     class Meta:
         model = User
-        fields = ['id', 'email', 'full_name']
+        fields = ['id', 'email', 'full_name', 'avatar']
 
 
 class MessageSerializer(serializers.ModelSerializer):
