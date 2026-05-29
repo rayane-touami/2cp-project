@@ -46,7 +46,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     bioController = TextEditingController(text: widget.bio);
     currentPasswordController = TextEditingController();
     newPasswordController = TextEditingController();
-    _selectedUniversityId = widget.universityId;
+    _selectedUniversityId = widget.universities.any(
+    (u) => u['id'].toString() == widget.universityId
+  ) ? widget.universityId : null;
 
     for (final c in [nameController, emailController, numberController,
         bioController, currentPasswordController, newPasswordController]) {

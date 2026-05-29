@@ -1,8 +1,9 @@
 // ignore: file_names
 import 'package:compusmarket/screens/authentication/sign_in.dart';
-import 'package:compusmarket/screens/authentication/sign_up.dart';
+//import 'package:compusmarket/screens/authentication/sign_up.dart';
 import 'package:compusmarket/screens/home/add_new_product.dart';
 import 'package:compusmarket/screens/profiles/Edit_profil.dart';
+import 'package:compusmarket/services/announcement_service.dart';
 import 'package:compusmarket/services/profile_api_service.dart';
 import 'package:compusmarket/services/auth_services.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +49,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
   }
 
   void _onNewProduct() {
-    _loadAll();
+   if (mounted) _loadAll();
   }
 
   Future<void> _loadAll() async {
@@ -56,12 +57,12 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
     try {
       // Fetch all data in parallel
       final results = await Future.wait([
-        ProfileApiService.getMyProfile(),
-        AuthService.getMe(),
-        ProfileApiService.getMyListings().catchError((_) => <dynamic>[]),
-        ProfileApiService.getMyDeals().catchError((_) => <dynamic>[]),
-        AuthService.getUniversities().catchError((_) => <dynamic>[]),
-      ]);
+  ProfileApiService.getMyProfile(),
+  AuthService.getMe(),
+  AnnouncementService.getMyAnnouncements().catchError((_) => <dynamic>[]), // ← change this line
+  ProfileApiService.getMyDeals().catchError((_) => <dynamic>[]),
+  AuthService.getUniversities().catchError((_) => <dynamic>[]),
+]);
 
       final profile = results[0] as Map<String, dynamic>;
       final authMe = results[1] as Map<String, dynamic>;
@@ -231,16 +232,29 @@ globalRealProductsNotifier.value = [];
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
+                                
+                               if (_showEmail) ...[
+  SizedBox(height: screenHeight * 0.005),
+  Text(
+    _userEmail,
+    style: TextStyle(
+      color: const Color(0xff808897),
+      fontSize: screenWidth * 0.033,
+    ),
+  ),
+],
+                                  SizedBox(height: screenHeight * 0.005),
+                                   if (_userBio.isNotEmpty)
+                                   Text(
+                              _userBio,
+                              softWrap: true,
+                              style: TextStyle(
+                                color: const Color(0xff808897),
+                                fontSize: screenWidth * 0.035,
+                                height: 1.6,
+                              ),
+                            ),
                                 SizedBox(height: screenHeight * 0.01),
-                                if (_showEmail)
-                                  Text(
-                                    _userEmail,
-                                    style: TextStyle(
-                                      color: const Color(0xff808897),
-                                      fontSize: screenWidth * 0.033,
-                                    ),
-                                  ),
-                                SizedBox(height: screenHeight * 0.015),
                                 Container(
                                   height: screenHeight * 0.001,
                                   width: screenWidth * 0.7,
@@ -304,38 +318,38 @@ globalRealProductsNotifier.value = [];
                       ],
                     ),
 
-                    SizedBox(height: screenHeight * 0.025),
+                    SizedBox(height: screenHeight * 0.04),
 
                     // ── About ──
-                    if (_userBio.isNotEmpty)
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "About",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xff808897),
-                                fontSize: screenWidth * 0.05,
-                              ),
-                            ),
-                            SizedBox(height: screenHeight * 0.01),
-                            Text(
-                              _userBio,
-                              softWrap: true,
-                              style: TextStyle(
-                                color: const Color(0xff808897),
-                                fontSize: screenWidth * 0.035,
-                                height: 1.6,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    // if (_userBio.isNotEmpty)
+                    //   Padding(
+                    //     padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
+                    //     child: Column(
+                    //       crossAxisAlignment: CrossAxisAlignment.start,
+                    //       children: [
+                    //         Text(
+                    //           "Bio",
+                    //           style: TextStyle(
+                    //             fontWeight: FontWeight.bold,
+                    //             color: const Color(0xff808897),
+                    //             fontSize: screenWidth * 0.05,
+                    //           ),
+                    //         ),
+                    //         SizedBox(height: screenHeight * 0.01),
+                    //         Text(
+                    //           _userBio,
+                    //           softWrap: true,
+                    //           style: TextStyle(
+                    //             color: const Color(0xff808897),
+                    //             fontSize: screenWidth * 0.035,
+                    //             height: 1.6,
+                    //           ),
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ),
 
-                    SizedBox(height: screenHeight * 0.02),
+                   
 
                     // ── My Listings ──
                     Padding(
@@ -380,30 +394,24 @@ globalRealProductsNotifier.value = [];
                           itemBuilder: (context, index) {
                             final listing = visibleListings[index];
                             final bool isUserAdded = listing['isUserAdded'] == true;
+                             print('📸 Listing photos: ${listing['photos']}');
+  print('📸 Full listing: $listing');
 
                             final product = {
-                              'name': listing['title'] ?? listing['name'] ?? '',
-                              'price': isUserAdded
-                                  ? listing['price']
-                                  : '${listing['price']} ${listing['currency'] ?? 'DA'}',
-                              'priceValue': double.tryParse(
-                                    listing['priceValue']?.toString() ??
-                                        listing['price']?.toString() ??
-                                        '0',
-                                  ) ??
-                                  0.0,
-                              'category': listing['category'] ?? '',
-                              'rating': (listing['average_rating'] ?? listing['rating'] ?? 0.0).toDouble(),
-                              'isRated': false,
-                              'image': isUserAdded
-                                  ? listing['image']
-                                  : (listing['photo'] ??
-                                      listing['image_url'] ??
-                                      'assets/images/products/airpods.jpg'),
-                              'isReal': listing['isReal'] ?? false,
-                              'isUserAdded': isUserAdded,
-                              'id': listing['id'],
-                            };
+  'name': listing['title'] ?? listing['name'] ?? '',
+ 'price': listing['price']?.toString() ?? '',
+  'priceValue': double.tryParse(listing['price']?.toString() ?? '0') ?? 0.0,
+  'category': listing['category'] ?? '',
+  'rating': (listing['average_rating'] ?? listing['rating'] ?? 0.0).toDouble(),
+  'isRated': false,
+  'image': listing['image'] ?? 
+           listing['photos']?[0]?['image'] ??
+           'assets/images/products/airpods.jpg',
+  'isReal': true,
+  'isUserAdded': false,
+  'id': listing['id'],
+  'description': listing['description'] ?? '',
+};
 
                             return Container(
                               decoration: BoxDecoration(

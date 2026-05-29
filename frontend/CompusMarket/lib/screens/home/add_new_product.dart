@@ -189,7 +189,9 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
           categoryId: categoryId,
           universityId: universityId,
           location: _selectedUniversity ?? '',
-          phoneNumber: _phoneController.text.trim(),
+          phoneNumber: _phoneController.text.trim().isEmpty 
+    ? null 
+    : _phoneController.text.trim(),
           photos: _selectedImages,
         );
 
