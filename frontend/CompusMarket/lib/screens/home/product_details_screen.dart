@@ -6,12 +6,9 @@ import '../../services/announcement_service.dart';
 import '../../services/msg_service.dart';
 import '../../services/auth_services.dart';
 import '../chats/chat_in.dart';
-<<<<<<< HEAD
 import 'package:compusmarket/screens/profiles/My_profile.dart';
 
 
-=======
->>>>>>> 272f4d28e9b93237bc47813596266b34e647315c
 class ProductDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> product;
 
@@ -72,6 +69,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       (widget.product['average_rating'] ?? widget.product['rating'] ?? 0.0)
           .toDouble();
 
+  bool get _isOwnProduct {
+    final sellerId = widget.product['seller_id']?.toString();
+    return sellerId != null && sellerId == MsgService.currentUserId;
+  }
+
   void _toggleFavorite() {
     setState(() {
       isFavorite = !isFavorite;
@@ -113,6 +115,86 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         print('❌ Rating failed: $e');
       }
     }
+  }
+
+  void _showReportDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        String selectedReason = 'Spam / Misleading';
+        final reasons = [
+          'Spam / Misleading',
+          'Inappropriate Content',
+          'Harassment or Abuse',
+          'Fake Product / Scam',
+          'Other'
+        ];
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: const Row(
+                children: [
+                  Icon(Icons.report_problem, color: Colors.red),
+                  SizedBox(width: 10),
+                  Text('Report Product'),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Why are you reporting this product?',
+                    style: TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 15),
+                  ...reasons.map((reason) {
+                    return RadioListTile<String>(
+                      activeColor: Colors.red,
+                      title: Text(reason, style: const TextStyle(fontSize: 14)),
+                      value: reason,
+                      groupValue: selectedReason,
+                      onChanged: (val) {
+                        setStateDialog(() {
+                          selectedReason = val!;
+                        });
+                      },
+                    );
+                  }),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Product reported successfully for: $selectedReason'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text('Submit Report', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   Widget _buildImage(String imagePath, {BoxFit fit = BoxFit.cover}) {
@@ -434,14 +516,39 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.only(top: 60, left: 140),
-              child: Text(
-                'Product Info',
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+              padding: const EdgeInsets.only(top: 60, left: 20, right: 20),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 45,
+                      height: 45,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.grey[300]!),
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                  const Expanded(
+                    child: Center(
+                      child: Text(
+                        'Product Info',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 45), // Balancing spacer for perfect centering
+                ],
               ),
             ),
 
@@ -508,61 +615,31 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   ),
                 ),
 
-                // ── Back + Favorite ──
-                SafeArea(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.05,
-                      vertical: 10,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: Container(
-                            width: 45,
-                            height: 45,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.9),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 5,
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.arrow_back,
-                              color: Colors.black,
-                            ),
+                // ── Favorite Button at bottom-right corner ──
+                Positioned(
+                  bottom: 16,
+                  right: 16,
+                  child: GestureDetector(
+                    onTap: _toggleFavorite,
+                    child: Container(
+                      width: 45,
+                      height: 45,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 5,
                           ),
-                        ),
-                        GestureDetector(
-                          onTap: _toggleFavorite,
-                          child: Container(
-                            width: 45,
-                            height: 45,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.9),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 5,
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              isFavorite
-                                  ? Icons.favorite
-                                  : Icons.favorite_border,
-                              color: isFavorite ? Colors.red : Colors.grey,
-                            ),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
+                      child: Icon(
+                        isFavorite
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        color: isFavorite ? Colors.red : Colors.grey,
+                      ),
                     ),
                   ),
                 ),
@@ -709,76 +786,115 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   SizedBox(height: screenWidth * 0.05),
 
                   // ── RATING & COMMENTS ──
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: _toggleRating,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.amber.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Colors.amber.withOpacity(0.5),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        GestureDetector(
+                          onTap: _toggleRating,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
                             ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                isRated ? Icons.star : Icons.star_border,
-                                color: Colors.amber,
-                                size: 20,
+                            decoration: BoxDecoration(
+                              color: Colors.amber.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.amber.withOpacity(0.5),
                               ),
-                              const SizedBox(width: 6),
-                              Text(
-                                'Rate',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  isRated ? Icons.star : Icons.star_border,
                                   color: Colors.amber,
+                                  size: 20,
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 15),
-                      GestureDetector(
-                        onTap: () => _showCommentsSheet(context),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Colors.grey.withOpacity(0.3),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Rate',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.amber,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          child: const Row(
-                            children: [
-                              Icon(
-                                Icons.comment_outlined,
-                                color: Colors.black87,
-                                size: 20,
+                        ),
+                        const SizedBox(width: 15),
+                        GestureDetector(
+                          onTap: () => _showCommentsSheet(context),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.grey.withOpacity(0.3),
                               ),
-                              SizedBox(width: 6),
-                              Text(
-                                'Comments',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
+                            ),
+                            child: const Row(
+                              children: [
+                                Icon(
+                                  Icons.comment_outlined,
                                   color: Colors.black87,
+                                  size: 20,
                                 ),
-                              ),
-                            ],
+                                SizedBox(width: 6),
+                                Text(
+                                  'Comments',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                        if (!_isOwnProduct) ...[
+                          const SizedBox(width: 15),
+                          GestureDetector(
+                            onTap: _showReportDialog,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: Colors.red.withOpacity(0.3),
+                                ),
+                              ),
+                              child: const Row(
+                                children: [
+                                  Icon(
+                                    Icons.report_outlined,
+                                    color: Colors.red,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'Report product',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
 
                   SizedBox(height: screenWidth * 0.08),

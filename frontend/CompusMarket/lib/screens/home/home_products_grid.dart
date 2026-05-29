@@ -343,7 +343,7 @@ class ProductCard extends StatelessWidget {
                               ),
                   ),
                   Positioned(
-                    top: 8,
+                    bottom: 8,
                     right: 8,
                     child: GestureDetector(
                       onTap: onEdit ?? onFavoriteToggle,
