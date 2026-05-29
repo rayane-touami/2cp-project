@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.db.models import Avg
 from django.db import transaction
 from django.core.files.images import get_image_dimensions
-from .models import Announcement, Category, Photo, Favorite, Review, Comment
+from .models import Announcement, Category, Photo, Favorite, Review, Comment, Report
 from features.universities.models import University
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -264,3 +264,33 @@ class MyAnnouncementSerializer(serializers.ModelSerializer):
             request.build_absolute_uri(p.image.url) if request else p.image.url
             for p in photos if p.image
         ]
+    
+class ReportSerializer(serializers.ModelSerializer):
+    reason_display = serializers.CharField(source='get_reason_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+
+    class Meta:
+        model = Report
+        fields = [
+            'id', 'announcement', 'announcement_id', 'reporter_id',
+            'reason', 'reason_display', 'description',
+            'status', 'status_display',
+            'reviewed_by', 'reviewed_at',
+            'resolved_by', 'resolved_at',
+            'admin_note', 'created_at'
+        ]
+        read_only_fields = [
+            'reporter_id', 'status', 'reviewed_by', 'reviewed_at',
+            'resolved_by', 'resolved_at', 'admin_note', 'created_at'
+        ]
+
+    def validate_announcement_id(self, value):
+        # Prevent reporting your own announcement
+        request = self.context.get('request')
+        try:
+            announcement = Announcement.objects.get(pk=value)
+        except Announcement.DoesNotExist:
+            raise serializers.ValidationError("Announcement not found.")
+        if request and announcement.student_id == request.user.id:
+            raise serializers.ValidationError("You cannot report your own announcement.")
+        return value    

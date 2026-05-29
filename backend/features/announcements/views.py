@@ -3,10 +3,11 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.db.models import Prefetch, Count, F, Q
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers
-from .models import Announcement, Category, Photo, Favorite, Review, Comment
+from .models import Announcement, Category, Photo, Favorite, Review, Comment, Report
 from features.universities.models import University
 from .serializers import (
     CategorySerializer,
@@ -18,6 +19,7 @@ from .serializers import (
     ReviewSerializer,
     CommentSerializer,
     MyAnnouncementSerializer,
+    ReportSerializer,
 )
 from features.notifications.signals import (
     notify_new_favorite,
@@ -436,3 +438,56 @@ class CommentUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return Comment.objects.filter(user_id=self.request.user.id)
     
+class ReportCreateAPIView(generics.CreateAPIView):
+    serializer_class = ReportSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(reporter_id=self.request.user.id)
+
+
+class ReportListAPIView(generics.ListAPIView):
+    """
+    For admins: list all reports.
+    For users: list reports they submitted.
+    """
+    serializer_class = ReportSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        user = self.request.user
+        if getattr(user, 'is_staff', False) or getattr(user, 'is_superuser', False):
+            return Report.objects.all().select_related('announcement', 'reviewed_by', 'resolved_by')
+        return Report.objects.filter(reporter_id=user.id)
+
+
+class ReportUpdateStatusAPIView(generics.UpdateAPIView):
+    """
+    Admin-only: update status, add admin note, mark reviewed/resolved.
+    """
+    serializer_class = ReportSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = Report.objects.all()
+
+    def patch(self, request, *args, **kwargs):
+        report = self.get_object()
+        new_status = request.data.get('status')
+        admin_note = request.data.get('admin_note')
+
+        if new_status in [Report.Status.RESOLVED, Report.Status.IGNORED, Report.Status.PENDING]:
+            report.status = new_status
+
+        if admin_note is not None:
+            report.admin_note = admin_note
+
+        # Track who reviewed/resolved
+        if new_status == Report.Status.RESOLVED:
+            report.resolved_by = request.user
+            report.resolved_at = timezone.now()
+        else:
+            report.reviewed_by = request.user
+            report.reviewed_at = timezone.now()
+
+        report.save()
+        return Response(ReportSerializer(report).data)

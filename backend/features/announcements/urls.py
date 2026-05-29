@@ -32,6 +32,11 @@ urlpatterns = [
     # comments
     path('announcements/<int:announcement_id>/comments/', views.CommentListCreateAPIView.as_view(), name='comment-list'),
     path('comments/<int:pk>/', views.CommentUpdateDeleteAPIView.as_view(), name='comment-detail'),
+
+    # reports
+    path('reports/', views.ReportCreateAPIView.as_view(), name='report-create'),
+    path('reports/list/', views.ReportListAPIView.as_view(), name='report-list'),
+    path('reports/<int:pk>/status/', views.ReportUpdateStatusAPIView.as_view(), name='report-status'),
     
 ]
 
