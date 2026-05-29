@@ -32,7 +32,8 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
   int _currentImageIndex = 0;
 
   bool _isSubmitting = false;
-  bool _isReserved = false;
+ // bool _isReserved = false;
+ String _selectedStatus = 'active';
 
   final List<String> _types = [
     'Books',
@@ -63,7 +64,8 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
       _nameController.text = p['name'] ?? p['title'] ?? '';
       _modelController.text = p['model']?.toString() ?? '';
       _descriptionController.text = p['description'] ?? '';
-      _isReserved = p['status'] == 'reserved';
+      _selectedStatus = p['status']?.toString() ?? 'active';
+      //_isReserved = p['status'] == 'reserved';
 
       // ✅ category: match case-insensitively against _types list
       final rawCategory = (p['category'] ?? '').toString();
@@ -246,13 +248,15 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
             'category': categoryId,
             'university': universityId,
             'location': _selectedUniversity ?? '',
-            'status': _isReserved ? 'reserved' : 'active',
+           // 'status': _selectedStatus,
+           // 'status': _isReserved ? 'reserved' : 'active',
             'model':_modelController.text.trim(),
           },
           _selectedImages.isNotEmpty
               ? _selectedImages.map((f) => f.path).toList()
               : null,
         );
+          await AnnouncementService.changeStatus(id, _selectedStatus);
 
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -464,23 +468,52 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                 _buildImageUploadPlaceholder(),
                 const SizedBox(height: 40),
 
-                // ── RESERVED TOGGLE (edit mode only) ──
+
                 if (widget.product != null) ...[
-                  SwitchListTile(
-                    title: const Text(
-                      'Mark as Reserved',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: const Text(
-                      'Product will appear as reserved in the home feed',
-                      style: TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-                    value: _isReserved,
-                    activeColor: const Color(0xFF1A73E8),
-                    onChanged: (val) => setState(() => _isReserved = val),
-                  ),
-                  const SizedBox(height: 16),
-                ],
+  const Text(
+    'Product Status',
+    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+  ),
+  const SizedBox(height: 8),
+  Container(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    decoration: BoxDecoration(
+      border: Border.all(color: Colors.grey),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: DropdownButtonHideUnderline(
+      child: DropdownButton<String>(
+        value: _selectedStatus,
+        isExpanded: true,
+        items: const [
+          DropdownMenuItem(value: 'active', child: Row(children: [Icon(Icons.check_circle, color: Colors.green, size: 18), SizedBox(width: 8), Text('Active')])),
+          DropdownMenuItem(value: 'sold',   child: Row(children: [Icon(Icons.sell,          color: Color(0xff2853af), size: 18), SizedBox(width: 8), Text('Sold')])),
+          DropdownMenuItem(value: 'expired',child: Row(children: [Icon(Icons.timer_off,     color: Colors.orange, size: 18), SizedBox(width: 8), Text('Expired')])),
+        ],
+        onChanged: (val) => setState(() => _selectedStatus = val ?? 'active'),
+      ),
+    ),
+  ),
+  const SizedBox(height: 16),
+],
+
+                // ── RESERVED TOGGLE (edit mode only) ──
+                // if (widget.product != null) ...[
+                //   SwitchListTile(
+                //     title: const Text(
+                //       'Mark as Reserved',
+                //       style: TextStyle(fontWeight: FontWeight.bold),
+                //     ),
+                //     subtitle: const Text(
+                //       'Product will appear as reserved in the home feed',
+                //       style: TextStyle(color: Colors.grey, fontSize: 12),
+                //     ),
+                //     value: _isReserved,
+                //     activeColor: const Color(0xFF1A73E8),
+                //     onChanged: (val) => setState(() => _isReserved = val),
+                //   ),
+                //   const SizedBox(height: 16),
+                // ],
 
                 _buildMainButton(
                   context,

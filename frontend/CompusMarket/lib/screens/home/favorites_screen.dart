@@ -38,6 +38,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           'rating': (announcement['average_rating'] ?? 0.0).toDouble(),
           'isRated': false,
           'image': announcement['photo'] ?? '',
+          'status': announcement['status']?.toString() ?? 'active',
           'isReal': true,
         };
       }).toList();

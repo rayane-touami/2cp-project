@@ -450,23 +450,33 @@ final product = {
                                 ],
                               ),
                               child: ClipRRect(
-                                borderRadius: BorderRadius.circular(16),
-                                child: ProductCard(
-                                  product: product,
-                                  isFavorite: false,
-                                  isRated: false,
-                                  onFavoriteToggle: () {},
-                                  onRatingToggle: () {},
-                                  onEdit: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => AddNewProductScreen( product: product,),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
+  borderRadius: BorderRadius.circular(16),
+  child: Stack(
+    children: [
+      ProductCard(
+        product: product,
+        isFavorite: false,
+        isRated: false,
+        onFavoriteToggle: () {},
+        onRatingToggle: () {},
+        onEdit: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => AddNewProductScreen(product: product),
+            ),
+          );
+        },
+      ),
+      if ((product['status'] ?? 'active') != 'active')
+        Positioned(
+          top: 8,
+          left: 8,
+          child: StatusBadge(status: product['status'] ?? ''),
+        ),
+    ],
+  ),
+),
                             );
                           },
                         ),
