@@ -433,6 +433,8 @@ final product = {
   'university': listing['university']?.toString() ?? listing['location']?.toString() ?? '',
   'images': listing['images'] ?? (listing['image'] != null ? [listing['image']] : []),
   'status': listing['status'] ?? 'active',
+  'model': listing['model']?.toString() ?? '',  
+  
 };
 
                             return Container(

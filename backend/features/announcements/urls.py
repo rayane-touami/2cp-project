@@ -36,7 +36,5 @@ urlpatterns = [
     # reports
     path('reports/', views.ReportCreateAPIView.as_view(), name='report-create'),
     path('reports/list/', views.ReportListAPIView.as_view(), name='report-list'),
-    path('reports/<int:pk>/status/', views.ReportUpdateStatusAPIView.as_view(), name='report-status'),
-    
 ]
 

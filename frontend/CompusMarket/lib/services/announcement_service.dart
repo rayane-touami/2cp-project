@@ -152,6 +152,7 @@ print('📥 Response body: ${response.body}');
     required String universityId,
     required String location,
     String? phoneNumber,
+    String? model,
     required List<File> photos,
   }) async {
     final request = http.MultipartRequest(
@@ -174,6 +175,10 @@ print('📥 Response body: ${response.body}');
 
     for (final photo in photos) {
       request.files.add(await http.MultipartFile.fromPath('photos', photo.path));
+    }
+
+    if (model != null && model.isNotEmpty){
+      request.fields['model']=model;
     }
 
     print('📤 Sending fields: ${request.fields}');
