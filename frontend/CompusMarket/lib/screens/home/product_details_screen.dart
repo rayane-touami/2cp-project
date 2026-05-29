@@ -6,13 +6,8 @@ import '../../services/announcement_service.dart';
 import '../../services/msg_service.dart';
 import '../../services/auth_services.dart';
 import '../chats/chat_in.dart';
-<<<<<<< HEAD
-import 'package:compusmarket/screens/profiles/My_profile.dart';
 
 
-=======
-
->>>>>>> 19f82a1ca9a2311918a812b171d793c89fb523c0
 class ProductDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> product;
 
