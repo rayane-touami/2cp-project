@@ -49,6 +49,14 @@ class MsgService {
   throw Exception('Failed to delete conversation: ${res.statusCode}');
 }
 
+static Future<void> saveDeviceToken(String token, String fcmToken) async {
+  await http.post(
+    Uri.parse('$baseUrl/messaging/devices/token/'),
+    headers: headers(token),
+    body: jsonEncode({'device_token': fcmToken}),
+  );
+}
+
   static String wsUrl(int conversationId, String token) =>
       '$wsBase/chat/$conversationId/?token=$token';
      static Future<Map<String, dynamic>> getOrCreateConversation(

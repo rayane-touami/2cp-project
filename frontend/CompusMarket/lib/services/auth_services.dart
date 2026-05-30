@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:compusmarket/services/profile_api_service.dart';
 import 'package:compusmarket/services/msg_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -13,30 +14,42 @@ class AuthService {
   static String refreshToken = '';
 
   static Future<Map<String, dynamic>> login(String email, String password) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/login/'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'password': password}),
-    );
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      accessToken = data['access'];
-      ProfileApiService.token = data['access'];
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('auth_token', data['access']);
-      await prefs.setString('refresh_token', data['refresh']);
-      refreshToken = data['refresh'];
-      final me = await getMe();
-      MsgService.currentUserId = me['id']?.toString() ?? '';
-      MsgService.currentUserEmail = me['email']?.toString() ?? '';
+  final response = await http.post(
+    Uri.parse('$baseUrl/login/'),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({'email': email, 'password': password}),
+  );
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+    accessToken = data['access'];
+    ProfileApiService.token = data['access'];
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('auth_token', data['access']);
+    await prefs.setString('refresh_token', data['refresh']);
+    refreshToken = data['refresh'];
+    final me = await getMe();
+    MsgService.currentUserId = me['id']?.toString() ?? '';
+    MsgService.currentUserEmail = me['email']?.toString() ?? '';
 
-      print('DEBUG currentUserEmail: ${MsgService.currentUserEmail}');
-print('DEBUG currentUserId: ${MsgService.currentUserId}');
-      return data;
-    } else {
-      throw Exception('Login failed');
+    print('DEBUG currentUserEmail: ${MsgService.currentUserEmail}');
+    print('DEBUG currentUserId: ${MsgService.currentUserId}');
+
+    // ✅ FCM token
+    try {
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken != null) {
+        await MsgService.saveDeviceToken(accessToken, fcmToken);
+        print('✅ FCM token saved');
+      }
+    } catch (e) {
+      print('❌ FCM token error: $e');
     }
+
+    return data; // ✅ only one return, at the very end
+  } else {
+    throw Exception('Login failed');
   }
+}
 
   static Future<List<dynamic>> getUniversities() async {
     final response = await http.get(Uri.parse('$baseUrl/universities/'));
