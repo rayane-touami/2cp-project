@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
       title: 'CompusMarket',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Inter'),
-      home: HomeScreen(),
+      home: OnBoadringScreen()
     );
   }
 }

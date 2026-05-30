@@ -239,4 +239,18 @@ print('📥 POST Body: ${response.body}');
       throw Exception('Failed to rate announcement: ${response.body}');
     }
   }
+  /// Report an announcement
+static Future<void> reportAnnouncement(int announcementId, String reason) async {
+  final response = await http.post(
+    Uri.parse('${ApiConfig.baseUrl}/reports/'),
+    headers: await ApiConfig.getHeaders(),
+    body: jsonEncode({
+      'announcement': announcementId,
+      'reason': reason,
+    }),
+  );
+  if (response.statusCode != 201) {
+    throw Exception('Failed to report: ${response.body}');
+  }
+}
 }

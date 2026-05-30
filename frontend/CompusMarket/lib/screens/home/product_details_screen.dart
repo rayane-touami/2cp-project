@@ -5,14 +5,11 @@ import 'home_products_grid.dart';
 import '../../services/announcement_service.dart';
 import '../../services/msg_service.dart';
 import '../../services/auth_services.dart';
+import '../../services/favorite_service.dart';
 import '../chats/chat_in.dart';
-<<<<<<< HEAD
 import 'package:compusmarket/screens/profiles/My_profile.dart';
+import '../profiles/His_profile.dart';
 
-
-=======
-
->>>>>>> 19f82a1ca9a2311918a812b171d793c89fb523c0
 class ProductDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> product;
 
@@ -78,25 +75,95 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     return sellerId != null && sellerId == MsgService.currentUserId;
   }
 
-  void _toggleFavorite() {
+  void _toggleFavorite() async {
+    final bool isReal = widget.product['isReal'] == true;
+    final String productName = _productName;
+    final int? announcementId = widget.product['id'];
+
     setState(() {
       isFavorite = !isFavorite;
-      if (isFavorite) {
-        globalFavoriteProducts.add(widget.product);
-      } else {
-        globalFavoriteProducts.removeWhere(
-          (p) => (p['name'] ?? p['title']) == _productName,
-        );
-      }
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          isFavorite ? 'Added to favorites' : 'Removed from favorites',
+
+    if (isFavorite) {
+      if (isReal && announcementId != null) {
+        try {
+          final result = await FavoriteService.addFavorite(announcementId);
+          if (mounted) {
+            setState(() {
+              final updatedProduct = {
+                ...widget.product,
+                'favoriteId': result['id'],
+              };
+              globalFavoriteProducts.removeWhere(
+                (p) => (p['name'] ?? p['title']) == productName,
+              );
+              globalFavoriteProducts.add(updatedProduct);
+            });
+          }
+        } catch (e) {
+          print('❌ Failed to add favorite: $e');
+          if (mounted) {
+            setState(() {
+              isFavorite = false;
+            });
+          }
+        }
+      } else {
+        setState(() {
+          globalFavoriteProducts.removeWhere(
+            (p) => (p['name'] ?? p['title']) == productName,
+          );
+          globalFavoriteProducts.add(widget.product);
+        });
+      }
+    } else {
+      if (isReal) {
+        try {
+          final existing = globalFavoriteProducts.firstWhere(
+            (p) => (p['name'] ?? p['title']) == productName,
+            orElse: () => {},
+          );
+          final favoriteId = existing['favoriteId'];
+          if (favoriteId != null) {
+            final int parsedId = favoriteId is int ? favoriteId : int.parse(favoriteId.toString());
+            await FavoriteService.removeFavorite(parsedId);
+          }
+          if (mounted) {
+            setState(() {
+              globalFavoriteProducts.removeWhere(
+                (p) => (p['name'] ?? p['title']) == productName,
+              );
+            });
+          }
+        } catch (e) {
+          print('❌ Failed to remove favorite: $e');
+          if (mounted) {
+            setState(() {
+              isFavorite = true;
+            });
+          }
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            globalFavoriteProducts.removeWhere(
+              (p) => (p['name'] ?? p['title']) == productName,
+            );
+          });
+        }
+      }
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isFavorite ? 'Added to favorites' : 'Removed from favorites',
+          ),
+          duration: const Duration(seconds: 1),
         ),
-        duration: const Duration(seconds: 1),
-      ),
-    );
+      );
+    }
   }
 
   void _toggleRating() async {
@@ -176,15 +243,35 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Product reported successfully for: $selectedReason'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  },
+          onPressed: () async {
+  print('DEBUG: Report button tapped');
+  try {
+    final reasonMap = {
+      'Spam / Misleading': 'spam',
+      'Inappropriate Content': 'inappropriate',
+      'Harassment or Abuse': 'offensive',
+      'Fake Product / Scam': 'scam',
+      'Other': 'other',
+    };
+    final reasonKey = reasonMap[selectedReason] ?? 'other';
+    await AnnouncementService.reportAnnouncement(
+      widget.product['id'],
+      reasonKey,
+    );
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Report submitted! Our team will review it.'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  } catch (e) {
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Failed to report: $e')),
+    );
+  }
+},
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
                     shape: RoundedRectangleBorder(
@@ -723,17 +810,25 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       ],
                     ),
                   ),
-                 TextButton(
-  onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => MyProfileScreen(), // or HisProfileScreen if you want another user’s profile
-      ),
-    );
-  },
-  child: const Text('View Profile'),
-),
+                 if (!_isOwnProduct)
+  TextButton(
+    onPressed: () {
+      final sellerId = widget.product['seller_id']?.toString();
+      if (sellerId == null || sellerId.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Seller info not available')),
+        );
+        return;
+      }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => HisProfileScreen(sellerId: sellerId),
+        ),
+      );
+    },
+    child: const Text('View Profile'),
+  ),
                 ],
               ),
             ),
