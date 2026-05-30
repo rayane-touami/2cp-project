@@ -240,7 +240,7 @@ class _ChatsInScreenState extends State<ChatsInScreen> {
               ),
               child: Icon(Icons.more_horiz, size: screenWidth * 0.065),
             ),
-            onPressed: () {},
+           onPressed: () => _showOptionsSheet(context, screenWidth),
           ),
         ],
         leading: IconButton(
@@ -435,4 +435,96 @@ class _ChatsInScreenState extends State<ChatsInScreen> {
       ),
     );
   }
+
+  void _showOptionsSheet(BuildContext context, double screenWidth) {
+  showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+    ),
+    builder: (_) => Container(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          const SizedBox(height: 16),
+          ListTile(
+            leading: const Icon(Icons.delete_outline, color: Colors.red),
+            title: const Text(
+              'Delete Chat',
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            onTap: () {
+              Navigator.pop(context); // close sheet
+              _confirmDelete(context);
+            },
+          ),
+          const Divider(height: 1, color: Color(0xffdfe1e6)),
+          ListTile(
+            leading: const Icon(Icons.cancel_outlined, color: Colors.grey),
+            title: const Text('Cancel'),
+            onTap: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+void _confirmDelete(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text('Delete Chat'),
+      content: const Text(
+        'Are you sure you want to delete this conversation? This cannot be undone.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+          onPressed: () async {
+            Navigator.pop(context); // close dialog
+            try {
+              await MsgService.deleteConversation(
+                AuthService.accessToken,
+                widget.conversationId,
+              );
+              if (mounted) {
+                Navigator.pop(context); // go back to chat list
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Chat deleted')),
+                );
+              }
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Failed to delete: $e')),
+                );
+              }
+            }
+          },
+          child: const Text(
+            'Delete',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      ],
+    ),
+  );
+}
 }

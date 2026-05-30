@@ -351,7 +351,7 @@ class AnnouncementStatusUpdateAPIView(generics.UpdateAPIView):
     def patch(self, request, *args, **kwargs):
         instance = self.get_object()
         status_value = request.data.get('status')
-        if status_value in ['active', 'sold', 'expired']:
+        if status_value in ['active', 'sold', 'expired', 'reserved']:
             instance.status = status_value
             instance.save()
             return Response({'status': status_value})

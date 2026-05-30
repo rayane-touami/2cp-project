@@ -701,6 +701,40 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               ),
                             ),
                           ),
+                          // Add inside the Stack that contains the PageView, after the dot indicators Positioned:
+if ((widget.product['status'] ?? 'active') != 'active')
+  Positioned(
+    top: 80,
+    left: 20,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xff2853af),
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 6)],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            widget.product['status'] == 'sold' ? Icons.sell : Icons.timer_off,
+            color: Colors.white,
+            size: 16,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            (widget.product['status'] ?? '').toUpperCase(),
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              letterSpacing: 1,
+            ),
+          ),
+        ],
+      ),
+    ),
+  ),
                       ],
                     ),
                   ),

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:compusmarket/screens/home/home_products_grid.dart';
 import 'package:compusmarket/screens/home/product_details_screen.dart';
 import 'package:compusmarket/widgets/standard_Button.dart';
 import 'package:flutter/material.dart';
@@ -399,17 +400,18 @@ class _HisProfileScreenState extends State<HisProfileScreen> {
                                 final listing = _listings[index];
                                 final imageUrl = listing['photo']?.toString() ?? '';
 
-                                return GestureDetector(
-                                  onTap: () {
-                                    // ✅ Navigates dynamically to ProductDetailsScreen on listing click!
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => ProductDetailsScreen(product: listing),
-                                      ),
-                                    );
-                                  },
-                                  child: Container(
+                               child: Stack(
+  children: [
+    GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ProductDetailsScreen(product: listing),
+          ),
+        );
+      },
+      child: Container(
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(16),
                                       boxShadow: [
@@ -466,7 +468,15 @@ class _HisProfileScreenState extends State<HisProfileScreen> {
                                       ),
                                     ),
                                   ),
-                                );
+    ),
+    if ((listing['status'] ?? 'active') != 'active')
+      Positioned(
+        top: 8,
+        left: 8,
+        child: StatusBadge(status: listing['status'] ?? ''),
+      ),
+  ],
+);
                               },
                             ),
                           ),

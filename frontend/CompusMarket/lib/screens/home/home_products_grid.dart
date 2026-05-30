@@ -79,6 +79,7 @@ class _HomeProductsGridState extends State<HomeProductsGrid> {
     'seller_id': item['seller_id']?.toString() ?? '',  // 👈 add this
     'university': item['university'] ?? '',
     'photos': item['photos'],
+    'status': item['status']?.toString() ?? 'active',
   };
 }).toList();
 
@@ -375,6 +376,13 @@ class ProductCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                  // Add this after the existing Positioned(top: 8, right: 8, ...) block:
+if ((product['status'] ?? 'active') != 'active')
+  Positioned(
+    top: 8,
+    left: 8,
+    child: StatusBadge(status: product['status'] ?? ''),
+  ),
                 ],
               ),
             ),
@@ -420,6 +428,45 @@ class ProductCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class StatusBadge extends StatelessWidget {
+  final String status;
+  const StatusBadge({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final isSold = status == 'sold';
+    final label = isSold ? 'SOLD' : 'EXPIRED';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xff2853af),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 4)],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isSold ? Icons.sell : Icons.timer_off,
+            color: Colors.white,
+            size: 12,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
       ),
     );
   }

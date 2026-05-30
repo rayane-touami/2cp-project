@@ -29,6 +29,7 @@ class Announcement(models.Model):
         EXPIRED  = 'expired',  'Expired'
         DRAFT    = 'draft',    'Draft'
         ARCHIVED = 'archived', 'Archived'
+        RESERVED = 'reserved', 'Reserved'
 
     title       = models.CharField(max_length=200)
     description = models.TextField()
