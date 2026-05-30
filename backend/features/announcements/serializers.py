@@ -72,6 +72,7 @@ class AnnouncementDetailSerializer(serializers.ModelSerializer):
     photos = PhotoSerializer(many=True, read_only=True)
     seller = serializers.CharField(source='student_full_name')
     seller_id = serializers.UUIDField(source='student_id')
+    seller_photo = serializers.SerializerMethodField()
     category = CategorySerializer(read_only=True)
     university = serializers.CharField(source='university.name', read_only=True)
     category_id = serializers.PrimaryKeyRelatedField(
@@ -95,7 +96,7 @@ class AnnouncementDetailSerializer(serializers.ModelSerializer):
         model = Announcement
         fields = [
             'id', 'title', 'description', 'price',
-            'photos', 'seller', 'seller_id', 'category', 'university',
+            'photos', 'seller', 'seller_id', 'seller_photo', 'category', 'university',
             'category_id', 'university_id', 'location',
             'phone_number', 'whatsapp', 'telegram', 'instagram',
             'facebook', 'allow_chat', 'condition', 'model','url',
@@ -113,6 +114,16 @@ class AnnouncementDetailSerializer(serializers.ModelSerializer):
 
     def get_comments_count(self, obj):
         return obj.comments.count()
+    def get_seller_photo(self, obj): 
+        from features.authentication.models import Student
+        try:
+            student = Student.objects.get(user_id=obj.student_id)
+            if student.profile_picture:
+                request = self.context.get('request')
+                return request.build_absolute_uri(student.profile_picture.url) if request else student.profile_picture.url
+        except Student.DoesNotExist:
+            pass
+        return None
 
 
 class AnnouncementCreateSerializer(serializers.ModelSerializer):
