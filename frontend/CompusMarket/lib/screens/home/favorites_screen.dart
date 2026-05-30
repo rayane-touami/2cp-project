@@ -29,18 +29,21 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       final favorites = data.map((item) {
         final announcement = item['announcement'];
         return {
-          'favoriteId': item['id'],
-          'id': announcement['id'],
-          'name': announcement['title'] ?? '',
-          'price': '${announcement['price']} DA',
-          'priceValue': double.tryParse(announcement['price'].toString()) ?? 0.0,
-          'category': announcement['category'] ?? '',
-          'rating': (announcement['average_rating'] ?? 0.0).toDouble(),
-          'isRated': false,
-          'image': announcement['photo'] ?? '',
-          'status': announcement['status']?.toString() ?? 'active',
-          'isReal': true,
-        };
+  'favoriteId': item['id'],
+  'id': announcement['id'],
+  'name': announcement['title'] ?? '',
+  'price': '${announcement['price']} DA',
+  'priceValue': double.tryParse(announcement['price'].toString()) ?? 0.0,
+  'category': announcement['category'] ?? '',
+  'rating': (announcement['average_rating'] ?? 0.0).toDouble(),
+  'isRated': false,
+  'image': announcement['photo'] ?? '',
+  'isReal': true,
+  'seller': announcement['seller'] ?? '',
+  'seller_id': announcement['seller_id']?.toString() ?? '',
+  'university': announcement['university'] ?? '',
+  'photos': announcement['photos'],
+};
       }).toList();
 
       if (mounted) {
@@ -57,11 +60,19 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   Future<void> _removeApiFavorite(Map<String, dynamic> product) async {
     try {
-      final int favoriteId = product['favoriteId'];
-      await FavoriteService.removeFavorite(favoriteId);
+      final favoriteId = product['favoriteId'];
+      if (favoriteId != null) {
+        final int parsedId = favoriteId is int ? favoriteId : int.parse(favoriteId.toString());
+        await FavoriteService.removeFavorite(parsedId);
+      }
       if (mounted) {
         setState(() {
-          _apiFavorites.removeWhere((p) => p['favoriteId'] == favoriteId);
+          if (favoriteId != null) {
+            _apiFavorites.removeWhere((p) => p['favoriteId'] == favoriteId);
+          }
+          globalFavoriteProducts.removeWhere(
+            (p) => (p['name'] ?? p['title']) == (product['name'] ?? product['title']),
+          );
         });
       }
     } catch (e) {
@@ -117,10 +128,22 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     : ValueListenableBuilder<FilterData>(
                         valueListenable: globalFilterState,
                         builder: (context, filter, child) {
-                          final List<Map<String, dynamic>> allFavorites = [
-                            ..._apiFavorites,
-                            ...globalFavoriteProducts,
-                          ];
+                          final List<Map<String, dynamic>> allFavorites = [];
+                          final Set<String> seenNames = {};
+
+                          for (final product in _apiFavorites) {
+                            final name = product['name'] ?? product['title'] ?? '';
+                            if (name.isNotEmpty && seenNames.add(name)) {
+                              allFavorites.add(product);
+                            }
+                          }
+
+                          for (final product in globalFavoriteProducts) {
+                            final name = product['name'] ?? product['title'] ?? '';
+                            if (name.isNotEmpty && seenNames.add(name)) {
+                              allFavorites.add(product);
+                            }
+                          }
 
                           final filteredFavorites = allFavorites.where((product) {
                             if (filter.searchQuery.isNotEmpty) {

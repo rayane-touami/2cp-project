@@ -38,6 +38,17 @@ class MsgService {
     );
   }
 
+  static Future<void> deleteConversation(String token, int conversationId) async {
+  final res = await http.delete(
+    Uri.parse('$baseUrl/messaging/conversations/$conversationId/delete/'),
+    headers: headers(token),
+  );
+  if (res.statusCode == 204) return;
+  if (res.statusCode == 403) throw Exception('Not your conversation');
+  if (res.statusCode == 404) throw Exception('Conversation not found');
+  throw Exception('Failed to delete conversation: ${res.statusCode}');
+}
+
   static String wsUrl(int conversationId, String token) =>
       '$wsBase/chat/$conversationId/?token=$token';
      static Future<Map<String, dynamic>> getOrCreateConversation(

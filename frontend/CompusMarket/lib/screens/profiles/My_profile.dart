@@ -434,7 +434,9 @@ final product = {
   'images': listing['images'] ?? (listing['image'] != null ? [listing['image']] : []),
   'status': listing['status'] ?? 'active',
   'model': listing['model']?.toString() ?? '',  
-  
+  'seller': listing['seller'] ?? '',
+  'seller_id': listing['seller_id']?.toString() ?? '',
+  'seller_avatar': listing['seller_avatar'],
 };
 
                             return Container(
